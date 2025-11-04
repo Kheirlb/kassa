@@ -1,13 +1,20 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/kassa/valve.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kassa</title>
     <meta description="Kassa is a schematic editor designed to make plumbing and instrumentation diagrams (P&ID) easy to use and maintain. A simple scripting programming language simplifies workflows surrounding P&IDs and systems engineering."/>
-    <script type="module" crossorigin src="/kassa/assets/index-CJZe6Ub8.js"></script>
-    <link rel="stylesheet" crossorigin href="/kassa/assets/index-D506FA7l.css">
+    <script/>
+      document.documentElement.classList.toggle(
+        "dark",
+        localStorage.theme === "dark" ||
+          (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches),
+      );
+    </script>
+    <script type="module" crossorigin src="/kassa/assets/index-bRJ1N9pU.js"></script>
+    <link rel="stylesheet" crossorigin href="/kassa/assets/index-C1OoJkon.css">
   <link rel="manifest" href="/kassa/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/kassa/registerSW.js"></script></head>
   <body>
     <div id="root"></div>
