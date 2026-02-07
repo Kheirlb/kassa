@@ -1,0 +1,13 @@
+{
+  "projectName": "Kassa",
+  "languages": [
+      {
+          "id": "kassa",
+          "grammar": "src/kassa.langium",
+          "fileExtensions": [
+              "kassa"
+          ]
+      }
+  ],
+  "out": "src/generated"
+}
