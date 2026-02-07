@@ -1,0 +1,32 @@
+{
+  "name": "@kassa/lang",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./ast": {
+      "types": "./dist/ast/index.d.ts",
+      "default": "./dist/ast/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "dev": "tsc -b tsconfig.json --watch",
+    "langium:generate": "langium generate"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.28.1",
+  "dependencies": {
+    "langium": "^4.2.0"
+  },
+  "devDependencies": {
+    "langium-cli": "^4.2.0"
+  }
+}
