@@ -5,7 +5,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "pnpm -r build"
+    "build": "pnpm -r --filter !kassa-app build",
+    "start-cli": "pnpm --filter kassa-cli start",
+    "kassa": "pnpm --filter kassa-cli kassa"
   },
   "keywords": [],
   "author": "",

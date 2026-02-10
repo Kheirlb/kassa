@@ -1,0 +1,42 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="120"
+  height="120"
+>
+  <path
+    fill="transparent"
+    stroke="currentColor"
+    d="m30,45 v30 l60,-30 v30 z"
+  />
+
+  <g id="ports">
+    <circle id="port-inlet"
+            cx="30" cy="60" r="1"
+            fill="transparent"
+            stroke="none"
+            data-port="inlet"
+            data-dir="180"
+            pointer-events="all"
+    />
+    <circle id="port-outlet"
+            cx="90" cy="60" r="1"
+            fill="transparent"
+            stroke="none"
+            data-port="outlet"
+            data-dir="0"
+            pointer-events="all"
+    />
+  </g>
+
+  <circle
+    id="label-anchor"
+    cx="60"
+    cy="90"
+    r="1"
+    fill="none"
+    stroke="none"
+    data-align="center"
+    data-v-align="below"
+  />
+  
+</svg>

@@ -1,24 +1,19 @@
 {
-  "name": "@kassa/cli",
+  "name": "@kassa/renderer",
   "private": true,
-  "type": "module",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -b tsconfig.json",
-    "start": "pnpm build && node dist/index.js",
-    "kassa": "node dist/index.js"
+    "build": "tsc -p tsconfig.json"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.28.1",
   "dependencies": {
-    "commander": "^14.0.3"
-  },
-  "devDependencies": {
-    "@types/node": "^25.2.0"
+    "@kassa/layout": "workspace:*"
   }
 }
