@@ -1,12 +1,67 @@
 grammar Kassa
 
-entry Model: (elements += Element)*;
+entry Model: (Newline* items+=Item)* Newline*;
 
-Element:
-    'element' name=ID;
+Item: Statement | ConnectionChain;
 
+// ---- connection langauge ----
+
+Endpoint: inlet=Port? componentId=[Declaration:Identifier] outlet=Port?;
+
+Port: '[' portName=Identifier ']';
+
+ConnectionChain:
+  start=Endpoint? ('-->' targets+=Endpoint)+;
+
+// ---- basic statements ----
+
+Statement: Declaration;
+
+Declaration:
+  name=Identifier ':' type=Type ('=' value=Value)?;
+
+Type:
+  name=Identifier;
+
+// ---- values ----
+
+Value: ObjectValue | ArrayValue | LiteralValue;
+
+ArrayValue:
+  '[' (elements+=Value (',' elements+=Value)*)? ','? ']';
+
+ObjectValue:
+  '{' (properties+=KeyValue (',' properties+=KeyValue)*)? ','? '}';
+
+KeyValue:
+  key=Identifier ':' value=Value;
+
+LiteralValue:
+  IdentifierValue | StringValue | NumberValue | BooleanValue;
+
+IdentifierValue:
+  value=Identifier;
+
+StringValue:
+  value=String;
+
+NumberValue:
+  value=Number;
+
+BooleanValue:
+  value=('true' | 'false');
+
+// ---- terminals ----
+
+terminal Identifier: /[_a-zA-Z]\w*/;
+terminal String: /"[^"]*"/;
+terminal Number: /-?\d+(\.\d+)?/;
+
+// newline is a real token
+terminal Newline: /[ \t]*;?[ \t]*(\r?\n)+/;
+
+// whitespace excludes newline
+//hidden terminal WS: /[ \t]+/;
 hidden terminal WS: /\s+/;
-terminal ID: /[_a-zA-Z][\w_]*/;
-
 hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
 hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;

@@ -15,7 +15,7 @@
     }
   },
   "scripts": {
-    "build": "tsc -b tsconfig.json",
+    "build": "pnpm langium:generate && tsc -b tsconfig.json",
     "dev": "tsc -b tsconfig.json --watch",
     "langium:generate": "langium generate"
   },

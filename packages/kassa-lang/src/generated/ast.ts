@@ -7,8 +7,11 @@
 import * as langium from 'langium';
 
 export const KassaTerminals = {
+    Identifier: /[_a-zA-Z]\w*/,
+    String: /"[^"]*"/,
+    Number: /-?\d+(\.\d+)?/,
+    Newline: /[ \t]*;?[ \t]*(\r?\n)+/,
     WS: /\s+/,
-    ID: /[_a-zA-Z][\w_]*/,
     ML_COMMENT: /\/\*[\s\S]*?\*\//,
     SL_COMMENT: /\/\/[^\n\r]*/,
 };
@@ -16,62 +19,448 @@ export const KassaTerminals = {
 export type KassaTerminalNames = keyof typeof KassaTerminals;
 
 export type KassaKeywordNames =
-    | "element";
+    | ","
+    | "-->"
+    | ":"
+    | "="
+    | "["
+    | "]"
+    | "false"
+    | "true"
+    | "{"
+    | "}";
 
 export type KassaTokenNames = KassaTerminalNames | KassaKeywordNames;
 
-export interface Element extends langium.AstNode {
-    readonly $container: Model;
-    readonly $type: 'Element';
-    name: string;
+export interface ArrayValue extends langium.AstNode {
+    readonly $container: ArrayValue | Declaration | KeyValue;
+    readonly $type: 'ArrayValue';
+    elements: Array<Value>;
 }
 
-export const Element = {
-    $type: 'Element',
-    name: 'name'
+export const ArrayValue = {
+    $type: 'ArrayValue',
+    elements: 'elements'
 } as const;
 
-export function isElement(item: unknown): item is Element {
-    return reflection.isInstance(item, Element.$type);
+export function isArrayValue(item: unknown): item is ArrayValue {
+    return reflection.isInstance(item, ArrayValue.$type);
+}
+
+export interface BooleanValue extends langium.AstNode {
+    readonly $container: ArrayValue | Declaration | KeyValue;
+    readonly $type: 'BooleanValue';
+    value: 'false' | 'true';
+}
+
+export const BooleanValue = {
+    $type: 'BooleanValue',
+    value: 'value'
+} as const;
+
+export function isBooleanValue(item: unknown): item is BooleanValue {
+    return reflection.isInstance(item, BooleanValue.$type);
+}
+
+export interface ConnectionChain extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'ConnectionChain';
+    start?: Endpoint;
+    targets: Array<Endpoint>;
+}
+
+export const ConnectionChain = {
+    $type: 'ConnectionChain',
+    start: 'start',
+    targets: 'targets'
+} as const;
+
+export function isConnectionChain(item: unknown): item is ConnectionChain {
+    return reflection.isInstance(item, ConnectionChain.$type);
+}
+
+export interface Declaration extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'Declaration';
+    name: string;
+    type: Type;
+    value?: Value;
+}
+
+export const Declaration = {
+    $type: 'Declaration',
+    name: 'name',
+    type: 'type',
+    value: 'value'
+} as const;
+
+export function isDeclaration(item: unknown): item is Declaration {
+    return reflection.isInstance(item, Declaration.$type);
+}
+
+export interface Endpoint extends langium.AstNode {
+    readonly $container: ConnectionChain;
+    readonly $type: 'Endpoint';
+    componentId: langium.Reference<Declaration>;
+    inlet?: Port;
+    outlet?: Port;
+}
+
+export const Endpoint = {
+    $type: 'Endpoint',
+    componentId: 'componentId',
+    inlet: 'inlet',
+    outlet: 'outlet'
+} as const;
+
+export function isEndpoint(item: unknown): item is Endpoint {
+    return reflection.isInstance(item, Endpoint.$type);
+}
+
+export interface IdentifierValue extends langium.AstNode {
+    readonly $container: ArrayValue | Declaration | KeyValue;
+    readonly $type: 'IdentifierValue';
+    value: string;
+}
+
+export const IdentifierValue = {
+    $type: 'IdentifierValue',
+    value: 'value'
+} as const;
+
+export function isIdentifierValue(item: unknown): item is IdentifierValue {
+    return reflection.isInstance(item, IdentifierValue.$type);
+}
+
+export type Item = ConnectionChain | Statement;
+
+export const Item = {
+    $type: 'Item'
+} as const;
+
+export function isItem(item: unknown): item is Item {
+    return reflection.isInstance(item, Item.$type);
+}
+
+export interface KeyValue extends langium.AstNode {
+    readonly $container: ObjectValue;
+    readonly $type: 'KeyValue';
+    key: string;
+    value: Value;
+}
+
+export const KeyValue = {
+    $type: 'KeyValue',
+    key: 'key',
+    value: 'value'
+} as const;
+
+export function isKeyValue(item: unknown): item is KeyValue {
+    return reflection.isInstance(item, KeyValue.$type);
+}
+
+export type LiteralValue = BooleanValue | IdentifierValue | NumberValue | StringValue;
+
+export const LiteralValue = {
+    $type: 'LiteralValue'
+} as const;
+
+export function isLiteralValue(item: unknown): item is LiteralValue {
+    return reflection.isInstance(item, LiteralValue.$type);
 }
 
 export interface Model extends langium.AstNode {
     readonly $type: 'Model';
-    elements: Array<Element>;
+    items: Array<Item>;
 }
 
 export const Model = {
     $type: 'Model',
-    elements: 'elements'
+    items: 'items'
 } as const;
 
 export function isModel(item: unknown): item is Model {
     return reflection.isInstance(item, Model.$type);
 }
 
+export interface NumberValue extends langium.AstNode {
+    readonly $container: ArrayValue | Declaration | KeyValue;
+    readonly $type: 'NumberValue';
+    value: string;
+}
+
+export const NumberValue = {
+    $type: 'NumberValue',
+    value: 'value'
+} as const;
+
+export function isNumberValue(item: unknown): item is NumberValue {
+    return reflection.isInstance(item, NumberValue.$type);
+}
+
+export interface ObjectValue extends langium.AstNode {
+    readonly $container: ArrayValue | Declaration | KeyValue;
+    readonly $type: 'ObjectValue';
+    properties: Array<KeyValue>;
+}
+
+export const ObjectValue = {
+    $type: 'ObjectValue',
+    properties: 'properties'
+} as const;
+
+export function isObjectValue(item: unknown): item is ObjectValue {
+    return reflection.isInstance(item, ObjectValue.$type);
+}
+
+export interface Port extends langium.AstNode {
+    readonly $container: Endpoint;
+    readonly $type: 'Port';
+    portName: string;
+}
+
+export const Port = {
+    $type: 'Port',
+    portName: 'portName'
+} as const;
+
+export function isPort(item: unknown): item is Port {
+    return reflection.isInstance(item, Port.$type);
+}
+
+export type Statement = Declaration;
+
+export const Statement = {
+    $type: 'Statement'
+} as const;
+
+export function isStatement(item: unknown): item is Statement {
+    return reflection.isInstance(item, Statement.$type);
+}
+
+export interface StringValue extends langium.AstNode {
+    readonly $container: ArrayValue | Declaration | KeyValue;
+    readonly $type: 'StringValue';
+    value: string;
+}
+
+export const StringValue = {
+    $type: 'StringValue',
+    value: 'value'
+} as const;
+
+export function isStringValue(item: unknown): item is StringValue {
+    return reflection.isInstance(item, StringValue.$type);
+}
+
+export interface Type extends langium.AstNode {
+    readonly $container: Declaration;
+    readonly $type: 'Type';
+    name: string;
+}
+
+export const Type = {
+    $type: 'Type',
+    name: 'name'
+} as const;
+
+export function isType(item: unknown): item is Type {
+    return reflection.isInstance(item, Type.$type);
+}
+
+export type Value = ArrayValue | LiteralValue | ObjectValue;
+
+export const Value = {
+    $type: 'Value'
+} as const;
+
+export function isValue(item: unknown): item is Value {
+    return reflection.isInstance(item, Value.$type);
+}
+
 export type KassaAstType = {
-    Element: Element
+    ArrayValue: ArrayValue
+    BooleanValue: BooleanValue
+    ConnectionChain: ConnectionChain
+    Declaration: Declaration
+    Endpoint: Endpoint
+    IdentifierValue: IdentifierValue
+    Item: Item
+    KeyValue: KeyValue
+    LiteralValue: LiteralValue
     Model: Model
+    NumberValue: NumberValue
+    ObjectValue: ObjectValue
+    Port: Port
+    Statement: Statement
+    StringValue: StringValue
+    Type: Type
+    Value: Value
 }
 
 export class KassaAstReflection extends langium.AbstractAstReflection {
     override readonly types = {
-        Element: {
-            name: Element.$type,
+        ArrayValue: {
+            name: ArrayValue.$type,
+            properties: {
+                elements: {
+                    name: ArrayValue.elements,
+                    defaultValue: []
+                }
+            },
+            superTypes: [Value.$type]
+        },
+        BooleanValue: {
+            name: BooleanValue.$type,
+            properties: {
+                value: {
+                    name: BooleanValue.value
+                }
+            },
+            superTypes: [LiteralValue.$type]
+        },
+        ConnectionChain: {
+            name: ConnectionChain.$type,
+            properties: {
+                start: {
+                    name: ConnectionChain.start
+                },
+                targets: {
+                    name: ConnectionChain.targets,
+                    defaultValue: []
+                }
+            },
+            superTypes: [Item.$type]
+        },
+        Declaration: {
+            name: Declaration.$type,
             properties: {
                 name: {
-                    name: Element.name
+                    name: Declaration.name
+                },
+                type: {
+                    name: Declaration.type
+                },
+                value: {
+                    name: Declaration.value
+                }
+            },
+            superTypes: [Statement.$type]
+        },
+        Endpoint: {
+            name: Endpoint.$type,
+            properties: {
+                componentId: {
+                    name: Endpoint.componentId,
+                    referenceType: Declaration.$type
+                },
+                inlet: {
+                    name: Endpoint.inlet
+                },
+                outlet: {
+                    name: Endpoint.outlet
                 }
             },
             superTypes: []
         },
+        IdentifierValue: {
+            name: IdentifierValue.$type,
+            properties: {
+                value: {
+                    name: IdentifierValue.value
+                }
+            },
+            superTypes: [LiteralValue.$type]
+        },
+        Item: {
+            name: Item.$type,
+            properties: {
+            },
+            superTypes: []
+        },
+        KeyValue: {
+            name: KeyValue.$type,
+            properties: {
+                key: {
+                    name: KeyValue.key
+                },
+                value: {
+                    name: KeyValue.value
+                }
+            },
+            superTypes: []
+        },
+        LiteralValue: {
+            name: LiteralValue.$type,
+            properties: {
+            },
+            superTypes: [Value.$type]
+        },
         Model: {
             name: Model.$type,
             properties: {
-                elements: {
-                    name: Model.elements,
+                items: {
+                    name: Model.items,
                     defaultValue: []
                 }
+            },
+            superTypes: []
+        },
+        NumberValue: {
+            name: NumberValue.$type,
+            properties: {
+                value: {
+                    name: NumberValue.value
+                }
+            },
+            superTypes: [LiteralValue.$type]
+        },
+        ObjectValue: {
+            name: ObjectValue.$type,
+            properties: {
+                properties: {
+                    name: ObjectValue.properties,
+                    defaultValue: []
+                }
+            },
+            superTypes: [Value.$type]
+        },
+        Port: {
+            name: Port.$type,
+            properties: {
+                portName: {
+                    name: Port.portName
+                }
+            },
+            superTypes: []
+        },
+        Statement: {
+            name: Statement.$type,
+            properties: {
+            },
+            superTypes: [Item.$type]
+        },
+        StringValue: {
+            name: StringValue.$type,
+            properties: {
+                value: {
+                    name: StringValue.value
+                }
+            },
+            superTypes: [LiteralValue.$type]
+        },
+        Type: {
+            name: Type.$type,
+            properties: {
+                name: {
+                    name: Type.name
+                }
+            },
+            superTypes: []
+        },
+        Value: {
+            name: Value.$type,
+            properties: {
             },
             superTypes: []
         }
