@@ -76,6 +76,12 @@ importers:
       '@kassa/lang':
         specifier: workspace:*
         version: link:../kassa-lang
+      langium:
+        specifier: ^4.2.1
+        version: 4.2.1
+      vscode-languageserver-textdocument:
+        specifier: ^1.0.12
+        version: 1.0.12
 
   packages/kassa-core: {}
 
@@ -660,6 +666,10 @@ packages:
 
   langium@4.2.0:
     resolution: {integrity: sha512-SoXTYrTyA9x0CjVoguZfB9NIbj2RwQ7KpltHyJwB7jyzbnfHkqw5Alf9A1JtIqouT7fZv4xMCCy+7CoIYGV65w==}
+    engines: {node: '>=20.10.0', npm: '>=10.2.3'}
+
+  langium@4.2.1:
+    resolution: {integrity: sha512-zu9QWmjpzJcomzdJQAHgDVhLGq5bLosVak1KVa40NzQHXfqr4eAHupvnPOVXEoLkg6Ocefvf/93d//SB7du4YQ==}
     engines: {node: '>=20.10.0', npm: '>=10.2.3'}
 
   locate-character@3.0.0:
@@ -1263,6 +1273,14 @@ snapshots:
       railroad-diagrams: 1.0.0
 
   langium@4.2.0:
+    dependencies:
+      chevrotain: 11.1.1
+      chevrotain-allstar: 0.3.1(chevrotain@11.1.1)
+      vscode-languageserver: 9.0.1
+      vscode-languageserver-textdocument: 1.0.12
+      vscode-uri: 3.1.0
+
+  langium@4.2.1:
     dependencies:
       chevrotain: 11.1.1
       chevrotain-allstar: 0.3.1(chevrotain@11.1.1)
