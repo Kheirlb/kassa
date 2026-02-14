@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Kassa Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/apps/kassa-vscode-ext",
+        "${workspaceFolder}/examples/"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/apps/kassa-vscode-ext/dist/**/*.js",
+        "${workspaceFolder}/packages/kassa-lang/dist/**/*.js"
+      ]
+    }
+  ]
+}

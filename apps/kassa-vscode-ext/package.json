@@ -1,0 +1,44 @@
+{
+  "name": "kassa-vscode-ext",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "engines": {
+    "vscode": "^1.67.0"
+  },
+  "main": "./out/extension/main.cjs",
+  "scripts": {
+    "build": "tsc -b tsconfig.json && node esbuild.mjs"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "kassa",
+        "aliases": [
+          "Kassa"
+        ],
+        "extensions": [
+          ".kassa"
+        ]
+      }
+    ]
+  },
+  "activationEvents": [
+    "onLanguage:kassa"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.29.3",
+  "dependencies": {
+    "@kassa/lang": "workspace:*",
+    "langium": "4.2.0",
+    "vscode-languageclient": "^9.0.1",
+    "vscode-languageserver": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.109.0",
+    "esbuild": "^0.27.3"
+  }
+}
