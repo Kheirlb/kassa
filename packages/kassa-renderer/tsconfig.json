@@ -2,14 +2,10 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
+    "rootDir": "src",
     "outDir": "dist",
     "module": "NodeNext",
     "moduleResolution": "NodeNext"
   },
   "include": ["src"],
-  "references": [
-    {
-      "path": "../kassa-layout"
-    }
-  ]
 }
