@@ -24,9 +24,9 @@
   "license": "ISC",
   "packageManager": "pnpm@10.28.1",
   "dependencies": {
-    "langium": "^4.2.0"
+    "langium": "4.2.0"
   },
   "devDependencies": {
-    "langium-cli": "^4.2.0"
+    "langium-cli": "4.2.0"
   }
 }
