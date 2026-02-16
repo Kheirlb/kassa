@@ -2,7 +2,7 @@ grammar Kassa
 
 entry Model: (Newline* items+=Item)* Newline*;
 
-Item: Statement | ConnectionChain;
+Item: Statement | ConnectionStmt;
 
 // ---- connection langauge ----
 
@@ -10,8 +10,14 @@ Endpoint: inlet=Port? componentId=[Declaration:Identifier] outlet=Port?;
 
 Port: '[' portName=Identifier ']';
 
-ConnectionChain:
-  start=Endpoint? ('-->' targets+=Endpoint)+;
+ConnectionStmt:
+  ConnectionStart | ConnectionContinue;
+
+ConnectionStart:
+  start=Endpoint ('-->' targets+=Endpoint?)*;
+
+ConnectionContinue:
+  '-->' targets+=Endpoint?;
 
 // ---- basic statements ----
 
