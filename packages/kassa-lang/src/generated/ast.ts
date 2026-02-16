@@ -62,21 +62,46 @@ export function isBooleanValue(item: unknown): item is BooleanValue {
     return reflection.isInstance(item, BooleanValue.$type);
 }
 
-export interface ConnectionChain extends langium.AstNode {
+export interface ConnectionContinue extends langium.AstNode {
     readonly $container: Model;
-    readonly $type: 'ConnectionChain';
-    start?: Endpoint;
+    readonly $type: 'ConnectionContinue';
     targets: Array<Endpoint>;
 }
 
-export const ConnectionChain = {
-    $type: 'ConnectionChain',
+export const ConnectionContinue = {
+    $type: 'ConnectionContinue',
+    targets: 'targets'
+} as const;
+
+export function isConnectionContinue(item: unknown): item is ConnectionContinue {
+    return reflection.isInstance(item, ConnectionContinue.$type);
+}
+
+export interface ConnectionStart extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'ConnectionStart';
+    start: Endpoint;
+    targets: Array<Endpoint>;
+}
+
+export const ConnectionStart = {
+    $type: 'ConnectionStart',
     start: 'start',
     targets: 'targets'
 } as const;
 
-export function isConnectionChain(item: unknown): item is ConnectionChain {
-    return reflection.isInstance(item, ConnectionChain.$type);
+export function isConnectionStart(item: unknown): item is ConnectionStart {
+    return reflection.isInstance(item, ConnectionStart.$type);
+}
+
+export type ConnectionStmt = ConnectionContinue | ConnectionStart;
+
+export const ConnectionStmt = {
+    $type: 'ConnectionStmt'
+} as const;
+
+export function isConnectionStmt(item: unknown): item is ConnectionStmt {
+    return reflection.isInstance(item, ConnectionStmt.$type);
 }
 
 export interface Declaration extends langium.AstNode {
@@ -99,7 +124,7 @@ export function isDeclaration(item: unknown): item is Declaration {
 }
 
 export interface Endpoint extends langium.AstNode {
-    readonly $container: ConnectionChain;
+    readonly $container: ConnectionContinue | ConnectionStart;
     readonly $type: 'Endpoint';
     componentId: langium.Reference<Declaration>;
     inlet?: Port;
@@ -132,7 +157,7 @@ export function isIdentifierValue(item: unknown): item is IdentifierValue {
     return reflection.isInstance(item, IdentifierValue.$type);
 }
 
-export type Item = ConnectionChain | Statement;
+export type Item = ConnectionStmt | Statement;
 
 export const Item = {
     $type: 'Item'
@@ -281,7 +306,9 @@ export function isValue(item: unknown): item is Value {
 export type KassaAstType = {
     ArrayValue: ArrayValue
     BooleanValue: BooleanValue
-    ConnectionChain: ConnectionChain
+    ConnectionContinue: ConnectionContinue
+    ConnectionStart: ConnectionStart
+    ConnectionStmt: ConnectionStmt
     Declaration: Declaration
     Endpoint: Endpoint
     IdentifierValue: IdentifierValue
@@ -319,16 +346,32 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [LiteralValue.$type]
         },
-        ConnectionChain: {
-            name: ConnectionChain.$type,
+        ConnectionContinue: {
+            name: ConnectionContinue.$type,
             properties: {
-                start: {
-                    name: ConnectionChain.start
-                },
                 targets: {
-                    name: ConnectionChain.targets,
+                    name: ConnectionContinue.targets,
                     defaultValue: []
                 }
+            },
+            superTypes: [ConnectionStmt.$type]
+        },
+        ConnectionStart: {
+            name: ConnectionStart.$type,
+            properties: {
+                start: {
+                    name: ConnectionStart.start
+                },
+                targets: {
+                    name: ConnectionStart.targets,
+                    defaultValue: []
+                }
+            },
+            superTypes: [ConnectionStmt.$type]
+        },
+        ConnectionStmt: {
+            name: ConnectionStmt.$type,
+            properties: {
             },
             superTypes: [Item.$type]
         },
