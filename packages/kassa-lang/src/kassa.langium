@@ -28,9 +28,11 @@ StandardConnection:
 DirectConnection:
   operator='->' target=ConnectedComponent;
 
-// ---- basic component and tag statements ----
+// ---- statements ----
 
-Statement: ComponentDeclaration | TagDeclarations;
+Statement: ComponentDeclaration | TagDeclarations | LayoutStatement;
+
+// ---- tag statements ----
 
 TagDeclarations:
   TagDeclaration | TagSetDeclaration;
@@ -47,11 +49,32 @@ TagRefList:
 TagSetDeclaration:
   'tagset' name=Identifier ('=' value=ObjectValue)?;
 
+// ---- component statements ----
+
 ComponentDeclaration:
   name=Identifier ':' type=ComponentType ('=' value=Value)?;
 
 ComponentType:
   name=Identifier;
+
+// ---- layout statements ----
+
+LayoutStatement:
+  'layout' name=Identifier? '{' layoutElements+=LayoutElement+ '}';
+
+LayoutElement:
+  LayoutComponent | RouteConnection;
+
+LayoutComponent:
+  'place' componentId=[ComponentDeclaration:Identifier] ':' value=ObjectValue;
+
+RouteConnection:
+  // TODO: Support referenced connections?
+  RouteNamedConnection;
+
+RouteNamedConnection:
+  // Narrow component options in validation?
+  'route' componentId=[ComponentDeclaration:Identifier] ':' value=ArrayValue;
 
 // ---- values ----
 
