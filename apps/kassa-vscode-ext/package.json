@@ -20,7 +20,15 @@
         ],
         "extensions": [
           ".kassa"
-        ]
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "kassa",
+        "scopeName": "source.kassa",
+        "path": "./syntaxes/kassa.tmLanguage.json"
       }
     ]
   },

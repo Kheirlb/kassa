@@ -6,7 +6,7 @@ Item: Statement | ConnectionStmt;
 
 // ---- connection langauge ----
 
-Endpoint: inlet=Port? componentId=[Declaration:Identifier] outlet=Port?;
+Endpoint: inlet=Port? componentId=[Declaration:Identifier] (':' type=Type)? outlet=Port?;
 
 Port: '[' portName=Identifier ']';
 
