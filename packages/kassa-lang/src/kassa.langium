@@ -1,32 +1,56 @@
 grammar Kassa
 
-entry Model: (Newline* items+=Item)* Newline*;
+entry Model: (items+=Item)*;
 
-Item: Statement | ConnectionStmt;
+Item: Statement | ConnectionStatement;
 
 // ---- connection langauge ----
 
-Endpoint: inlet=Port? componentId=[Declaration:Identifier] (':' type=Type)? outlet=Port?;
+ConnectedComponent: inlet=Port? componentId=[ComponentDeclaration:Identifier] (':' type=ComponentType)? outlet=Port?;
 
 Port: '[' portName=Identifier ']';
 
-ConnectionStmt:
+ConnectionStatement:
   ConnectionStart | ConnectionContinue;
 
 ConnectionStart:
-  start=Endpoint ('-->' targets+=Endpoint?)*;
+  start=ConnectedComponent connections+=ConnectionKind+;
 
 ConnectionContinue:
-  '-->' targets+=Endpoint?;
+  connections+=ConnectionKind+; // starts with an operator implicitly
 
-// ---- basic statements ----
+ConnectionKind:
+  (kind=StandardConnection | kind=DirectConnection);
 
-Statement: Declaration;
+StandardConnection:
+  operator='-->' target=ConnectedComponent;
 
-Declaration:
-  name=Identifier ':' type=Type ('=' value=Value)?;
+DirectConnection:
+  operator='->' target=ConnectedComponent;
 
-Type:
+// ---- basic component and tag statements ----
+
+Statement: ComponentDeclaration | TagDeclarations;
+
+TagDeclarations:
+  TagDeclaration | TagSetDeclaration;
+
+TagDeclaration:
+  'tag' name=Identifier ('=' value=ObjectValue)?;
+
+TagRef:
+  ref=[TagDeclaration:Identifier];
+
+TagRefList:
+  '[' (elements+=TagRef (',' elements+=TagRef)*)? ','? ']';
+
+TagSetDeclaration:
+  'tagset' name=Identifier ('=' value=ObjectValue)?;
+
+ComponentDeclaration:
+  name=Identifier ':' type=ComponentType ('=' value=Value)?;
+
+ComponentType:
   name=Identifier;
 
 // ---- values ----
@@ -37,10 +61,16 @@ ArrayValue:
   '[' (elements+=Value (',' elements+=Value)*)? ','? ']';
 
 ObjectValue:
-  '{' (properties+=KeyValue (',' properties+=KeyValue)*)? ','? '}';
+  '{' (properties+=ObjectProperty (',' properties+=ObjectProperty)*)? ','? '}';
+
+ObjectProperty:
+  TagsProperty | KeyValue;
+
+TagsProperty:
+  'tags' ':' TagRefList;
 
 KeyValue:
-  key=Identifier ':' value=Value;
+  key=PropertyKey ':' value=Value;
 
 LiteralValue:
   IdentifierValue | StringValue | NumberValue | BooleanValue;
@@ -57,17 +87,16 @@ NumberValue:
 BooleanValue:
   value=('true' | 'false');
 
+PropertyKey returns string:
+  Identifier | String | 'tag' | 'tagset'
+;
+
 // ---- terminals ----
 
 terminal Identifier: /[_a-zA-Z]\w*/;
 terminal String: /"[^"]*"/;
 terminal Number: /-?\d+(\.\d+)?/;
 
-// newline is a real token
-terminal Newline: /[ \t]*;?[ \t]*(\r?\n)+/;
-
-// whitespace excludes newline
-//hidden terminal WS: /[ \t]+/;
 hidden terminal WS: /\s+/;
 hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
 hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;

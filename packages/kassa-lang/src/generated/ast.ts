@@ -10,7 +10,6 @@ export const KassaTerminals = {
     Identifier: /[_a-zA-Z]\w*/,
     String: /"[^"]*"/,
     Number: /-?\d+(\.\d+)?/,
-    Newline: /[ \t]*;?[ \t]*(\r?\n)+/,
     WS: /\s+/,
     ML_COMMENT: /\/\*[\s\S]*?\*\//,
     SL_COMMENT: /\/\/[^\n\r]*/,
@@ -21,11 +20,15 @@ export type KassaTerminalNames = keyof typeof KassaTerminals;
 export type KassaKeywordNames =
     | ","
     | "-->"
+    | "->"
     | ":"
     | "="
     | "["
     | "]"
     | "false"
+    | "tag"
+    | "tags"
+    | "tagset"
     | "true"
     | "{"
     | "}";
@@ -33,7 +36,7 @@ export type KassaKeywordNames =
 export type KassaTokenNames = KassaTerminalNames | KassaKeywordNames;
 
 export interface ArrayValue extends langium.AstNode {
-    readonly $container: ArrayValue | Declaration | KeyValue;
+    readonly $container: ArrayValue | ComponentDeclaration | KeyValue;
     readonly $type: 'ArrayValue';
     elements: Array<Value>;
 }
@@ -48,7 +51,7 @@ export function isArrayValue(item: unknown): item is ArrayValue {
 }
 
 export interface BooleanValue extends langium.AstNode {
-    readonly $container: ArrayValue | Declaration | KeyValue;
+    readonly $container: ArrayValue | ComponentDeclaration | KeyValue;
     readonly $type: 'BooleanValue';
     value: 'false' | 'true';
 }
@@ -62,90 +65,137 @@ export function isBooleanValue(item: unknown): item is BooleanValue {
     return reflection.isInstance(item, BooleanValue.$type);
 }
 
-export interface ConnectionContinue extends langium.AstNode {
+export interface ComponentDeclaration extends langium.AstNode {
     readonly $container: Model;
-    readonly $type: 'ConnectionContinue';
-    targets: Array<Endpoint>;
-}
-
-export const ConnectionContinue = {
-    $type: 'ConnectionContinue',
-    targets: 'targets'
-} as const;
-
-export function isConnectionContinue(item: unknown): item is ConnectionContinue {
-    return reflection.isInstance(item, ConnectionContinue.$type);
-}
-
-export interface ConnectionStart extends langium.AstNode {
-    readonly $container: Model;
-    readonly $type: 'ConnectionStart';
-    start: Endpoint;
-    targets: Array<Endpoint>;
-}
-
-export const ConnectionStart = {
-    $type: 'ConnectionStart',
-    start: 'start',
-    targets: 'targets'
-} as const;
-
-export function isConnectionStart(item: unknown): item is ConnectionStart {
-    return reflection.isInstance(item, ConnectionStart.$type);
-}
-
-export type ConnectionStmt = ConnectionContinue | ConnectionStart;
-
-export const ConnectionStmt = {
-    $type: 'ConnectionStmt'
-} as const;
-
-export function isConnectionStmt(item: unknown): item is ConnectionStmt {
-    return reflection.isInstance(item, ConnectionStmt.$type);
-}
-
-export interface Declaration extends langium.AstNode {
-    readonly $container: Model;
-    readonly $type: 'Declaration';
+    readonly $type: 'ComponentDeclaration';
     name: string;
-    type: Type;
+    type: ComponentType;
     value?: Value;
 }
 
-export const Declaration = {
-    $type: 'Declaration',
+export const ComponentDeclaration = {
+    $type: 'ComponentDeclaration',
     name: 'name',
     type: 'type',
     value: 'value'
 } as const;
 
-export function isDeclaration(item: unknown): item is Declaration {
-    return reflection.isInstance(item, Declaration.$type);
+export function isComponentDeclaration(item: unknown): item is ComponentDeclaration {
+    return reflection.isInstance(item, ComponentDeclaration.$type);
 }
 
-export interface Endpoint extends langium.AstNode {
-    readonly $container: ConnectionContinue | ConnectionStart;
-    readonly $type: 'Endpoint';
-    componentId: langium.Reference<Declaration>;
+export interface ComponentType extends langium.AstNode {
+    readonly $container: ComponentDeclaration | ConnectedComponent;
+    readonly $type: 'ComponentType';
+    name: string;
+}
+
+export const ComponentType = {
+    $type: 'ComponentType',
+    name: 'name'
+} as const;
+
+export function isComponentType(item: unknown): item is ComponentType {
+    return reflection.isInstance(item, ComponentType.$type);
+}
+
+export interface ConnectedComponent extends langium.AstNode {
+    readonly $container: ConnectionStart | DirectConnection | StandardConnection;
+    readonly $type: 'ConnectedComponent';
+    componentId: langium.Reference<ComponentDeclaration>;
     inlet?: Port;
     outlet?: Port;
-    type?: Type;
+    type?: ComponentType;
 }
 
-export const Endpoint = {
-    $type: 'Endpoint',
+export const ConnectedComponent = {
+    $type: 'ConnectedComponent',
     componentId: 'componentId',
     inlet: 'inlet',
     outlet: 'outlet',
     type: 'type'
 } as const;
 
-export function isEndpoint(item: unknown): item is Endpoint {
-    return reflection.isInstance(item, Endpoint.$type);
+export function isConnectedComponent(item: unknown): item is ConnectedComponent {
+    return reflection.isInstance(item, ConnectedComponent.$type);
+}
+
+export interface ConnectionContinue extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'ConnectionContinue';
+    connections: Array<ConnectionKind>;
+}
+
+export const ConnectionContinue = {
+    $type: 'ConnectionContinue',
+    connections: 'connections'
+} as const;
+
+export function isConnectionContinue(item: unknown): item is ConnectionContinue {
+    return reflection.isInstance(item, ConnectionContinue.$type);
+}
+
+export interface ConnectionKind extends langium.AstNode {
+    readonly $container: ConnectionContinue | ConnectionStart;
+    readonly $type: 'ConnectionKind';
+    kind: DirectConnection | StandardConnection;
+}
+
+export const ConnectionKind = {
+    $type: 'ConnectionKind',
+    kind: 'kind'
+} as const;
+
+export function isConnectionKind(item: unknown): item is ConnectionKind {
+    return reflection.isInstance(item, ConnectionKind.$type);
+}
+
+export interface ConnectionStart extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'ConnectionStart';
+    connections: Array<ConnectionKind>;
+    start: ConnectedComponent;
+}
+
+export const ConnectionStart = {
+    $type: 'ConnectionStart',
+    connections: 'connections',
+    start: 'start'
+} as const;
+
+export function isConnectionStart(item: unknown): item is ConnectionStart {
+    return reflection.isInstance(item, ConnectionStart.$type);
+}
+
+export type ConnectionStatement = ConnectionContinue | ConnectionStart;
+
+export const ConnectionStatement = {
+    $type: 'ConnectionStatement'
+} as const;
+
+export function isConnectionStatement(item: unknown): item is ConnectionStatement {
+    return reflection.isInstance(item, ConnectionStatement.$type);
+}
+
+export interface DirectConnection extends langium.AstNode {
+    readonly $container: ConnectionKind;
+    readonly $type: 'DirectConnection';
+    operator: '->';
+    target: ConnectedComponent;
+}
+
+export const DirectConnection = {
+    $type: 'DirectConnection',
+    operator: 'operator',
+    target: 'target'
+} as const;
+
+export function isDirectConnection(item: unknown): item is DirectConnection {
+    return reflection.isInstance(item, DirectConnection.$type);
 }
 
 export interface IdentifierValue extends langium.AstNode {
-    readonly $container: ArrayValue | Declaration | KeyValue;
+    readonly $container: ArrayValue | ComponentDeclaration | KeyValue;
     readonly $type: 'IdentifierValue';
     value: string;
 }
@@ -159,7 +209,7 @@ export function isIdentifierValue(item: unknown): item is IdentifierValue {
     return reflection.isInstance(item, IdentifierValue.$type);
 }
 
-export type Item = ConnectionStmt | Statement;
+export type Item = ConnectionStatement | Statement;
 
 export const Item = {
     $type: 'Item'
@@ -172,7 +222,7 @@ export function isItem(item: unknown): item is Item {
 export interface KeyValue extends langium.AstNode {
     readonly $container: ObjectValue;
     readonly $type: 'KeyValue';
-    key: string;
+    key: PropertyKey;
     value: Value;
 }
 
@@ -211,7 +261,7 @@ export function isModel(item: unknown): item is Model {
 }
 
 export interface NumberValue extends langium.AstNode {
-    readonly $container: ArrayValue | Declaration | KeyValue;
+    readonly $container: ArrayValue | ComponentDeclaration | KeyValue;
     readonly $type: 'NumberValue';
     value: string;
 }
@@ -225,10 +275,20 @@ export function isNumberValue(item: unknown): item is NumberValue {
     return reflection.isInstance(item, NumberValue.$type);
 }
 
+export type ObjectProperty = KeyValue | TagsProperty;
+
+export const ObjectProperty = {
+    $type: 'ObjectProperty'
+} as const;
+
+export function isObjectProperty(item: unknown): item is ObjectProperty {
+    return reflection.isInstance(item, ObjectProperty.$type);
+}
+
 export interface ObjectValue extends langium.AstNode {
-    readonly $container: ArrayValue | Declaration | KeyValue;
+    readonly $container: ArrayValue | ComponentDeclaration | KeyValue | TagDeclaration | TagSetDeclaration;
     readonly $type: 'ObjectValue';
-    properties: Array<KeyValue>;
+    properties: Array<ObjectProperty>;
 }
 
 export const ObjectValue = {
@@ -241,7 +301,7 @@ export function isObjectValue(item: unknown): item is ObjectValue {
 }
 
 export interface Port extends langium.AstNode {
-    readonly $container: Endpoint;
+    readonly $container: ConnectedComponent;
     readonly $type: 'Port';
     portName: string;
 }
@@ -255,7 +315,30 @@ export function isPort(item: unknown): item is Port {
     return reflection.isInstance(item, Port.$type);
 }
 
-export type Statement = Declaration;
+export type PropertyKey = 'tag' | 'tagset' | string;
+
+export function isPropertyKey(item: unknown): item is PropertyKey {
+    return item === 'tag' || item === 'tagset' || (typeof item === 'string' && (/[_a-zA-Z]\w*/.test(item) || /"[^"]*"/.test(item)));
+}
+
+export interface StandardConnection extends langium.AstNode {
+    readonly $container: ConnectionKind;
+    readonly $type: 'StandardConnection';
+    operator: '-->';
+    target: ConnectedComponent;
+}
+
+export const StandardConnection = {
+    $type: 'StandardConnection',
+    operator: 'operator',
+    target: 'target'
+} as const;
+
+export function isStandardConnection(item: unknown): item is StandardConnection {
+    return reflection.isInstance(item, StandardConnection.$type);
+}
+
+export type Statement = ComponentDeclaration | TagDeclarations;
 
 export const Statement = {
     $type: 'Statement'
@@ -266,7 +349,7 @@ export function isStatement(item: unknown): item is Statement {
 }
 
 export interface StringValue extends langium.AstNode {
-    readonly $container: ArrayValue | Declaration | KeyValue;
+    readonly $container: ArrayValue | ComponentDeclaration | KeyValue;
     readonly $type: 'StringValue';
     value: string;
 }
@@ -280,19 +363,88 @@ export function isStringValue(item: unknown): item is StringValue {
     return reflection.isInstance(item, StringValue.$type);
 }
 
-export interface Type extends langium.AstNode {
-    readonly $container: Declaration | Endpoint;
-    readonly $type: 'Type';
+export interface TagDeclaration extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'TagDeclaration';
     name: string;
+    value?: ObjectValue;
 }
 
-export const Type = {
-    $type: 'Type',
-    name: 'name'
+export const TagDeclaration = {
+    $type: 'TagDeclaration',
+    name: 'name',
+    value: 'value'
 } as const;
 
-export function isType(item: unknown): item is Type {
-    return reflection.isInstance(item, Type.$type);
+export function isTagDeclaration(item: unknown): item is TagDeclaration {
+    return reflection.isInstance(item, TagDeclaration.$type);
+}
+
+export type TagDeclarations = TagDeclaration | TagSetDeclaration;
+
+export const TagDeclarations = {
+    $type: 'TagDeclarations'
+} as const;
+
+export function isTagDeclarations(item: unknown): item is TagDeclarations {
+    return reflection.isInstance(item, TagDeclarations.$type);
+}
+
+export interface TagRef extends langium.AstNode {
+    readonly $container: TagRefList;
+    readonly $type: 'TagRef';
+    ref: langium.Reference<TagDeclaration>;
+}
+
+export const TagRef = {
+    $type: 'TagRef',
+    ref: 'ref'
+} as const;
+
+export function isTagRef(item: unknown): item is TagRef {
+    return reflection.isInstance(item, TagRef.$type);
+}
+
+export interface TagRefList extends langium.AstNode {
+    readonly $container: ObjectValue;
+    readonly $type: 'TagRefList';
+    elements: Array<TagRef>;
+}
+
+export const TagRefList = {
+    $type: 'TagRefList',
+    elements: 'elements'
+} as const;
+
+export function isTagRefList(item: unknown): item is TagRefList {
+    return reflection.isInstance(item, TagRefList.$type);
+}
+
+export interface TagSetDeclaration extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'TagSetDeclaration';
+    name: string;
+    value?: ObjectValue;
+}
+
+export const TagSetDeclaration = {
+    $type: 'TagSetDeclaration',
+    name: 'name',
+    value: 'value'
+} as const;
+
+export function isTagSetDeclaration(item: unknown): item is TagSetDeclaration {
+    return reflection.isInstance(item, TagSetDeclaration.$type);
+}
+
+export type TagsProperty = TagRefList;
+
+export const TagsProperty = {
+    $type: 'TagsProperty'
+} as const;
+
+export function isTagsProperty(item: unknown): item is TagsProperty {
+    return reflection.isInstance(item, TagsProperty.$type);
 }
 
 export type Value = ArrayValue | LiteralValue | ObjectValue;
@@ -308,22 +460,32 @@ export function isValue(item: unknown): item is Value {
 export type KassaAstType = {
     ArrayValue: ArrayValue
     BooleanValue: BooleanValue
+    ComponentDeclaration: ComponentDeclaration
+    ComponentType: ComponentType
+    ConnectedComponent: ConnectedComponent
     ConnectionContinue: ConnectionContinue
+    ConnectionKind: ConnectionKind
     ConnectionStart: ConnectionStart
-    ConnectionStmt: ConnectionStmt
-    Declaration: Declaration
-    Endpoint: Endpoint
+    ConnectionStatement: ConnectionStatement
+    DirectConnection: DirectConnection
     IdentifierValue: IdentifierValue
     Item: Item
     KeyValue: KeyValue
     LiteralValue: LiteralValue
     Model: Model
     NumberValue: NumberValue
+    ObjectProperty: ObjectProperty
     ObjectValue: ObjectValue
     Port: Port
+    StandardConnection: StandardConnection
     Statement: Statement
     StringValue: StringValue
-    Type: Type
+    TagDeclaration: TagDeclaration
+    TagDeclarations: TagDeclarations
+    TagRef: TagRef
+    TagRefList: TagRefList
+    TagSetDeclaration: TagSetDeclaration
+    TagsProperty: TagsProperty
     Value: Value
 }
 
@@ -348,65 +510,95 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [LiteralValue.$type]
         },
-        ConnectionContinue: {
-            name: ConnectionContinue.$type,
-            properties: {
-                targets: {
-                    name: ConnectionContinue.targets,
-                    defaultValue: []
-                }
-            },
-            superTypes: [ConnectionStmt.$type]
-        },
-        ConnectionStart: {
-            name: ConnectionStart.$type,
-            properties: {
-                start: {
-                    name: ConnectionStart.start
-                },
-                targets: {
-                    name: ConnectionStart.targets,
-                    defaultValue: []
-                }
-            },
-            superTypes: [ConnectionStmt.$type]
-        },
-        ConnectionStmt: {
-            name: ConnectionStmt.$type,
-            properties: {
-            },
-            superTypes: [Item.$type]
-        },
-        Declaration: {
-            name: Declaration.$type,
+        ComponentDeclaration: {
+            name: ComponentDeclaration.$type,
             properties: {
                 name: {
-                    name: Declaration.name
+                    name: ComponentDeclaration.name
                 },
                 type: {
-                    name: Declaration.type
+                    name: ComponentDeclaration.type
                 },
                 value: {
-                    name: Declaration.value
+                    name: ComponentDeclaration.value
                 }
             },
             superTypes: [Statement.$type]
         },
-        Endpoint: {
-            name: Endpoint.$type,
+        ComponentType: {
+            name: ComponentType.$type,
+            properties: {
+                name: {
+                    name: ComponentType.name
+                }
+            },
+            superTypes: []
+        },
+        ConnectedComponent: {
+            name: ConnectedComponent.$type,
             properties: {
                 componentId: {
-                    name: Endpoint.componentId,
-                    referenceType: Declaration.$type
+                    name: ConnectedComponent.componentId,
+                    referenceType: ComponentDeclaration.$type
                 },
                 inlet: {
-                    name: Endpoint.inlet
+                    name: ConnectedComponent.inlet
                 },
                 outlet: {
-                    name: Endpoint.outlet
+                    name: ConnectedComponent.outlet
                 },
                 type: {
-                    name: Endpoint.type
+                    name: ConnectedComponent.type
+                }
+            },
+            superTypes: []
+        },
+        ConnectionContinue: {
+            name: ConnectionContinue.$type,
+            properties: {
+                connections: {
+                    name: ConnectionContinue.connections,
+                    defaultValue: []
+                }
+            },
+            superTypes: [ConnectionStatement.$type]
+        },
+        ConnectionKind: {
+            name: ConnectionKind.$type,
+            properties: {
+                kind: {
+                    name: ConnectionKind.kind
+                }
+            },
+            superTypes: []
+        },
+        ConnectionStart: {
+            name: ConnectionStart.$type,
+            properties: {
+                connections: {
+                    name: ConnectionStart.connections,
+                    defaultValue: []
+                },
+                start: {
+                    name: ConnectionStart.start
+                }
+            },
+            superTypes: [ConnectionStatement.$type]
+        },
+        ConnectionStatement: {
+            name: ConnectionStatement.$type,
+            properties: {
+            },
+            superTypes: [Item.$type]
+        },
+        DirectConnection: {
+            name: DirectConnection.$type,
+            properties: {
+                operator: {
+                    name: DirectConnection.operator
+                },
+                target: {
+                    name: DirectConnection.target
                 }
             },
             superTypes: []
@@ -436,7 +628,7 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                     name: KeyValue.value
                 }
             },
-            superTypes: []
+            superTypes: [ObjectProperty.$type]
         },
         LiteralValue: {
             name: LiteralValue.$type,
@@ -463,6 +655,12 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [LiteralValue.$type]
         },
+        ObjectProperty: {
+            name: ObjectProperty.$type,
+            properties: {
+            },
+            superTypes: []
+        },
         ObjectValue: {
             name: ObjectValue.$type,
             properties: {
@@ -482,6 +680,18 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: []
         },
+        StandardConnection: {
+            name: StandardConnection.$type,
+            properties: {
+                operator: {
+                    name: StandardConnection.operator
+                },
+                target: {
+                    name: StandardConnection.target
+                }
+            },
+            superTypes: []
+        },
         Statement: {
             name: Statement.$type,
             properties: {
@@ -497,14 +707,61 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [LiteralValue.$type]
         },
-        Type: {
-            name: Type.$type,
+        TagDeclaration: {
+            name: TagDeclaration.$type,
             properties: {
                 name: {
-                    name: Type.name
+                    name: TagDeclaration.name
+                },
+                value: {
+                    name: TagDeclaration.value
+                }
+            },
+            superTypes: [TagDeclarations.$type]
+        },
+        TagDeclarations: {
+            name: TagDeclarations.$type,
+            properties: {
+            },
+            superTypes: [Statement.$type]
+        },
+        TagRef: {
+            name: TagRef.$type,
+            properties: {
+                ref: {
+                    name: TagRef.ref,
+                    referenceType: TagDeclaration.$type
                 }
             },
             superTypes: []
+        },
+        TagRefList: {
+            name: TagRefList.$type,
+            properties: {
+                elements: {
+                    name: TagRefList.elements,
+                    defaultValue: []
+                }
+            },
+            superTypes: [TagsProperty.$type]
+        },
+        TagSetDeclaration: {
+            name: TagSetDeclaration.$type,
+            properties: {
+                name: {
+                    name: TagSetDeclaration.name
+                },
+                value: {
+                    name: TagSetDeclaration.value
+                }
+            },
+            superTypes: [TagDeclarations.$type]
+        },
+        TagsProperty: {
+            name: TagsProperty.$type,
+            properties: {
+            },
+            superTypes: [ObjectProperty.$type]
         },
         Value: {
             name: Value.$type,

@@ -1,0 +1,75 @@
+// // kassa-version: 0.0.1
+// // Example file showing main features.
+
+// // TODO: Load partIds file.
+// // loadPartsFile(parts.csv) // default reference
+// // mcmasterparts: Parts = loadPartsFile(mcmaster.csv)
+
+// // Define tags/tagset.
+// tag noCleaning = { name: "No Cleaning" }
+// tag toBeCleaned = { name: "To Be Cleaned", color: red }
+// tag cleaned = { name: "Cleaned", color: green }
+// // TagSet assists with kassa app organization.
+// tagset cleanStatus = {
+//   name: "Cleaning",
+// 	color: yellow,
+// 	tags: [noCleaning, toBeCleaned, cleaned]
+// }
+
+// // Define symbols and connections.
+// v1: Valve = { parts: ["1", "1B"], tags: cleaned }
+// v2: Valve = { parts: ["2"] }
+// // TODO: Support index/key access.
+// // v3: Valve = { name: "V-3", parts: [mcmaster["91k36712"]] }
+// conn1: NamedConnection
+// // TODO: Example of cystom symbol.
+// // CustomTank: Custom(Tank) = {
+// //   ports: [
+// //     Tank.1,
+// //     { name: inlet, x: 35, y: 50, rot: 180 }
+// //   ]
+// // }
+// // tank1: CustomTank
+
+// // Example of drawing config that could have been imported.
+// kassaDrawingTemplate: Drawing = {
+// 	unit: in,
+//     height: 8.5,
+//     width: 11,
+//     scale: 1.5,
+// 	titleBlock: {
+// 	  title: "Example P&ID",
+// 	  author: "Karl Parks",
+// 	  date: "2026-01-05"
+// 	}
+// }
+
+// // v1[outlet] -> conn1 -> [inlet] v2 [outlet]
+// // --> [inlet] v3
+// // v3 --> [inlet] tank1
+
+// // TODO: Or build a scoped schematic.
+// // Schematic Schematic1 {
+// // 	// Actually connect.
+// // 	Connect optionalGroupName {
+// // 	    v1[outlet] -> conn1 -> [inlet] v2 [outlet]
+// // 		// Continue to next line.
+// // 	    --> [inlet] v3
+// // 		// Automatically select port and build.
+// // 	    v3 --> [inlet] tank1
+// // 	}
+
+// // 	// And layout.
+// // 	Layout optionalLayoutName {
+// // 	    v1: { x: 100, y: 100, rot: 0, mirror: true },
+// // 		conn1: [
+// // 			{ dir: out, amount: 100 },
+// // 			{ dir: right, amount: 50 }
+// // 		],
+// // 		v2 [outlet] --> [inlet] v3: [
+// // 			{ dir: out, amount: 100 }
+// // 		]
+// // 	}
+
+// // 	Drawing = kassaDrawingTemplate
+// // }
