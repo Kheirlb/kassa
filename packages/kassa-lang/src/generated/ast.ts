@@ -129,13 +129,15 @@ export interface Endpoint extends langium.AstNode {
     componentId: langium.Reference<Declaration>;
     inlet?: Port;
     outlet?: Port;
+    type?: Type;
 }
 
 export const Endpoint = {
     $type: 'Endpoint',
     componentId: 'componentId',
     inlet: 'inlet',
-    outlet: 'outlet'
+    outlet: 'outlet',
+    type: 'type'
 } as const;
 
 export function isEndpoint(item: unknown): item is Endpoint {
@@ -279,7 +281,7 @@ export function isStringValue(item: unknown): item is StringValue {
 }
 
 export interface Type extends langium.AstNode {
-    readonly $container: Declaration;
+    readonly $container: Declaration | Endpoint;
     readonly $type: 'Type';
     name: string;
 }
@@ -402,6 +404,9 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 },
                 outlet: {
                     name: Endpoint.outlet
+                },
+                type: {
+                    name: Endpoint.type
                 }
             },
             superTypes: []
