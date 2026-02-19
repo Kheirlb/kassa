@@ -1,14 +1,25 @@
+// Tags here.
+tag testTagRename = { name: "Test Tag", color: green }
+tagset testTags = {
+  name: "Test Tags",
+  tags: [testTagRename]
+}
+
 // Components here.
 v0: Valve
-v1: Valve = {};
-v2: Valve = { name: "value" };
-v3: Valve = { enabled: true, setpoint: 12.5 };
-v4: Valve = { tag: MV_100, nested: { a: 1 } };
+v1: Valve = {}
+v2: Valve = { name: "value" }
+v3: Valve = { booleanTest: true, numberTest: 12.5 }
+v4: Valve = { tag: MV_100, nestedTest: { a: 1 } }
 v5: Valve = true
 v6: Valve = 123
 v7: Valve = "hello"
 v8: Valve = SomeIdentifier
-v9: Valve = { array: [1, 2], nestedArray: [[1, 2], 3] };
+v9: Valve = { array: [1, 2], nestedArray: [[1, 2], 3] }
+v10: Valve = {
+  tags: [testTagRename],
+  "tags": [testTagRename, standardArrayHere]
+}
 
 // Connections below.
 v1 --> v2 --> v3
