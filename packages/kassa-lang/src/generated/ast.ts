@@ -26,6 +26,9 @@ export type KassaKeywordNames =
     | "["
     | "]"
     | "false"
+    | "layout"
+    | "place"
+    | "route"
     | "tag"
     | "tags"
     | "tagset"
@@ -36,7 +39,7 @@ export type KassaKeywordNames =
 export type KassaTokenNames = KassaTerminalNames | KassaKeywordNames;
 
 export interface ArrayValue extends langium.AstNode {
-    readonly $container: ArrayValue | ComponentDeclaration | KeyValue;
+    readonly $container: ArrayValue | ComponentDeclaration | KeyValue | RouteNamedConnection;
     readonly $type: 'ArrayValue';
     elements: Array<Value>;
 }
@@ -236,6 +239,50 @@ export function isKeyValue(item: unknown): item is KeyValue {
     return reflection.isInstance(item, KeyValue.$type);
 }
 
+export interface LayoutComponent extends langium.AstNode {
+    readonly $container: LayoutStatement;
+    readonly $type: 'LayoutComponent';
+    componentId: langium.Reference<ComponentDeclaration>;
+    value: ObjectValue;
+}
+
+export const LayoutComponent = {
+    $type: 'LayoutComponent',
+    componentId: 'componentId',
+    value: 'value'
+} as const;
+
+export function isLayoutComponent(item: unknown): item is LayoutComponent {
+    return reflection.isInstance(item, LayoutComponent.$type);
+}
+
+export type LayoutElement = LayoutComponent | RouteConnection;
+
+export const LayoutElement = {
+    $type: 'LayoutElement'
+} as const;
+
+export function isLayoutElement(item: unknown): item is LayoutElement {
+    return reflection.isInstance(item, LayoutElement.$type);
+}
+
+export interface LayoutStatement extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'LayoutStatement';
+    layoutElements: Array<LayoutElement>;
+    name?: string;
+}
+
+export const LayoutStatement = {
+    $type: 'LayoutStatement',
+    layoutElements: 'layoutElements',
+    name: 'name'
+} as const;
+
+export function isLayoutStatement(item: unknown): item is LayoutStatement {
+    return reflection.isInstance(item, LayoutStatement.$type);
+}
+
 export type LiteralValue = BooleanValue | IdentifierValue | NumberValue | StringValue;
 
 export const LiteralValue = {
@@ -286,7 +333,7 @@ export function isObjectProperty(item: unknown): item is ObjectProperty {
 }
 
 export interface ObjectValue extends langium.AstNode {
-    readonly $container: ArrayValue | ComponentDeclaration | KeyValue | TagDeclaration | TagSetDeclaration;
+    readonly $container: ArrayValue | ComponentDeclaration | KeyValue | LayoutComponent | TagDeclaration | TagSetDeclaration;
     readonly $type: 'ObjectValue';
     properties: Array<ObjectProperty>;
 }
@@ -321,6 +368,33 @@ export function isPropertyKey(item: unknown): item is PropertyKey {
     return item === 'tag' || item === 'tagset' || (typeof item === 'string' && (/[_a-zA-Z]\w*/.test(item) || /"[^"]*"/.test(item)));
 }
 
+export type RouteConnection = RouteNamedConnection;
+
+export const RouteConnection = {
+    $type: 'RouteConnection'
+} as const;
+
+export function isRouteConnection(item: unknown): item is RouteConnection {
+    return reflection.isInstance(item, RouteConnection.$type);
+}
+
+export interface RouteNamedConnection extends langium.AstNode {
+    readonly $container: LayoutStatement;
+    readonly $type: 'RouteNamedConnection';
+    componentId: langium.Reference<ComponentDeclaration>;
+    value: ArrayValue;
+}
+
+export const RouteNamedConnection = {
+    $type: 'RouteNamedConnection',
+    componentId: 'componentId',
+    value: 'value'
+} as const;
+
+export function isRouteNamedConnection(item: unknown): item is RouteNamedConnection {
+    return reflection.isInstance(item, RouteNamedConnection.$type);
+}
+
 export interface StandardConnection extends langium.AstNode {
     readonly $container: ConnectionKind;
     readonly $type: 'StandardConnection';
@@ -338,7 +412,7 @@ export function isStandardConnection(item: unknown): item is StandardConnection 
     return reflection.isInstance(item, StandardConnection.$type);
 }
 
-export type Statement = ComponentDeclaration | TagDeclarations;
+export type Statement = ComponentDeclaration | LayoutStatement | TagDeclarations;
 
 export const Statement = {
     $type: 'Statement'
@@ -471,12 +545,17 @@ export type KassaAstType = {
     IdentifierValue: IdentifierValue
     Item: Item
     KeyValue: KeyValue
+    LayoutComponent: LayoutComponent
+    LayoutElement: LayoutElement
+    LayoutStatement: LayoutStatement
     LiteralValue: LiteralValue
     Model: Model
     NumberValue: NumberValue
     ObjectProperty: ObjectProperty
     ObjectValue: ObjectValue
     Port: Port
+    RouteConnection: RouteConnection
+    RouteNamedConnection: RouteNamedConnection
     StandardConnection: StandardConnection
     Statement: Statement
     StringValue: StringValue
@@ -630,6 +709,38 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [ObjectProperty.$type]
         },
+        LayoutComponent: {
+            name: LayoutComponent.$type,
+            properties: {
+                componentId: {
+                    name: LayoutComponent.componentId,
+                    referenceType: ComponentDeclaration.$type
+                },
+                value: {
+                    name: LayoutComponent.value
+                }
+            },
+            superTypes: [LayoutElement.$type]
+        },
+        LayoutElement: {
+            name: LayoutElement.$type,
+            properties: {
+            },
+            superTypes: []
+        },
+        LayoutStatement: {
+            name: LayoutStatement.$type,
+            properties: {
+                layoutElements: {
+                    name: LayoutStatement.layoutElements,
+                    defaultValue: []
+                },
+                name: {
+                    name: LayoutStatement.name
+                }
+            },
+            superTypes: [Statement.$type]
+        },
         LiteralValue: {
             name: LiteralValue.$type,
             properties: {
@@ -679,6 +790,25 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: []
+        },
+        RouteConnection: {
+            name: RouteConnection.$type,
+            properties: {
+            },
+            superTypes: [LayoutElement.$type]
+        },
+        RouteNamedConnection: {
+            name: RouteNamedConnection.$type,
+            properties: {
+                componentId: {
+                    name: RouteNamedConnection.componentId,
+                    referenceType: ComponentDeclaration.$type
+                },
+                value: {
+                    name: RouteNamedConnection.value
+                }
+            },
+            superTypes: [RouteConnection.$type]
         },
         StandardConnection: {
             name: StandardConnection.$type,
