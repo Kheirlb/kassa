@@ -21,15 +21,30 @@ v10: Valve = {
   "tags": [testTagRename, standardArrayHere]
 }
 
+
+// Custom symbol.
+symbol CustomTank<Tank> = {
+  port inlet: { x: 35, y: 50, rot: 180 }
+}
+
 // Connections below.
 v1 --> v2 --> v3
 --> v4 --> v5
 v1 [outlet] --> [inlet] v2 [outlet] --> [inlet] v3
 v6 [outlet] --> [inlet] v7 --> v8 [outlet] --> v9 [outlet]
 
-layout layout1 {
-  place v0: { x: 100 , y: 100 }
-  route v1: [
-    {}, {}, auto
-  ]
+place v0: { x: 100 , y: 100 }
+route v1: [
+  {}, {}, auto
+]
+
+drawing sheet = {
+  height: 8.5,
+  width: 11,
+  scale: 1.5,
+	titleBlock: {
+	  title: "Example P&ID",
+	  author: "Karl Parks",
+	  date: "2026"
+	}
 }

@@ -1,14 +1,18 @@
 grammar Kassa
 
-entry Model: (items+=Item)*;
+entry Model:
+  (items+=Item)*;
 
-Item: Statement | ConnectionStatement;
+Item:
+  Statement | ConnectionStatement;
 
 // ---- connection langauge ----
 
-ConnectedComponent: inlet=Port? componentId=[ComponentDeclaration:Identifier] (':' type=ComponentType)? outlet=Port?;
+ConnectedComponent:
+  inlet=Port? componentId=[ComponentDeclaration:Identifier] (':' type=ComponentType)? outlet=Port?;
 
-Port: '[' portName=Identifier ']';
+Port:
+  '[' portName=Identifier ']';
 
 ConnectionStatement:
   ConnectionStart | ConnectionContinue;
@@ -30,7 +34,8 @@ DirectConnection:
 
 // ---- statements ----
 
-Statement: ComponentDeclaration | TagDeclarations | LayoutGroup | LayoutElement;
+Statement:
+  ComponentDeclaration | TagDeclarations | LayoutGroup | LayoutElement | DrawingStatement | CustomSymbol;
 
 // ---- tag statements ----
 
@@ -57,10 +62,16 @@ ComponentDeclaration:
 ComponentType:
   name=Identifier;
 
+CustomSymbol:
+  'symbol' name=Identifier '<' symbolInput=Identifier '>' ('=' value='{' customSymbolElements+=CystomSymbolElement+ '}')?;
+
+CystomSymbolElement:
+  'port' name=Identifier ':' value=ObjectValue;
+
 // ---- layout statements ----
 
 LayoutGroup:
-  'layout' name=Identifier? '{' layoutElements+=LayoutElement+ '}';
+  'layout' name=Identifier? '=' '{' layoutElements+=LayoutElement+ '}';
 
 LayoutElement:
   LayoutComponent | RouteConnection;
@@ -76,9 +87,15 @@ RouteNamedConnection:
   // Narrow component options in validation?
   'route' componentId=[ComponentDeclaration:Identifier] ':' value=ArrayValue;
 
+// ---- drawing sheet details ----
+
+DrawingStatement:
+  'drawing' name=Identifier ('=' value=ObjectValue)?;
+
 // ---- values ----
 
-Value: ObjectValue | ArrayValue | LiteralValue;
+Value:
+  ObjectValue | ArrayValue | LiteralValue;
 
 ArrayValue:
   '[' (elements+=Value (',' elements+=Value)*)? ','? ']';
