@@ -1,3 +1,2 @@
-
-// v1 [outlet] --> [inlet] v2 [outlet] --> [inlet] v3
-// v6 [outlet] --> [inlet] v7 --> v8 [outlet] --> v9 [outlet]
+v1:Valve [outlet] --> [inlet] v2: Valve [outlet] --> [inlet] v3: Valve
+v6: Valve [outlet] --> [inlet] v7: Valve --> v8: Valve [outlet] --> v9: Valve [outlet]

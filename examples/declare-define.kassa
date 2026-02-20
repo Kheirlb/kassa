@@ -1,3 +1,4 @@
-// // Declare and define in place.
-// v0: Valve
-// v0 --> v1: Valve
+// Declare and define in place.
+v00: Valve
+// v10: Valve
+v00 --> v10: Valve

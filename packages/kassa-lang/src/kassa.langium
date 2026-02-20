@@ -4,15 +4,23 @@ entry Model:
   (items+=Item)*;
 
 Item:
-  Statement | ConnectionStatement;
+  ConnectionStatement | Statement;
+
+// ---- statements ----
+
+Statement:
+  ComponentDeclaration | TagDeclarations | LayoutGroup | LayoutElement | DrawingStatement | CustomSymbol;
+
+// ---- component statements ----
+
+ComponentDeclaration:
+  name=Identifier ':' type=ComponentType ('=' value=Value)?;
+
+
+ComponentType:
+  name=Identifier;
 
 // ---- connection langauge ----
-
-ConnectedComponent:
-  inlet=Port? componentId=[ComponentDeclaration:Identifier] (':' type=ComponentType)? outlet=Port?;
-
-Port:
-  '[' portName=Identifier ']';
 
 ConnectionStatement:
   ConnectionStart | ConnectionContinue;
@@ -32,10 +40,24 @@ StandardConnection:
 DirectConnection:
   operator='->' target=ConnectedComponent;
 
-// ---- statements ----
+ConnectedComponent:
+  ref=ConnectedComponentRef | define=ConnectedComponentDefine;
 
-Statement:
-  ComponentDeclaration | TagDeclarations | LayoutGroup | LayoutElement | DrawingStatement | CustomSymbol;
+ConnectedComponentRef:
+  inlet=Port? componentId=[ComponentDeclaration] outlet=Port?;
+
+ConnectedComponentDefine:
+  inlet=Port? componentId=ComponentDeclaration outlet=Port?;
+
+Port:
+  '[' portName=Identifier ']';
+
+// ---- custom symbol ----
+CustomSymbol:
+  'symbol' name=Identifier '<' symbolInput=Identifier '>' ('=' value='{' customSymbolElements+=CystomSymbolElement+ '}')?;
+
+CystomSymbolElement:
+  'port' name=Identifier ':' value=ObjectValue;
 
 // ---- tag statements ----
 
@@ -54,20 +76,6 @@ TagRefList:
 TagSetDeclaration:
   'tagset' name=Identifier ('=' value=ObjectValue)?;
 
-// ---- component statements ----
-
-ComponentDeclaration:
-  name=Identifier ':' type=ComponentType ('=' value=Value)?;
-
-ComponentType:
-  name=Identifier;
-
-CustomSymbol:
-  'symbol' name=Identifier '<' symbolInput=Identifier '>' ('=' value='{' customSymbolElements+=CystomSymbolElement+ '}')?;
-
-CystomSymbolElement:
-  'port' name=Identifier ':' value=ObjectValue;
-
 // ---- layout statements ----
 
 LayoutGroup:
@@ -77,7 +85,7 @@ LayoutElement:
   LayoutComponent | RouteConnection;
 
 LayoutComponent:
-  'place' componentId=[ComponentDeclaration:Identifier] ':' value=ObjectValue;
+  'place' componentId=[ComponentDeclaration] ':' value=ObjectValue;
 
 RouteConnection:
   // TODO: Support referenced connections?
@@ -85,7 +93,7 @@ RouteConnection:
 
 RouteNamedConnection:
   // Narrow component options in validation?
-  'route' componentId=[ComponentDeclaration:Identifier] ':' value=ArrayValue;
+  'route' componentId=[ComponentDeclaration] ':' value=ArrayValue;
 
 // ---- drawing sheet details ----
 

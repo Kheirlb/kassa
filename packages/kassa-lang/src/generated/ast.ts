@@ -74,7 +74,7 @@ export function isBooleanValue(item: unknown): item is BooleanValue {
 }
 
 export interface ComponentDeclaration extends langium.AstNode {
-    readonly $container: Model;
+    readonly $container: ConnectedComponentDefine | Model;
     readonly $type: 'ComponentDeclaration';
     name: string;
     type: ComponentType;
@@ -93,7 +93,7 @@ export function isComponentDeclaration(item: unknown): item is ComponentDeclarat
 }
 
 export interface ComponentType extends langium.AstNode {
-    readonly $container: ComponentDeclaration | ConnectedComponent;
+    readonly $container: ComponentDeclaration;
     readonly $type: 'ComponentType';
     name: string;
 }
@@ -110,22 +110,56 @@ export function isComponentType(item: unknown): item is ComponentType {
 export interface ConnectedComponent extends langium.AstNode {
     readonly $container: ConnectionStart | DirectConnection | StandardConnection;
     readonly $type: 'ConnectedComponent';
-    componentId: langium.Reference<ComponentDeclaration>;
-    inlet?: Port;
-    outlet?: Port;
-    type?: ComponentType;
+    define?: ConnectedComponentDefine;
+    ref?: ConnectedComponentRef;
 }
 
 export const ConnectedComponent = {
     $type: 'ConnectedComponent',
-    componentId: 'componentId',
-    inlet: 'inlet',
-    outlet: 'outlet',
-    type: 'type'
+    define: 'define',
+    ref: 'ref'
 } as const;
 
 export function isConnectedComponent(item: unknown): item is ConnectedComponent {
     return reflection.isInstance(item, ConnectedComponent.$type);
+}
+
+export interface ConnectedComponentDefine extends langium.AstNode {
+    readonly $container: ConnectedComponent;
+    readonly $type: 'ConnectedComponentDefine';
+    componentId: ComponentDeclaration;
+    inlet?: Port;
+    outlet?: Port;
+}
+
+export const ConnectedComponentDefine = {
+    $type: 'ConnectedComponentDefine',
+    componentId: 'componentId',
+    inlet: 'inlet',
+    outlet: 'outlet'
+} as const;
+
+export function isConnectedComponentDefine(item: unknown): item is ConnectedComponentDefine {
+    return reflection.isInstance(item, ConnectedComponentDefine.$type);
+}
+
+export interface ConnectedComponentRef extends langium.AstNode {
+    readonly $container: ConnectedComponent;
+    readonly $type: 'ConnectedComponentRef';
+    componentId: langium.Reference<ComponentDeclaration>;
+    inlet?: Port;
+    outlet?: Port;
+}
+
+export const ConnectedComponentRef = {
+    $type: 'ConnectedComponentRef',
+    componentId: 'componentId',
+    inlet: 'inlet',
+    outlet: 'outlet'
+} as const;
+
+export function isConnectedComponentRef(item: unknown): item is ConnectedComponentRef {
+    return reflection.isInstance(item, ConnectedComponentRef.$type);
 }
 
 export interface ConnectionContinue extends langium.AstNode {
@@ -408,7 +442,7 @@ export function isObjectValue(item: unknown): item is ObjectValue {
 }
 
 export interface Port extends langium.AstNode {
-    readonly $container: ConnectedComponent;
+    readonly $container: ConnectedComponentDefine | ConnectedComponentRef;
     readonly $type: 'Port';
     portName: string;
 }
@@ -597,6 +631,8 @@ export type KassaAstType = {
     ComponentDeclaration: ComponentDeclaration
     ComponentType: ComponentType
     ConnectedComponent: ConnectedComponent
+    ConnectedComponentDefine: ConnectedComponentDefine
+    ConnectedComponentRef: ConnectedComponentRef
     ConnectionContinue: ConnectionContinue
     ConnectionKind: ConnectionKind
     ConnectionStart: ConnectionStart
@@ -679,18 +715,42 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         ConnectedComponent: {
             name: ConnectedComponent.$type,
             properties: {
+                define: {
+                    name: ConnectedComponent.define
+                },
+                ref: {
+                    name: ConnectedComponent.ref
+                }
+            },
+            superTypes: []
+        },
+        ConnectedComponentDefine: {
+            name: ConnectedComponentDefine.$type,
+            properties: {
                 componentId: {
-                    name: ConnectedComponent.componentId,
+                    name: ConnectedComponentDefine.componentId
+                },
+                inlet: {
+                    name: ConnectedComponentDefine.inlet
+                },
+                outlet: {
+                    name: ConnectedComponentDefine.outlet
+                }
+            },
+            superTypes: []
+        },
+        ConnectedComponentRef: {
+            name: ConnectedComponentRef.$type,
+            properties: {
+                componentId: {
+                    name: ConnectedComponentRef.componentId,
                     referenceType: ComponentDeclaration.$type
                 },
                 inlet: {
-                    name: ConnectedComponent.inlet
+                    name: ConnectedComponentRef.inlet
                 },
                 outlet: {
-                    name: ConnectedComponent.outlet
-                },
-                type: {
-                    name: ConnectedComponent.type
+                    name: ConnectedComponentRef.outlet
                 }
             },
             superTypes: []
