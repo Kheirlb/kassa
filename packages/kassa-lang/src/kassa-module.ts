@@ -1,6 +1,7 @@
 import { type Module, inject } from 'langium';
 import { createDefaultModule, createDefaultSharedModule, type DefaultSharedModuleContext, type LangiumServices, type LangiumSharedServices, type PartialLangiumServices } from 'langium/lsp';
 import { KassaGeneratedModule, KassaGeneratedSharedModule } from './generated/module.js';
+import { KassaScopeProvider } from './kassa-scope-provider.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -20,6 +21,10 @@ export type KassaServices = LangiumServices & KassaAddedServices
  * selected services, while the custom services must be fully specified.
  */
 export const KassaModule: Module<KassaServices, PartialLangiumServices & KassaAddedServices> = {
+    // Add our custom scope provider here.
+    references: {
+        ScopeProvider: (services) => new KassaScopeProvider(services)
+    }
 };
 
 /**

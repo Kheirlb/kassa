@@ -1,5 +1,5 @@
-// // Types of connections:
-// // 1. standard
-// // 2. direct
-// // 3. named (direct)
-// v0: Valve --> v1: Valve -> v2: Valve
+// Types of connections:
+// 1. standard
+// 2. direct
+// 3. named (direct)
+v0: Valve --> v1: Valve -> v2: Valve
