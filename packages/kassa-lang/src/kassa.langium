@@ -30,7 +30,7 @@ DirectConnection:
 
 // ---- statements ----
 
-Statement: ComponentDeclaration | TagDeclarations | LayoutStatement;
+Statement: ComponentDeclaration | TagDeclarations | LayoutGroup | LayoutElement;
 
 // ---- tag statements ----
 
@@ -59,7 +59,7 @@ ComponentType:
 
 // ---- layout statements ----
 
-LayoutStatement:
+LayoutGroup:
   'layout' name=Identifier? '{' layoutElements+=LayoutElement+ '}';
 
 LayoutElement:
