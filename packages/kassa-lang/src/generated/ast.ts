@@ -22,13 +22,18 @@ export type KassaKeywordNames =
     | "-->"
     | "->"
     | ":"
+    | "<"
     | "="
+    | ">"
     | "["
     | "]"
+    | "drawing"
     | "false"
     | "layout"
     | "place"
+    | "port"
     | "route"
+    | "symbol"
     | "tag"
     | "tags"
     | "tagset"
@@ -180,6 +185,44 @@ export function isConnectionStatement(item: unknown): item is ConnectionStatemen
     return reflection.isInstance(item, ConnectionStatement.$type);
 }
 
+export interface CustomSymbol extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'CustomSymbol';
+    customSymbolElements: Array<CystomSymbolElement>;
+    name: string;
+    symbolInput: string;
+    value?: '{';
+}
+
+export const CustomSymbol = {
+    $type: 'CustomSymbol',
+    customSymbolElements: 'customSymbolElements',
+    name: 'name',
+    symbolInput: 'symbolInput',
+    value: 'value'
+} as const;
+
+export function isCustomSymbol(item: unknown): item is CustomSymbol {
+    return reflection.isInstance(item, CustomSymbol.$type);
+}
+
+export interface CystomSymbolElement extends langium.AstNode {
+    readonly $container: CustomSymbol;
+    readonly $type: 'CystomSymbolElement';
+    name: string;
+    value: ObjectValue;
+}
+
+export const CystomSymbolElement = {
+    $type: 'CystomSymbolElement',
+    name: 'name',
+    value: 'value'
+} as const;
+
+export function isCystomSymbolElement(item: unknown): item is CystomSymbolElement {
+    return reflection.isInstance(item, CystomSymbolElement.$type);
+}
+
 export interface DirectConnection extends langium.AstNode {
     readonly $container: ConnectionKind;
     readonly $type: 'DirectConnection';
@@ -195,6 +238,23 @@ export const DirectConnection = {
 
 export function isDirectConnection(item: unknown): item is DirectConnection {
     return reflection.isInstance(item, DirectConnection.$type);
+}
+
+export interface DrawingStatement extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'DrawingStatement';
+    name: string;
+    value?: ObjectValue;
+}
+
+export const DrawingStatement = {
+    $type: 'DrawingStatement',
+    name: 'name',
+    value: 'value'
+} as const;
+
+export function isDrawingStatement(item: unknown): item is DrawingStatement {
+    return reflection.isInstance(item, DrawingStatement.$type);
 }
 
 export interface IdentifierValue extends langium.AstNode {
@@ -333,7 +393,7 @@ export function isObjectProperty(item: unknown): item is ObjectProperty {
 }
 
 export interface ObjectValue extends langium.AstNode {
-    readonly $container: ArrayValue | ComponentDeclaration | KeyValue | LayoutComponent | TagDeclaration | TagSetDeclaration;
+    readonly $container: ArrayValue | ComponentDeclaration | CystomSymbolElement | DrawingStatement | KeyValue | LayoutComponent | TagDeclaration | TagSetDeclaration;
     readonly $type: 'ObjectValue';
     properties: Array<ObjectProperty>;
 }
@@ -412,7 +472,7 @@ export function isStandardConnection(item: unknown): item is StandardConnection 
     return reflection.isInstance(item, StandardConnection.$type);
 }
 
-export type Statement = ComponentDeclaration | LayoutElement | LayoutGroup | TagDeclarations;
+export type Statement = ComponentDeclaration | CustomSymbol | DrawingStatement | LayoutElement | LayoutGroup | TagDeclarations;
 
 export const Statement = {
     $type: 'Statement'
@@ -541,7 +601,10 @@ export type KassaAstType = {
     ConnectionKind: ConnectionKind
     ConnectionStart: ConnectionStart
     ConnectionStatement: ConnectionStatement
+    CustomSymbol: CustomSymbol
+    CystomSymbolElement: CystomSymbolElement
     DirectConnection: DirectConnection
+    DrawingStatement: DrawingStatement
     IdentifierValue: IdentifierValue
     Item: Item
     KeyValue: KeyValue
@@ -670,6 +733,37 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [Item.$type]
         },
+        CustomSymbol: {
+            name: CustomSymbol.$type,
+            properties: {
+                customSymbolElements: {
+                    name: CustomSymbol.customSymbolElements,
+                    defaultValue: []
+                },
+                name: {
+                    name: CustomSymbol.name
+                },
+                symbolInput: {
+                    name: CustomSymbol.symbolInput
+                },
+                value: {
+                    name: CustomSymbol.value
+                }
+            },
+            superTypes: [Statement.$type]
+        },
+        CystomSymbolElement: {
+            name: CystomSymbolElement.$type,
+            properties: {
+                name: {
+                    name: CystomSymbolElement.name
+                },
+                value: {
+                    name: CystomSymbolElement.value
+                }
+            },
+            superTypes: []
+        },
         DirectConnection: {
             name: DirectConnection.$type,
             properties: {
@@ -681,6 +775,18 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: []
+        },
+        DrawingStatement: {
+            name: DrawingStatement.$type,
+            properties: {
+                name: {
+                    name: DrawingStatement.name
+                },
+                value: {
+                    name: DrawingStatement.value
+                }
+            },
+            superTypes: [Statement.$type]
         },
         IdentifierValue: {
             name: IdentifierValue.$type,
