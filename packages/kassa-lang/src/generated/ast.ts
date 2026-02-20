@@ -240,7 +240,7 @@ export function isKeyValue(item: unknown): item is KeyValue {
 }
 
 export interface LayoutComponent extends langium.AstNode {
-    readonly $container: LayoutStatement;
+    readonly $container: LayoutGroup | Model;
     readonly $type: 'LayoutComponent';
     componentId: langium.Reference<ComponentDeclaration>;
     value: ObjectValue;
@@ -266,21 +266,21 @@ export function isLayoutElement(item: unknown): item is LayoutElement {
     return reflection.isInstance(item, LayoutElement.$type);
 }
 
-export interface LayoutStatement extends langium.AstNode {
+export interface LayoutGroup extends langium.AstNode {
     readonly $container: Model;
-    readonly $type: 'LayoutStatement';
+    readonly $type: 'LayoutGroup';
     layoutElements: Array<LayoutElement>;
     name?: string;
 }
 
-export const LayoutStatement = {
-    $type: 'LayoutStatement',
+export const LayoutGroup = {
+    $type: 'LayoutGroup',
     layoutElements: 'layoutElements',
     name: 'name'
 } as const;
 
-export function isLayoutStatement(item: unknown): item is LayoutStatement {
-    return reflection.isInstance(item, LayoutStatement.$type);
+export function isLayoutGroup(item: unknown): item is LayoutGroup {
+    return reflection.isInstance(item, LayoutGroup.$type);
 }
 
 export type LiteralValue = BooleanValue | IdentifierValue | NumberValue | StringValue;
@@ -379,7 +379,7 @@ export function isRouteConnection(item: unknown): item is RouteConnection {
 }
 
 export interface RouteNamedConnection extends langium.AstNode {
-    readonly $container: LayoutStatement;
+    readonly $container: LayoutGroup | Model;
     readonly $type: 'RouteNamedConnection';
     componentId: langium.Reference<ComponentDeclaration>;
     value: ArrayValue;
@@ -412,7 +412,7 @@ export function isStandardConnection(item: unknown): item is StandardConnection 
     return reflection.isInstance(item, StandardConnection.$type);
 }
 
-export type Statement = ComponentDeclaration | LayoutStatement | TagDeclarations;
+export type Statement = ComponentDeclaration | LayoutElement | LayoutGroup | TagDeclarations;
 
 export const Statement = {
     $type: 'Statement'
@@ -547,7 +547,7 @@ export type KassaAstType = {
     KeyValue: KeyValue
     LayoutComponent: LayoutComponent
     LayoutElement: LayoutElement
-    LayoutStatement: LayoutStatement
+    LayoutGroup: LayoutGroup
     LiteralValue: LiteralValue
     Model: Model
     NumberValue: NumberValue
@@ -726,17 +726,17 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             name: LayoutElement.$type,
             properties: {
             },
-            superTypes: []
+            superTypes: [Statement.$type]
         },
-        LayoutStatement: {
-            name: LayoutStatement.$type,
+        LayoutGroup: {
+            name: LayoutGroup.$type,
             properties: {
                 layoutElements: {
-                    name: LayoutStatement.layoutElements,
+                    name: LayoutGroup.layoutElements,
                     defaultValue: []
                 },
                 name: {
-                    name: LayoutStatement.name
+                    name: LayoutGroup.name
                 }
             },
             superTypes: [Statement.$type]

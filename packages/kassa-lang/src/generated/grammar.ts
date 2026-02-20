@@ -381,6 +381,13 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
               "$ref": "#/rules@18"
             },
             "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@19"
+            },
+            "arguments": []
           }
         ]
       },
@@ -689,7 +696,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
     },
     {
       "$type": "ParserRule",
-      "name": "LayoutStatement",
+      "name": "LayoutGroup",
       "definition": {
         "$type": "Group",
         "elements": [
