@@ -1,0 +1,9 @@
+tag testTagRename = {
+  name: "hi"
+  color: #FFFFFF
+}
+
+tagset testTags = {
+  name: "Test Tags",
+  tags: [testTagRename]
+}

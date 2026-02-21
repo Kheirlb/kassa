@@ -1,51 +1,58 @@
 // Tags here.
-tag testTagRename = { name: "Test Tag", color: green }
-tagset testTags = {
-  name: "Test Tags",
+tag testTagRename { name: "Test Tag", color: green }
+tagset testTags {
+  name: "Test Tags"
   tags: [testTagRename]
 }
 
 // Components here.
 v0: Valve
-v1: Valve = {}
-v2: Valve = { name: "value" }
-v3: Valve = { booleanTest: true, numberTest: 12.5 }
-v4: Valve = { tag: MV_100, nestedTest: { a: 1 } }
-v5: Valve = true
-v6: Valve = 123
-v7: Valve = "hello"
-v8: Valve = SomeIdentifier
-v9: Valve = { array: [1, 2], nestedArray: [[1, 2], 3] }
-v10: Valve = {
-  tags: [testTagRename],
-  "tags": [testTagRename, standardArrayHere]
+v1: Valve {}
+v2: Valve { name: "Name" }
+v3: Valve {
+  name: "Valve with Tag"
+  tags: [testTagRename]
 }
 
-
 // Custom symbol.
-symbol CustomTank<Tank> = {
-  port inlet: { x: 35, y: 50, rot: 180 }
+symbol CustomTank<Tank> {
+  port inlet { 
+    x: 35
+    y: 50
+    rot: 180
+  }
+}
+symbol CustomValve<Vakve> {
+  
 }
 
 // Connections below.
-v0 --> v1 --> v2 --> v3
---> v4 --> v5
-v1 [outlet] --> [inlet] v2 [outlet] --> [inlet] v3
-v6 [outlet] --> [inlet] v7 --> v8 [outlet] --> v9 [outlet]
---> v11: Valve
+v0 --> v1
+--> v2
+--> v3
 
-place v0: { x: 100 , y: 100 }
-route v1: [
-  {}, {}, auto
-]
+// Layout examples.
+layout optionalLayoutGroup {
+  place v0 {
+    x: 10
+    y: 10
+    rot: 90
+  }
+  route v1 [
+    out 100
+    right 50
+    auto
+  ]
+}
 
-drawing sheet = {
-  height: 8.5,
-  width: 11,
-  scale: 1.5,
+// Drawing example.
+drawing optionSheetName {
+  height: 8.5
+  width: 11
+  scale: 1.5
 	titleBlock: {
-	  title: "Example P&ID",
-	  author: "Karl Parks",
+	  title: "Example P&ID"
+	  author: "Karl Parks"
 	  date: "2026"
 	}
 }

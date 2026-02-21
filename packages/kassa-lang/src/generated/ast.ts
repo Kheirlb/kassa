@@ -13,6 +13,7 @@ export const KassaTerminals = {
     WS: /\s+/,
     ML_COMMENT: /\/\*[\s\S]*?\*\//,
     SL_COMMENT: /\/\/[^\n\r]*/,
+    HEX_COLOR: /#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?([0-9a-fA-F]{2})?/,
 };
 
 export type KassaTerminalNames = keyof typeof KassaTerminals;
@@ -27,24 +28,36 @@ export type KassaKeywordNames =
     | ">"
     | "["
     | "]"
+    | "author"
+    | "auto"
+    | "color"
+    | "date"
     | "drawing"
-    | "false"
+    | "height"
     | "layout"
+    | "name"
     | "place"
     | "port"
+    | "rot"
     | "route"
+    | "scale"
     | "symbol"
     | "tag"
     | "tags"
     | "tagset"
-    | "true"
+    | "title"
+    | "titleBlock"
+    | "width"
+    | "x"
+    | "y"
+    | "z"
     | "{"
     | "}";
 
 export type KassaTokenNames = KassaTerminalNames | KassaKeywordNames;
 
 export interface ArrayValue extends langium.AstNode {
-    readonly $container: ArrayValue | ComponentDeclaration | KeyValue | RouteNamedConnection;
+    readonly $container: ArrayValue | KeyValue;
     readonly $type: 'ArrayValue';
     elements: Array<Value>;
 }
@@ -58,8 +71,29 @@ export function isArrayValue(item: unknown): item is ArrayValue {
     return reflection.isInstance(item, ArrayValue.$type);
 }
 
+export type Auto = 'auto';
+
+export function isAuto(item: unknown): item is Auto {
+    return item === 'auto';
+}
+
+export interface BasicColor extends langium.AstNode {
+    readonly $container: TagColorProperty;
+    readonly $type: 'BasicColor';
+    name: string;
+}
+
+export const BasicColor = {
+    $type: 'BasicColor',
+    name: 'name'
+} as const;
+
+export function isBasicColor(item: unknown): item is BasicColor {
+    return reflection.isInstance(item, BasicColor.$type);
+}
+
 export interface BooleanValue extends langium.AstNode {
-    readonly $container: ArrayValue | ComponentDeclaration | KeyValue;
+    readonly $container: ArrayValue | KeyValue;
     readonly $type: 'BooleanValue';
     value: 'false' | 'true';
 }
@@ -73,12 +107,37 @@ export function isBooleanValue(item: unknown): item is BooleanValue {
     return reflection.isInstance(item, BooleanValue.$type);
 }
 
+export type Color = BasicColor | HexColor;
+
+export const Color = {
+    $type: 'Color'
+} as const;
+
+export function isColor(item: unknown): item is Color {
+    return reflection.isInstance(item, Color.$type);
+}
+
+export interface ComponentBlock extends langium.AstNode {
+    readonly $container: ComponentDeclaration;
+    readonly $type: 'ComponentBlock';
+    properties: Array<ComponentProperty>;
+}
+
+export const ComponentBlock = {
+    $type: 'ComponentBlock',
+    properties: 'properties'
+} as const;
+
+export function isComponentBlock(item: unknown): item is ComponentBlock {
+    return reflection.isInstance(item, ComponentBlock.$type);
+}
+
 export interface ComponentDeclaration extends langium.AstNode {
     readonly $container: ConnectedComponentDefine | Model;
     readonly $type: 'ComponentDeclaration';
     name: string;
     type: ComponentType;
-    value?: Value;
+    value?: ComponentBlock;
 }
 
 export const ComponentDeclaration = {
@@ -90,6 +149,31 @@ export const ComponentDeclaration = {
 
 export function isComponentDeclaration(item: unknown): item is ComponentDeclaration {
     return reflection.isInstance(item, ComponentDeclaration.$type);
+}
+
+export interface ComponentNameProperty extends langium.AstNode {
+    readonly $container: ComponentBlock;
+    readonly $type: 'ComponentNameProperty';
+    value: string;
+}
+
+export const ComponentNameProperty = {
+    $type: 'ComponentNameProperty',
+    value: 'value'
+} as const;
+
+export function isComponentNameProperty(item: unknown): item is ComponentNameProperty {
+    return reflection.isInstance(item, ComponentNameProperty.$type);
+}
+
+export type ComponentProperty = ComponentNameProperty | TagSetTagsProperty;
+
+export const ComponentProperty = {
+    $type: 'ComponentProperty'
+} as const;
+
+export function isComponentProperty(item: unknown): item is ComponentProperty {
+    return reflection.isInstance(item, ComponentProperty.$type);
 }
 
 export interface ComponentType extends langium.AstNode {
@@ -222,39 +306,77 @@ export function isConnectionStatement(item: unknown): item is ConnectionStatemen
 export interface CustomSymbol extends langium.AstNode {
     readonly $container: Model;
     readonly $type: 'CustomSymbol';
-    customSymbolElements: Array<CystomSymbolElement>;
+    block?: CustomSymbolBlock;
     name: string;
     symbolInput: string;
-    value?: '{';
 }
 
 export const CustomSymbol = {
     $type: 'CustomSymbol',
-    customSymbolElements: 'customSymbolElements',
+    block: 'block',
     name: 'name',
-    symbolInput: 'symbolInput',
-    value: 'value'
+    symbolInput: 'symbolInput'
 } as const;
 
 export function isCustomSymbol(item: unknown): item is CustomSymbol {
     return reflection.isInstance(item, CustomSymbol.$type);
 }
 
-export interface CystomSymbolElement extends langium.AstNode {
+export interface CustomSymbolBlock extends langium.AstNode {
     readonly $container: CustomSymbol;
+    readonly $type: 'CustomSymbolBlock';
+    properties: Array<CustomSymbolProperty>;
+}
+
+export const CustomSymbolBlock = {
+    $type: 'CustomSymbolBlock',
+    properties: 'properties'
+} as const;
+
+export function isCustomSymbolBlock(item: unknown): item is CustomSymbolBlock {
+    return reflection.isInstance(item, CustomSymbolBlock.$type);
+}
+
+export type CustomSymbolProperty = CystomSymbolElement;
+
+export const CustomSymbolProperty = {
+    $type: 'CustomSymbolProperty'
+} as const;
+
+export function isCustomSymbolProperty(item: unknown): item is CustomSymbolProperty {
+    return reflection.isInstance(item, CustomSymbolProperty.$type);
+}
+
+export interface CystomSymbolElement extends langium.AstNode {
+    readonly $container: CustomSymbolBlock;
     readonly $type: 'CystomSymbolElement';
+    block: DefinePortBlock;
     name: string;
-    value: ObjectValue;
 }
 
 export const CystomSymbolElement = {
     $type: 'CystomSymbolElement',
-    name: 'name',
-    value: 'value'
+    block: 'block',
+    name: 'name'
 } as const;
 
 export function isCystomSymbolElement(item: unknown): item is CystomSymbolElement {
     return reflection.isInstance(item, CystomSymbolElement.$type);
+}
+
+export interface DefinePortBlock extends langium.AstNode {
+    readonly $container: CystomSymbolElement;
+    readonly $type: 'DefinePortBlock';
+    properties: Array<PortProperty>;
+}
+
+export const DefinePortBlock = {
+    $type: 'DefinePortBlock',
+    properties: 'properties'
+} as const;
+
+export function isDefinePortBlock(item: unknown): item is DefinePortBlock {
+    return reflection.isInstance(item, DefinePortBlock.$type);
 }
 
 export interface DirectConnection extends langium.AstNode {
@@ -274,25 +396,142 @@ export function isDirectConnection(item: unknown): item is DirectConnection {
     return reflection.isInstance(item, DirectConnection.$type);
 }
 
+export interface Direction extends langium.AstNode {
+    readonly $container: RouteArray;
+    readonly $type: 'Direction';
+    amount: NumberValue;
+    dir: string;
+}
+
+export const Direction = {
+    $type: 'Direction',
+    amount: 'amount',
+    dir: 'dir'
+} as const;
+
+export function isDirection(item: unknown): item is Direction {
+    return reflection.isInstance(item, Direction.$type);
+}
+
+export interface DrawingBlock extends langium.AstNode {
+    readonly $container: DrawingStatement;
+    readonly $type: 'DrawingBlock';
+    properties: Array<DrawingProperty>;
+}
+
+export const DrawingBlock = {
+    $type: 'DrawingBlock',
+    properties: 'properties'
+} as const;
+
+export function isDrawingBlock(item: unknown): item is DrawingBlock {
+    return reflection.isInstance(item, DrawingBlock.$type);
+}
+
+export interface DrawingHeight extends langium.AstNode {
+    readonly $container: DrawingBlock;
+    readonly $type: 'DrawingHeight';
+    value: NumberValue;
+}
+
+export const DrawingHeight = {
+    $type: 'DrawingHeight',
+    value: 'value'
+} as const;
+
+export function isDrawingHeight(item: unknown): item is DrawingHeight {
+    return reflection.isInstance(item, DrawingHeight.$type);
+}
+
+export type DrawingProperty = DrawingHeight | DrawingScale | DrawingTitleBlock | DrawingWidth;
+
+export const DrawingProperty = {
+    $type: 'DrawingProperty'
+} as const;
+
+export function isDrawingProperty(item: unknown): item is DrawingProperty {
+    return reflection.isInstance(item, DrawingProperty.$type);
+}
+
+export interface DrawingScale extends langium.AstNode {
+    readonly $container: DrawingBlock;
+    readonly $type: 'DrawingScale';
+    value: NumberValue;
+}
+
+export const DrawingScale = {
+    $type: 'DrawingScale',
+    value: 'value'
+} as const;
+
+export function isDrawingScale(item: unknown): item is DrawingScale {
+    return reflection.isInstance(item, DrawingScale.$type);
+}
+
 export interface DrawingStatement extends langium.AstNode {
     readonly $container: Model;
     readonly $type: 'DrawingStatement';
+    block?: DrawingBlock;
     name: string;
-    value?: ObjectValue;
 }
 
 export const DrawingStatement = {
     $type: 'DrawingStatement',
-    name: 'name',
-    value: 'value'
+    block: 'block',
+    name: 'name'
 } as const;
 
 export function isDrawingStatement(item: unknown): item is DrawingStatement {
     return reflection.isInstance(item, DrawingStatement.$type);
 }
 
+export interface DrawingTitleBlock extends langium.AstNode {
+    readonly $container: DrawingBlock;
+    readonly $type: 'DrawingTitleBlock';
+    value: TitleBlock;
+}
+
+export const DrawingTitleBlock = {
+    $type: 'DrawingTitleBlock',
+    value: 'value'
+} as const;
+
+export function isDrawingTitleBlock(item: unknown): item is DrawingTitleBlock {
+    return reflection.isInstance(item, DrawingTitleBlock.$type);
+}
+
+export interface DrawingWidth extends langium.AstNode {
+    readonly $container: DrawingBlock;
+    readonly $type: 'DrawingWidth';
+    value: NumberValue;
+}
+
+export const DrawingWidth = {
+    $type: 'DrawingWidth',
+    value: 'value'
+} as const;
+
+export function isDrawingWidth(item: unknown): item is DrawingWidth {
+    return reflection.isInstance(item, DrawingWidth.$type);
+}
+
+export interface HexColor extends langium.AstNode {
+    readonly $container: TagColorProperty;
+    readonly $type: 'HexColor';
+    value: string;
+}
+
+export const HexColor = {
+    $type: 'HexColor',
+    value: 'value'
+} as const;
+
+export function isHexColor(item: unknown): item is HexColor {
+    return reflection.isInstance(item, HexColor.$type);
+}
+
 export interface IdentifierValue extends langium.AstNode {
-    readonly $container: ArrayValue | ComponentDeclaration | KeyValue;
+    readonly $container: ArrayValue | KeyValue;
     readonly $type: 'IdentifierValue';
     value: string;
 }
@@ -306,20 +545,10 @@ export function isIdentifierValue(item: unknown): item is IdentifierValue {
     return reflection.isInstance(item, IdentifierValue.$type);
 }
 
-export type Item = ConnectionStatement | Statement;
-
-export const Item = {
-    $type: 'Item'
-} as const;
-
-export function isItem(item: unknown): item is Item {
-    return reflection.isInstance(item, Item.$type);
-}
-
 export interface KeyValue extends langium.AstNode {
     readonly $container: ObjectValue;
     readonly $type: 'KeyValue';
-    key: PropertyKey;
+    key: string;
     value: Value;
 }
 
@@ -336,14 +565,14 @@ export function isKeyValue(item: unknown): item is KeyValue {
 export interface LayoutComponent extends langium.AstNode {
     readonly $container: LayoutGroup | Model;
     readonly $type: 'LayoutComponent';
+    block: LayoutPlaceBlock;
     componentId: langium.Reference<ComponentDeclaration>;
-    value: ObjectValue;
 }
 
 export const LayoutComponent = {
     $type: 'LayoutComponent',
-    componentId: 'componentId',
-    value: 'value'
+    block: 'block',
+    componentId: 'componentId'
 } as const;
 
 export function isLayoutComponent(item: unknown): item is LayoutComponent {
@@ -377,6 +606,21 @@ export function isLayoutGroup(item: unknown): item is LayoutGroup {
     return reflection.isInstance(item, LayoutGroup.$type);
 }
 
+export interface LayoutPlaceBlock extends langium.AstNode {
+    readonly $container: LayoutComponent;
+    readonly $type: 'LayoutPlaceBlock';
+    properties: Array<PlaceProperty>;
+}
+
+export const LayoutPlaceBlock = {
+    $type: 'LayoutPlaceBlock',
+    properties: 'properties'
+} as const;
+
+export function isLayoutPlaceBlock(item: unknown): item is LayoutPlaceBlock {
+    return reflection.isInstance(item, LayoutPlaceBlock.$type);
+}
+
 export type LiteralValue = BooleanValue | IdentifierValue | NumberValue | StringValue;
 
 export const LiteralValue = {
@@ -389,12 +633,12 @@ export function isLiteralValue(item: unknown): item is LiteralValue {
 
 export interface Model extends langium.AstNode {
     readonly $type: 'Model';
-    items: Array<Item>;
+    statements: Array<Statement>;
 }
 
 export const Model = {
     $type: 'Model',
-    items: 'items'
+    statements: 'statements'
 } as const;
 
 export function isModel(item: unknown): item is Model {
@@ -402,7 +646,7 @@ export function isModel(item: unknown): item is Model {
 }
 
 export interface NumberValue extends langium.AstNode {
-    readonly $container: ArrayValue | ComponentDeclaration | KeyValue;
+    readonly $container: ArrayValue | Direction | DrawingHeight | DrawingScale | DrawingWidth | KeyValue | Rot | TitleBlockDate | XPos | YPos | ZPos;
     readonly $type: 'NumberValue';
     value: string;
 }
@@ -416,20 +660,10 @@ export function isNumberValue(item: unknown): item is NumberValue {
     return reflection.isInstance(item, NumberValue.$type);
 }
 
-export type ObjectProperty = KeyValue | TagsProperty;
-
-export const ObjectProperty = {
-    $type: 'ObjectProperty'
-} as const;
-
-export function isObjectProperty(item: unknown): item is ObjectProperty {
-    return reflection.isInstance(item, ObjectProperty.$type);
-}
-
 export interface ObjectValue extends langium.AstNode {
-    readonly $container: ArrayValue | ComponentDeclaration | CystomSymbolElement | DrawingStatement | KeyValue | LayoutComponent | TagDeclaration | TagSetDeclaration;
+    readonly $container: ArrayValue | KeyValue;
     readonly $type: 'ObjectValue';
-    properties: Array<ObjectProperty>;
+    properties: Array<KeyValue>;
 }
 
 export const ObjectValue = {
@@ -439,6 +673,16 @@ export const ObjectValue = {
 
 export function isObjectValue(item: unknown): item is ObjectValue {
     return reflection.isInstance(item, ObjectValue.$type);
+}
+
+export type PlaceProperty = Rot | XPos | YPos | ZPos;
+
+export const PlaceProperty = {
+    $type: 'PlaceProperty'
+} as const;
+
+export function isPlaceProperty(item: unknown): item is PlaceProperty {
+    return reflection.isInstance(item, PlaceProperty.$type);
 }
 
 export interface Port extends langium.AstNode {
@@ -456,10 +700,44 @@ export function isPort(item: unknown): item is Port {
     return reflection.isInstance(item, Port.$type);
 }
 
-export type PropertyKey = 'tag' | 'tagset' | string;
+export type PortProperty = Rot | XPos | YPos;
 
-export function isPropertyKey(item: unknown): item is PropertyKey {
-    return item === 'tag' || item === 'tagset' || (typeof item === 'string' && (/[_a-zA-Z]\w*/.test(item) || /"[^"]*"/.test(item)));
+export const PortProperty = {
+    $type: 'PortProperty'
+} as const;
+
+export function isPortProperty(item: unknown): item is PortProperty {
+    return reflection.isInstance(item, PortProperty.$type);
+}
+
+export interface Rot extends langium.AstNode {
+    readonly $container: DefinePortBlock | LayoutPlaceBlock;
+    readonly $type: 'Rot';
+    value: NumberValue;
+}
+
+export const Rot = {
+    $type: 'Rot',
+    value: 'value'
+} as const;
+
+export function isRot(item: unknown): item is Rot {
+    return reflection.isInstance(item, Rot.$type);
+}
+
+export interface RouteArray extends langium.AstNode {
+    readonly $container: RouteNamedConnection;
+    readonly $type: 'RouteArray';
+    elements: Array<RouteSection>;
+}
+
+export const RouteArray = {
+    $type: 'RouteArray',
+    elements: 'elements'
+} as const;
+
+export function isRouteArray(item: unknown): item is RouteArray {
+    return reflection.isInstance(item, RouteArray.$type);
 }
 
 export type RouteConnection = RouteNamedConnection;
@@ -475,18 +753,28 @@ export function isRouteConnection(item: unknown): item is RouteConnection {
 export interface RouteNamedConnection extends langium.AstNode {
     readonly $container: LayoutGroup | Model;
     readonly $type: 'RouteNamedConnection';
+    array: RouteArray;
     componentId: langium.Reference<ComponentDeclaration>;
-    value: ArrayValue;
 }
 
 export const RouteNamedConnection = {
     $type: 'RouteNamedConnection',
-    componentId: 'componentId',
-    value: 'value'
+    array: 'array',
+    componentId: 'componentId'
 } as const;
 
 export function isRouteNamedConnection(item: unknown): item is RouteNamedConnection {
     return reflection.isInstance(item, RouteNamedConnection.$type);
+}
+
+export type RouteSection = Direction;
+
+export const RouteSection = {
+    $type: 'RouteSection'
+} as const;
+
+export function isRouteSection(item: unknown): item is RouteSection {
+    return reflection.isInstance(item, RouteSection.$type);
 }
 
 export interface StandardConnection extends langium.AstNode {
@@ -506,7 +794,7 @@ export function isStandardConnection(item: unknown): item is StandardConnection 
     return reflection.isInstance(item, StandardConnection.$type);
 }
 
-export type Statement = ComponentDeclaration | CustomSymbol | DrawingStatement | LayoutElement | LayoutGroup | TagDeclarations;
+export type Statement = ComponentDeclaration | ConnectionStatement | CustomSymbol | DrawingStatement | LayoutElement | LayoutGroup | TagDeclarations;
 
 export const Statement = {
     $type: 'Statement'
@@ -517,7 +805,7 @@ export function isStatement(item: unknown): item is Statement {
 }
 
 export interface StringValue extends langium.AstNode {
-    readonly $container: ArrayValue | ComponentDeclaration | KeyValue;
+    readonly $container: ArrayValue | KeyValue | TitleBlockAuthor | TitleBlockDate | TitleBlockTitle;
     readonly $type: 'StringValue';
     value: string;
 }
@@ -531,17 +819,47 @@ export function isStringValue(item: unknown): item is StringValue {
     return reflection.isInstance(item, StringValue.$type);
 }
 
+export interface TagBlock extends langium.AstNode {
+    readonly $container: TagDeclaration;
+    readonly $type: 'TagBlock';
+    properties: Array<TagProperty>;
+}
+
+export const TagBlock = {
+    $type: 'TagBlock',
+    properties: 'properties'
+} as const;
+
+export function isTagBlock(item: unknown): item is TagBlock {
+    return reflection.isInstance(item, TagBlock.$type);
+}
+
+export interface TagColorProperty extends langium.AstNode {
+    readonly $container: TagBlock;
+    readonly $type: 'TagColorProperty';
+    value: Color;
+}
+
+export const TagColorProperty = {
+    $type: 'TagColorProperty',
+    value: 'value'
+} as const;
+
+export function isTagColorProperty(item: unknown): item is TagColorProperty {
+    return reflection.isInstance(item, TagColorProperty.$type);
+}
+
 export interface TagDeclaration extends langium.AstNode {
     readonly $container: Model;
     readonly $type: 'TagDeclaration';
+    block?: TagBlock;
     name: string;
-    value?: ObjectValue;
 }
 
 export const TagDeclaration = {
     $type: 'TagDeclaration',
-    name: 'name',
-    value: 'value'
+    block: 'block',
+    name: 'name'
 } as const;
 
 export function isTagDeclaration(item: unknown): item is TagDeclaration {
@@ -556,6 +874,31 @@ export const TagDeclarations = {
 
 export function isTagDeclarations(item: unknown): item is TagDeclarations {
     return reflection.isInstance(item, TagDeclarations.$type);
+}
+
+export interface TagNameProperty extends langium.AstNode {
+    readonly $container: TagBlock;
+    readonly $type: 'TagNameProperty';
+    value: string;
+}
+
+export const TagNameProperty = {
+    $type: 'TagNameProperty',
+    value: 'value'
+} as const;
+
+export function isTagNameProperty(item: unknown): item is TagNameProperty {
+    return reflection.isInstance(item, TagNameProperty.$type);
+}
+
+export type TagProperty = TagColorProperty | TagNameProperty;
+
+export const TagProperty = {
+    $type: 'TagProperty'
+} as const;
+
+export function isTagProperty(item: unknown): item is TagProperty {
+    return reflection.isInstance(item, TagProperty.$type);
 }
 
 export interface TagRef extends langium.AstNode {
@@ -574,7 +917,7 @@ export function isTagRef(item: unknown): item is TagRef {
 }
 
 export interface TagRefList extends langium.AstNode {
-    readonly $container: ObjectValue;
+    readonly $container: ComponentBlock | TagSetBlock;
     readonly $type: 'TagRefList';
     elements: Array<TagRef>;
 }
@@ -588,31 +931,141 @@ export function isTagRefList(item: unknown): item is TagRefList {
     return reflection.isInstance(item, TagRefList.$type);
 }
 
+export interface TagSetBlock extends langium.AstNode {
+    readonly $container: TagSetDeclaration;
+    readonly $type: 'TagSetBlock';
+    properties: Array<TagSetProperty>;
+}
+
+export const TagSetBlock = {
+    $type: 'TagSetBlock',
+    properties: 'properties'
+} as const;
+
+export function isTagSetBlock(item: unknown): item is TagSetBlock {
+    return reflection.isInstance(item, TagSetBlock.$type);
+}
+
 export interface TagSetDeclaration extends langium.AstNode {
     readonly $container: Model;
     readonly $type: 'TagSetDeclaration';
+    block: TagSetBlock;
     name: string;
-    value?: ObjectValue;
 }
 
 export const TagSetDeclaration = {
     $type: 'TagSetDeclaration',
-    name: 'name',
-    value: 'value'
+    block: 'block',
+    name: 'name'
 } as const;
 
 export function isTagSetDeclaration(item: unknown): item is TagSetDeclaration {
     return reflection.isInstance(item, TagSetDeclaration.$type);
 }
 
-export type TagsProperty = TagRefList;
+export interface TagSetNameProperty extends langium.AstNode {
+    readonly $container: TagSetBlock;
+    readonly $type: 'TagSetNameProperty';
+    value: string;
+}
 
-export const TagsProperty = {
-    $type: 'TagsProperty'
+export const TagSetNameProperty = {
+    $type: 'TagSetNameProperty',
+    value: 'value'
 } as const;
 
-export function isTagsProperty(item: unknown): item is TagsProperty {
-    return reflection.isInstance(item, TagsProperty.$type);
+export function isTagSetNameProperty(item: unknown): item is TagSetNameProperty {
+    return reflection.isInstance(item, TagSetNameProperty.$type);
+}
+
+export type TagSetProperty = TagSetNameProperty | TagSetTagsProperty;
+
+export const TagSetProperty = {
+    $type: 'TagSetProperty'
+} as const;
+
+export function isTagSetProperty(item: unknown): item is TagSetProperty {
+    return reflection.isInstance(item, TagSetProperty.$type);
+}
+
+export type TagSetTagsProperty = TagRefList;
+
+export const TagSetTagsProperty = {
+    $type: 'TagSetTagsProperty'
+} as const;
+
+export function isTagSetTagsProperty(item: unknown): item is TagSetTagsProperty {
+    return reflection.isInstance(item, TagSetTagsProperty.$type);
+}
+
+export interface TitleBlock extends langium.AstNode {
+    readonly $container: DrawingTitleBlock;
+    readonly $type: 'TitleBlock';
+    properties: Array<TitleBlockProperty>;
+}
+
+export const TitleBlock = {
+    $type: 'TitleBlock',
+    properties: 'properties'
+} as const;
+
+export function isTitleBlock(item: unknown): item is TitleBlock {
+    return reflection.isInstance(item, TitleBlock.$type);
+}
+
+export interface TitleBlockAuthor extends langium.AstNode {
+    readonly $container: TitleBlock;
+    readonly $type: 'TitleBlockAuthor';
+    value: StringValue;
+}
+
+export const TitleBlockAuthor = {
+    $type: 'TitleBlockAuthor',
+    value: 'value'
+} as const;
+
+export function isTitleBlockAuthor(item: unknown): item is TitleBlockAuthor {
+    return reflection.isInstance(item, TitleBlockAuthor.$type);
+}
+
+export interface TitleBlockDate extends langium.AstNode {
+    readonly $container: TitleBlock;
+    readonly $type: 'TitleBlockDate';
+    value: NumberValue | StringValue;
+}
+
+export const TitleBlockDate = {
+    $type: 'TitleBlockDate',
+    value: 'value'
+} as const;
+
+export function isTitleBlockDate(item: unknown): item is TitleBlockDate {
+    return reflection.isInstance(item, TitleBlockDate.$type);
+}
+
+export type TitleBlockProperty = TitleBlockAuthor | TitleBlockDate | TitleBlockTitle;
+
+export const TitleBlockProperty = {
+    $type: 'TitleBlockProperty'
+} as const;
+
+export function isTitleBlockProperty(item: unknown): item is TitleBlockProperty {
+    return reflection.isInstance(item, TitleBlockProperty.$type);
+}
+
+export interface TitleBlockTitle extends langium.AstNode {
+    readonly $container: TitleBlock;
+    readonly $type: 'TitleBlockTitle';
+    value: StringValue;
+}
+
+export const TitleBlockTitle = {
+    $type: 'TitleBlockTitle',
+    value: 'value'
+} as const;
+
+export function isTitleBlockTitle(item: unknown): item is TitleBlockTitle {
+    return reflection.isInstance(item, TitleBlockTitle.$type);
 }
 
 export type Value = ArrayValue | LiteralValue | ObjectValue;
@@ -625,10 +1078,60 @@ export function isValue(item: unknown): item is Value {
     return reflection.isInstance(item, Value.$type);
 }
 
+export interface XPos extends langium.AstNode {
+    readonly $container: DefinePortBlock | LayoutPlaceBlock;
+    readonly $type: 'XPos';
+    value: NumberValue;
+}
+
+export const XPos = {
+    $type: 'XPos',
+    value: 'value'
+} as const;
+
+export function isXPos(item: unknown): item is XPos {
+    return reflection.isInstance(item, XPos.$type);
+}
+
+export interface YPos extends langium.AstNode {
+    readonly $container: DefinePortBlock | LayoutPlaceBlock;
+    readonly $type: 'YPos';
+    value: NumberValue;
+}
+
+export const YPos = {
+    $type: 'YPos',
+    value: 'value'
+} as const;
+
+export function isYPos(item: unknown): item is YPos {
+    return reflection.isInstance(item, YPos.$type);
+}
+
+export interface ZPos extends langium.AstNode {
+    readonly $container: LayoutPlaceBlock;
+    readonly $type: 'ZPos';
+    value: NumberValue;
+}
+
+export const ZPos = {
+    $type: 'ZPos',
+    value: 'value'
+} as const;
+
+export function isZPos(item: unknown): item is ZPos {
+    return reflection.isInstance(item, ZPos.$type);
+}
+
 export type KassaAstType = {
     ArrayValue: ArrayValue
+    BasicColor: BasicColor
     BooleanValue: BooleanValue
+    Color: Color
+    ComponentBlock: ComponentBlock
     ComponentDeclaration: ComponentDeclaration
+    ComponentNameProperty: ComponentNameProperty
+    ComponentProperty: ComponentProperty
     ComponentType: ComponentType
     ConnectedComponent: ConnectedComponent
     ConnectedComponentDefine: ConnectedComponentDefine
@@ -638,33 +1141,63 @@ export type KassaAstType = {
     ConnectionStart: ConnectionStart
     ConnectionStatement: ConnectionStatement
     CustomSymbol: CustomSymbol
+    CustomSymbolBlock: CustomSymbolBlock
+    CustomSymbolProperty: CustomSymbolProperty
     CystomSymbolElement: CystomSymbolElement
+    DefinePortBlock: DefinePortBlock
     DirectConnection: DirectConnection
+    Direction: Direction
+    DrawingBlock: DrawingBlock
+    DrawingHeight: DrawingHeight
+    DrawingProperty: DrawingProperty
+    DrawingScale: DrawingScale
     DrawingStatement: DrawingStatement
+    DrawingTitleBlock: DrawingTitleBlock
+    DrawingWidth: DrawingWidth
+    HexColor: HexColor
     IdentifierValue: IdentifierValue
-    Item: Item
     KeyValue: KeyValue
     LayoutComponent: LayoutComponent
     LayoutElement: LayoutElement
     LayoutGroup: LayoutGroup
+    LayoutPlaceBlock: LayoutPlaceBlock
     LiteralValue: LiteralValue
     Model: Model
     NumberValue: NumberValue
-    ObjectProperty: ObjectProperty
     ObjectValue: ObjectValue
+    PlaceProperty: PlaceProperty
     Port: Port
+    PortProperty: PortProperty
+    Rot: Rot
+    RouteArray: RouteArray
     RouteConnection: RouteConnection
     RouteNamedConnection: RouteNamedConnection
+    RouteSection: RouteSection
     StandardConnection: StandardConnection
     Statement: Statement
     StringValue: StringValue
+    TagBlock: TagBlock
+    TagColorProperty: TagColorProperty
     TagDeclaration: TagDeclaration
     TagDeclarations: TagDeclarations
+    TagNameProperty: TagNameProperty
+    TagProperty: TagProperty
     TagRef: TagRef
     TagRefList: TagRefList
+    TagSetBlock: TagSetBlock
     TagSetDeclaration: TagSetDeclaration
-    TagsProperty: TagsProperty
+    TagSetNameProperty: TagSetNameProperty
+    TagSetProperty: TagSetProperty
+    TagSetTagsProperty: TagSetTagsProperty
+    TitleBlock: TitleBlock
+    TitleBlockAuthor: TitleBlockAuthor
+    TitleBlockDate: TitleBlockDate
+    TitleBlockProperty: TitleBlockProperty
+    TitleBlockTitle: TitleBlockTitle
     Value: Value
+    XPos: XPos
+    YPos: YPos
+    ZPos: ZPos
 }
 
 export class KassaAstReflection extends langium.AbstractAstReflection {
@@ -679,6 +1212,15 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [Value.$type]
         },
+        BasicColor: {
+            name: BasicColor.$type,
+            properties: {
+                name: {
+                    name: BasicColor.name
+                }
+            },
+            superTypes: [Color.$type]
+        },
         BooleanValue: {
             name: BooleanValue.$type,
             properties: {
@@ -687,6 +1229,22 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: [LiteralValue.$type]
+        },
+        Color: {
+            name: Color.$type,
+            properties: {
+            },
+            superTypes: []
+        },
+        ComponentBlock: {
+            name: ComponentBlock.$type,
+            properties: {
+                properties: {
+                    name: ComponentBlock.properties,
+                    defaultValue: []
+                }
+            },
+            superTypes: []
         },
         ComponentDeclaration: {
             name: ComponentDeclaration.$type,
@@ -702,6 +1260,21 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: [Statement.$type]
+        },
+        ComponentNameProperty: {
+            name: ComponentNameProperty.$type,
+            properties: {
+                value: {
+                    name: ComponentNameProperty.value
+                }
+            },
+            superTypes: [ComponentProperty.$type]
+        },
+        ComponentProperty: {
+            name: ComponentProperty.$type,
+            properties: {
+            },
+            superTypes: []
         },
         ComponentType: {
             name: ComponentType.$type,
@@ -791,35 +1364,57 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             name: ConnectionStatement.$type,
             properties: {
             },
-            superTypes: [Item.$type]
+            superTypes: [Statement.$type]
         },
         CustomSymbol: {
             name: CustomSymbol.$type,
             properties: {
-                customSymbolElements: {
-                    name: CustomSymbol.customSymbolElements,
-                    defaultValue: []
+                block: {
+                    name: CustomSymbol.block
                 },
                 name: {
                     name: CustomSymbol.name
                 },
                 symbolInput: {
                     name: CustomSymbol.symbolInput
-                },
-                value: {
-                    name: CustomSymbol.value
                 }
             },
             superTypes: [Statement.$type]
         },
+        CustomSymbolBlock: {
+            name: CustomSymbolBlock.$type,
+            properties: {
+                properties: {
+                    name: CustomSymbolBlock.properties,
+                    defaultValue: []
+                }
+            },
+            superTypes: []
+        },
+        CustomSymbolProperty: {
+            name: CustomSymbolProperty.$type,
+            properties: {
+            },
+            superTypes: []
+        },
         CystomSymbolElement: {
             name: CystomSymbolElement.$type,
             properties: {
+                block: {
+                    name: CystomSymbolElement.block
+                },
                 name: {
                     name: CystomSymbolElement.name
-                },
-                value: {
-                    name: CystomSymbolElement.value
+                }
+            },
+            superTypes: [CustomSymbolProperty.$type]
+        },
+        DefinePortBlock: {
+            name: DefinePortBlock.$type,
+            properties: {
+                properties: {
+                    name: DefinePortBlock.properties,
+                    defaultValue: []
                 }
             },
             superTypes: []
@@ -836,17 +1431,90 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: []
         },
+        Direction: {
+            name: Direction.$type,
+            properties: {
+                amount: {
+                    name: Direction.amount
+                },
+                dir: {
+                    name: Direction.dir
+                }
+            },
+            superTypes: [RouteSection.$type]
+        },
+        DrawingBlock: {
+            name: DrawingBlock.$type,
+            properties: {
+                properties: {
+                    name: DrawingBlock.properties,
+                    defaultValue: []
+                }
+            },
+            superTypes: []
+        },
+        DrawingHeight: {
+            name: DrawingHeight.$type,
+            properties: {
+                value: {
+                    name: DrawingHeight.value
+                }
+            },
+            superTypes: [DrawingProperty.$type]
+        },
+        DrawingProperty: {
+            name: DrawingProperty.$type,
+            properties: {
+            },
+            superTypes: []
+        },
+        DrawingScale: {
+            name: DrawingScale.$type,
+            properties: {
+                value: {
+                    name: DrawingScale.value
+                }
+            },
+            superTypes: [DrawingProperty.$type]
+        },
         DrawingStatement: {
             name: DrawingStatement.$type,
             properties: {
+                block: {
+                    name: DrawingStatement.block
+                },
                 name: {
                     name: DrawingStatement.name
-                },
-                value: {
-                    name: DrawingStatement.value
                 }
             },
             superTypes: [Statement.$type]
+        },
+        DrawingTitleBlock: {
+            name: DrawingTitleBlock.$type,
+            properties: {
+                value: {
+                    name: DrawingTitleBlock.value
+                }
+            },
+            superTypes: [DrawingProperty.$type]
+        },
+        DrawingWidth: {
+            name: DrawingWidth.$type,
+            properties: {
+                value: {
+                    name: DrawingWidth.value
+                }
+            },
+            superTypes: [DrawingProperty.$type]
+        },
+        HexColor: {
+            name: HexColor.$type,
+            properties: {
+                value: {
+                    name: HexColor.value
+                }
+            },
+            superTypes: [Color.$type]
         },
         IdentifierValue: {
             name: IdentifierValue.$type,
@@ -856,12 +1524,6 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: [LiteralValue.$type]
-        },
-        Item: {
-            name: Item.$type,
-            properties: {
-            },
-            superTypes: []
         },
         KeyValue: {
             name: KeyValue.$type,
@@ -873,17 +1535,17 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                     name: KeyValue.value
                 }
             },
-            superTypes: [ObjectProperty.$type]
+            superTypes: []
         },
         LayoutComponent: {
             name: LayoutComponent.$type,
             properties: {
+                block: {
+                    name: LayoutComponent.block
+                },
                 componentId: {
                     name: LayoutComponent.componentId,
                     referenceType: ComponentDeclaration.$type
-                },
-                value: {
-                    name: LayoutComponent.value
                 }
             },
             superTypes: [LayoutElement.$type]
@@ -907,6 +1569,16 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [Statement.$type]
         },
+        LayoutPlaceBlock: {
+            name: LayoutPlaceBlock.$type,
+            properties: {
+                properties: {
+                    name: LayoutPlaceBlock.properties,
+                    defaultValue: []
+                }
+            },
+            superTypes: []
+        },
         LiteralValue: {
             name: LiteralValue.$type,
             properties: {
@@ -916,8 +1588,8 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         Model: {
             name: Model.$type,
             properties: {
-                items: {
-                    name: Model.items,
+                statements: {
+                    name: Model.statements,
                     defaultValue: []
                 }
             },
@@ -932,12 +1604,6 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [LiteralValue.$type]
         },
-        ObjectProperty: {
-            name: ObjectProperty.$type,
-            properties: {
-            },
-            superTypes: []
-        },
         ObjectValue: {
             name: ObjectValue.$type,
             properties: {
@@ -948,11 +1614,42 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [Value.$type]
         },
+        PlaceProperty: {
+            name: PlaceProperty.$type,
+            properties: {
+            },
+            superTypes: []
+        },
         Port: {
             name: Port.$type,
             properties: {
                 portName: {
                     name: Port.portName
+                }
+            },
+            superTypes: []
+        },
+        PortProperty: {
+            name: PortProperty.$type,
+            properties: {
+            },
+            superTypes: []
+        },
+        Rot: {
+            name: Rot.$type,
+            properties: {
+                value: {
+                    name: Rot.value
+                }
+            },
+            superTypes: [PlaceProperty.$type, PortProperty.$type]
+        },
+        RouteArray: {
+            name: RouteArray.$type,
+            properties: {
+                elements: {
+                    name: RouteArray.elements,
+                    defaultValue: []
                 }
             },
             superTypes: []
@@ -966,15 +1663,21 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         RouteNamedConnection: {
             name: RouteNamedConnection.$type,
             properties: {
+                array: {
+                    name: RouteNamedConnection.array
+                },
                 componentId: {
                     name: RouteNamedConnection.componentId,
                     referenceType: ComponentDeclaration.$type
-                },
-                value: {
-                    name: RouteNamedConnection.value
                 }
             },
             superTypes: [RouteConnection.$type]
+        },
+        RouteSection: {
+            name: RouteSection.$type,
+            properties: {
+            },
+            superTypes: []
         },
         StandardConnection: {
             name: StandardConnection.$type,
@@ -992,7 +1695,7 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             name: Statement.$type,
             properties: {
             },
-            superTypes: [Item.$type]
+            superTypes: []
         },
         StringValue: {
             name: StringValue.$type,
@@ -1003,14 +1706,33 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [LiteralValue.$type]
         },
+        TagBlock: {
+            name: TagBlock.$type,
+            properties: {
+                properties: {
+                    name: TagBlock.properties,
+                    defaultValue: []
+                }
+            },
+            superTypes: []
+        },
+        TagColorProperty: {
+            name: TagColorProperty.$type,
+            properties: {
+                value: {
+                    name: TagColorProperty.value
+                }
+            },
+            superTypes: [TagProperty.$type]
+        },
         TagDeclaration: {
             name: TagDeclaration.$type,
             properties: {
+                block: {
+                    name: TagDeclaration.block
+                },
                 name: {
                     name: TagDeclaration.name
-                },
-                value: {
-                    name: TagDeclaration.value
                 }
             },
             superTypes: [TagDeclarations.$type]
@@ -1020,6 +1742,21 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             properties: {
             },
             superTypes: [Statement.$type]
+        },
+        TagNameProperty: {
+            name: TagNameProperty.$type,
+            properties: {
+                value: {
+                    name: TagNameProperty.value
+                }
+            },
+            superTypes: [TagProperty.$type]
+        },
+        TagProperty: {
+            name: TagProperty.$type,
+            properties: {
+            },
+            superTypes: []
         },
         TagRef: {
             name: TagRef.$type,
@@ -1039,31 +1776,126 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                     defaultValue: []
                 }
             },
-            superTypes: [TagsProperty.$type]
+            superTypes: [TagSetTagsProperty.$type]
+        },
+        TagSetBlock: {
+            name: TagSetBlock.$type,
+            properties: {
+                properties: {
+                    name: TagSetBlock.properties,
+                    defaultValue: []
+                }
+            },
+            superTypes: []
         },
         TagSetDeclaration: {
             name: TagSetDeclaration.$type,
             properties: {
+                block: {
+                    name: TagSetDeclaration.block
+                },
                 name: {
                     name: TagSetDeclaration.name
-                },
-                value: {
-                    name: TagSetDeclaration.value
                 }
             },
             superTypes: [TagDeclarations.$type]
         },
-        TagsProperty: {
-            name: TagsProperty.$type,
+        TagSetNameProperty: {
+            name: TagSetNameProperty.$type,
+            properties: {
+                value: {
+                    name: TagSetNameProperty.value
+                }
+            },
+            superTypes: [TagSetProperty.$type]
+        },
+        TagSetProperty: {
+            name: TagSetProperty.$type,
             properties: {
             },
-            superTypes: [ObjectProperty.$type]
+            superTypes: []
+        },
+        TagSetTagsProperty: {
+            name: TagSetTagsProperty.$type,
+            properties: {
+            },
+            superTypes: [ComponentProperty.$type, TagSetProperty.$type]
+        },
+        TitleBlock: {
+            name: TitleBlock.$type,
+            properties: {
+                properties: {
+                    name: TitleBlock.properties,
+                    defaultValue: []
+                }
+            },
+            superTypes: []
+        },
+        TitleBlockAuthor: {
+            name: TitleBlockAuthor.$type,
+            properties: {
+                value: {
+                    name: TitleBlockAuthor.value
+                }
+            },
+            superTypes: [TitleBlockProperty.$type]
+        },
+        TitleBlockDate: {
+            name: TitleBlockDate.$type,
+            properties: {
+                value: {
+                    name: TitleBlockDate.value
+                }
+            },
+            superTypes: [TitleBlockProperty.$type]
+        },
+        TitleBlockProperty: {
+            name: TitleBlockProperty.$type,
+            properties: {
+            },
+            superTypes: []
+        },
+        TitleBlockTitle: {
+            name: TitleBlockTitle.$type,
+            properties: {
+                value: {
+                    name: TitleBlockTitle.value
+                }
+            },
+            superTypes: [TitleBlockProperty.$type]
         },
         Value: {
             name: Value.$type,
             properties: {
             },
             superTypes: []
+        },
+        XPos: {
+            name: XPos.$type,
+            properties: {
+                value: {
+                    name: XPos.value
+                }
+            },
+            superTypes: [PlaceProperty.$type, PortProperty.$type]
+        },
+        YPos: {
+            name: YPos.$type,
+            properties: {
+                value: {
+                    name: YPos.value
+                }
+            },
+            superTypes: [PlaceProperty.$type, PortProperty.$type]
+        },
+        ZPos: {
+            name: ZPos.$type,
+            properties: {
+                value: {
+                    name: ZPos.value
+                }
+            },
+            superTypes: [PlaceProperty.$type]
         }
     } as const satisfies langium.AstMetaData
 }
