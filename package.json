@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "build": "pnpm -r --filter !kassa-app build",
+    "build:devlang": "pnpm --filter @kassa/lang --filter kassa-vscode-ext build",
     "start-cli": "pnpm --filter kassa-cli start",
     "kassa": "pnpm --filter kassa-cli kassa"
   },

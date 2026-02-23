@@ -1,5 +1,6 @@
 import "./kassa-base"
 import "./kassa-components"
+import "./kassa-connections"
 // ---- layout statements ----
 
 LayoutGroup:
@@ -15,7 +16,7 @@ LayoutPlaceBlock:
   '{' (properties+=PlaceProperty (','? properties+=PlaceProperty)*)? ','?  '}';
 
 PlaceProperty:
-  XPos | YPos | ZPos | Rot;
+  XPos | YPos | ZPos | Rot | Mirror;
 
 XPos:
   'x' ':' value=NumberValue;
@@ -29,13 +30,17 @@ ZPos:
 Rot:
   'rot' ':' value=NumberValue;
 
+Mirror:
+  'mirror' (':' value=BooleanValue)?;
+
 RouteConnection:
-  // TODO: Support referenced connections "v0-->v1" instead of conn1?
-  RouteNamedConnection;
+  RouteNamedConnection | RouteBasicConnection;
 
 RouteNamedConnection:
-  // TODO Narrow component options in validation?
   'route' componentId=[ComponentDeclaration] '='? array=RouteArray;
+
+RouteBasicConnection:
+  'route' fromComponentId=[ComponentDeclaration] outlet=Port? 'to' inlet=Port? toComponentId=[ComponentDeclaration] '='? array=RouteArray;
 
 RouteArray:
   '[' (elements+=RouteSection (','? elements+=RouteSection)*)? ','? ']';
@@ -44,7 +49,7 @@ RouteSection:
   Direction | Auto;
 
 Direction:
-  dir=Identifier amount=NumberValue;
+  dir=Identifier? amount=NumberValue;
 
 Auto returns string:
   'auto';
