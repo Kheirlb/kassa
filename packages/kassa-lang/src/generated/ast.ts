@@ -22,6 +22,7 @@ export type KassaKeywordNames =
     | ","
     | "-->"
     | "->"
+    | "."
     | ":"
     | "<"
     | "="
@@ -33,8 +34,11 @@ export type KassaKeywordNames =
     | "color"
     | "date"
     | "drawing"
+    | "false"
+    | "hardware"
     | "height"
     | "layout"
+    | "mirror"
     | "name"
     | "place"
     | "port"
@@ -47,6 +51,8 @@ export type KassaKeywordNames =
     | "tagset"
     | "title"
     | "titleBlock"
+    | "to"
+    | "true"
     | "width"
     | "x"
     | "y"
@@ -93,7 +99,7 @@ export function isBasicColor(item: unknown): item is BasicColor {
 }
 
 export interface BooleanValue extends langium.AstNode {
-    readonly $container: ArrayValue | KeyValue;
+    readonly $container: ArrayValue | KeyValue | Mirror;
     readonly $type: 'BooleanValue';
     value: 'false' | 'true';
 }
@@ -166,7 +172,17 @@ export function isComponentNameProperty(item: unknown): item is ComponentNamePro
     return reflection.isInstance(item, ComponentNameProperty.$type);
 }
 
-export type ComponentProperty = ComponentNameProperty | TagSetTagsProperty;
+export type ComponentOptionsProperty = OptionsList;
+
+export const ComponentOptionsProperty = {
+    $type: 'ComponentOptionsProperty'
+} as const;
+
+export function isComponentOptionsProperty(item: unknown): item is ComponentOptionsProperty {
+    return reflection.isInstance(item, ComponentOptionsProperty.$type);
+}
+
+export type ComponentProperty = ComponentNameProperty | ComponentOptionsProperty | TagSetTagsProperty;
 
 export const ComponentProperty = {
     $type: 'ComponentProperty'
@@ -400,7 +416,7 @@ export interface Direction extends langium.AstNode {
     readonly $container: RouteArray;
     readonly $type: 'Direction';
     amount: NumberValue;
-    dir: string;
+    dir?: string;
 }
 
 export const Direction = {
@@ -631,6 +647,21 @@ export function isLiteralValue(item: unknown): item is LiteralValue {
     return reflection.isInstance(item, LiteralValue.$type);
 }
 
+export interface Mirror extends langium.AstNode {
+    readonly $container: LayoutPlaceBlock;
+    readonly $type: 'Mirror';
+    value?: BooleanValue;
+}
+
+export const Mirror = {
+    $type: 'Mirror',
+    value: 'value'
+} as const;
+
+export function isMirror(item: unknown): item is Mirror {
+    return reflection.isInstance(item, Mirror.$type);
+}
+
 export interface Model extends langium.AstNode {
     readonly $type: 'Model';
     statements: Array<Statement>;
@@ -675,7 +706,53 @@ export function isObjectValue(item: unknown): item is ObjectValue {
     return reflection.isInstance(item, ObjectValue.$type);
 }
 
-export type PlaceProperty = Rot | XPos | YPos | ZPos;
+export interface OptionRef extends langium.AstNode {
+    readonly $container: OptionsList;
+    readonly $type: 'OptionRef';
+    key: string;
+    source: string;
+}
+
+export const OptionRef = {
+    $type: 'OptionRef',
+    key: 'key',
+    source: 'source'
+} as const;
+
+export function isOptionRef(item: unknown): item is OptionRef {
+    return reflection.isInstance(item, OptionRef.$type);
+}
+
+export interface OptionsList extends langium.AstNode {
+    readonly $container: ComponentBlock;
+    readonly $type: 'OptionsList';
+    option: Array<OptionRef>;
+}
+
+export const OptionsList = {
+    $type: 'OptionsList',
+    option: 'option'
+} as const;
+
+export function isOptionsList(item: unknown): item is OptionsList {
+    return reflection.isInstance(item, OptionsList.$type);
+}
+
+export interface OptionsSource extends langium.AstNode {
+    readonly $type: 'OptionsSource';
+    name: string;
+}
+
+export const OptionsSource = {
+    $type: 'OptionsSource',
+    name: 'name'
+} as const;
+
+export function isOptionsSource(item: unknown): item is OptionsSource {
+    return reflection.isInstance(item, OptionsSource.$type);
+}
+
+export type PlaceProperty = Mirror | Rot | XPos | YPos | ZPos;
 
 export const PlaceProperty = {
     $type: 'PlaceProperty'
@@ -686,7 +763,7 @@ export function isPlaceProperty(item: unknown): item is PlaceProperty {
 }
 
 export interface Port extends langium.AstNode {
-    readonly $container: ConnectedComponentDefine | ConnectedComponentRef;
+    readonly $container: ConnectedComponentDefine | ConnectedComponentRef | RouteBasicConnection;
     readonly $type: 'Port';
     portName: string;
 }
@@ -726,7 +803,7 @@ export function isRot(item: unknown): item is Rot {
 }
 
 export interface RouteArray extends langium.AstNode {
-    readonly $container: RouteNamedConnection;
+    readonly $container: RouteBasicConnection | RouteNamedConnection;
     readonly $type: 'RouteArray';
     elements: Array<RouteSection>;
 }
@@ -740,7 +817,30 @@ export function isRouteArray(item: unknown): item is RouteArray {
     return reflection.isInstance(item, RouteArray.$type);
 }
 
-export type RouteConnection = RouteNamedConnection;
+export interface RouteBasicConnection extends langium.AstNode {
+    readonly $container: LayoutGroup | Model;
+    readonly $type: 'RouteBasicConnection';
+    array: RouteArray;
+    fromComponentId: langium.Reference<ComponentDeclaration>;
+    inlet?: Port;
+    outlet?: Port;
+    toComponentId: langium.Reference<ComponentDeclaration>;
+}
+
+export const RouteBasicConnection = {
+    $type: 'RouteBasicConnection',
+    array: 'array',
+    fromComponentId: 'fromComponentId',
+    inlet: 'inlet',
+    outlet: 'outlet',
+    toComponentId: 'toComponentId'
+} as const;
+
+export function isRouteBasicConnection(item: unknown): item is RouteBasicConnection {
+    return reflection.isInstance(item, RouteBasicConnection.$type);
+}
+
+export type RouteConnection = RouteBasicConnection | RouteNamedConnection;
 
 export const RouteConnection = {
     $type: 'RouteConnection'
@@ -1131,6 +1231,7 @@ export type KassaAstType = {
     ComponentBlock: ComponentBlock
     ComponentDeclaration: ComponentDeclaration
     ComponentNameProperty: ComponentNameProperty
+    ComponentOptionsProperty: ComponentOptionsProperty
     ComponentProperty: ComponentProperty
     ComponentType: ComponentType
     ConnectedComponent: ConnectedComponent
@@ -1162,14 +1263,19 @@ export type KassaAstType = {
     LayoutGroup: LayoutGroup
     LayoutPlaceBlock: LayoutPlaceBlock
     LiteralValue: LiteralValue
+    Mirror: Mirror
     Model: Model
     NumberValue: NumberValue
     ObjectValue: ObjectValue
+    OptionRef: OptionRef
+    OptionsList: OptionsList
+    OptionsSource: OptionsSource
     PlaceProperty: PlaceProperty
     Port: Port
     PortProperty: PortProperty
     Rot: Rot
     RouteArray: RouteArray
+    RouteBasicConnection: RouteBasicConnection
     RouteConnection: RouteConnection
     RouteNamedConnection: RouteNamedConnection
     RouteSection: RouteSection
@@ -1267,6 +1373,12 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 value: {
                     name: ComponentNameProperty.value
                 }
+            },
+            superTypes: [ComponentProperty.$type]
+        },
+        ComponentOptionsProperty: {
+            name: ComponentOptionsProperty.$type,
+            properties: {
             },
             superTypes: [ComponentProperty.$type]
         },
@@ -1585,6 +1697,15 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [Value.$type]
         },
+        Mirror: {
+            name: Mirror.$type,
+            properties: {
+                value: {
+                    name: Mirror.value
+                }
+            },
+            superTypes: [PlaceProperty.$type]
+        },
         Model: {
             name: Model.$type,
             properties: {
@@ -1613,6 +1734,37 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: [Value.$type]
+        },
+        OptionRef: {
+            name: OptionRef.$type,
+            properties: {
+                key: {
+                    name: OptionRef.key
+                },
+                source: {
+                    name: OptionRef.source
+                }
+            },
+            superTypes: []
+        },
+        OptionsList: {
+            name: OptionsList.$type,
+            properties: {
+                option: {
+                    name: OptionsList.option,
+                    defaultValue: []
+                }
+            },
+            superTypes: [ComponentOptionsProperty.$type]
+        },
+        OptionsSource: {
+            name: OptionsSource.$type,
+            properties: {
+                name: {
+                    name: OptionsSource.name
+                }
+            },
+            superTypes: []
         },
         PlaceProperty: {
             name: PlaceProperty.$type,
@@ -1653,6 +1805,29 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: []
+        },
+        RouteBasicConnection: {
+            name: RouteBasicConnection.$type,
+            properties: {
+                array: {
+                    name: RouteBasicConnection.array
+                },
+                fromComponentId: {
+                    name: RouteBasicConnection.fromComponentId,
+                    referenceType: ComponentDeclaration.$type
+                },
+                inlet: {
+                    name: RouteBasicConnection.inlet
+                },
+                outlet: {
+                    name: RouteBasicConnection.outlet
+                },
+                toComponentId: {
+                    name: RouteBasicConnection.toComponentId,
+                    referenceType: ComponentDeclaration.$type
+                }
+            },
+            superTypes: [RouteConnection.$type]
         },
         RouteConnection: {
             name: RouteConnection.$type,

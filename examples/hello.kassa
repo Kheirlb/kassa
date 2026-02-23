@@ -12,6 +12,7 @@ v2: Valve { name: "Name" }
 v3: Valve {
   name: "Valve with Tag"
   tags: [testTagRename]
+  hardware: [mcmaster."47865K21", default."PART 1"]
 }
 
 // Custom symbol.
@@ -22,14 +23,14 @@ symbol CustomTank<Tank> {
     rot: 180
   }
 }
-symbol CustomValve<Vakve> {
+symbol CustomValve<Valve> {
   
 }
 
 // Connections below.
 v0 --> v1
---> v2
---> v3
+--> v2 [outlet]
+--> [inlet] v3
 
 // Layout examples.
 layout optionalLayoutGroup {
@@ -37,11 +38,15 @@ layout optionalLayoutGroup {
     x: 10
     y: 10
     rot: 90
+    mirror
   }
   route v1 [
     out 100
     right 50
     auto
+  ]
+  route v2 [outlet] to [inlet] v3 [
+    bend -30
   ]
 }
 

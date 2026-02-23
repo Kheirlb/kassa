@@ -11,9 +11,19 @@ ComponentBlock:
   '{' (properties+=ComponentProperty (','? properties+=ComponentProperty)*)? ','? '}';
 
 ComponentProperty:
-  ComponentNameProperty | TagSetTagsProperty;
-// TODO ComponentPartsProperty;
+  ComponentNameProperty | TagSetTagsProperty | ComponentOptionsProperty;
 
 ComponentNameProperty:
   'name' ':' value=String;
 
+OptionsSource:
+  name=Identifier;
+
+ComponentOptionsProperty:
+  'hardware' ':' OptionsList;
+
+OptionsList:
+  '[' (option+=OptionRef (','? option+=OptionRef)*)? ','? ']';
+
+OptionRef:
+  source=Identifier '.' key=(Identifier | String | Number);
