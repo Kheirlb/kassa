@@ -19,7 +19,8 @@ Expecations:
 
 # Development
 ## Installation
-TODO
+- https://pnpm.io/installation
+- `pnpm install`
 
 ## Everyday
 - `pnpm build`
