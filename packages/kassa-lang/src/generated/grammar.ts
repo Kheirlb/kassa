@@ -84,6 +84,13 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
           {
             "$type": "RuleCall",
             "rule": {
+              "$ref": "#/rules@88"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
               "$ref": "#/rules@53"
             },
             "arguments": []
@@ -3307,6 +3314,70 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
                   "arguments": []
                 }
               ]
+            }
+          }
+        ]
+      },
+      "entry": false,
+      "fragment": false,
+      "parameters": []
+    },
+    {
+      "$type": "ParserRule",
+      "name": "ImportStatement",
+      "definition": {
+        "$type": "Group",
+        "elements": [
+          {
+            "$type": "Keyword",
+            "value": "import"
+          },
+          {
+            "$type": "Assignment",
+            "feature": "target",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@89"
+              },
+              "arguments": []
+            }
+          }
+        ]
+      },
+      "entry": false,
+      "fragment": false,
+      "parameters": []
+    },
+    {
+      "$type": "ParserRule",
+      "name": "ImportTarget",
+      "definition": {
+        "$type": "Alternatives",
+        "elements": [
+          {
+            "$type": "Assignment",
+            "feature": "path",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@8"
+              },
+              "arguments": []
+            }
+          },
+          {
+            "$type": "Assignment",
+            "feature": "name",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@11"
+              },
+              "arguments": []
             }
           }
         ]

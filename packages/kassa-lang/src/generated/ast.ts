@@ -37,6 +37,7 @@ export type KassaKeywordNames =
     | "false"
     | "hardware"
     | "height"
+    | "import"
     | "layout"
     | "mirror"
     | "name"
@@ -561,6 +562,38 @@ export function isIdentifierValue(item: unknown): item is IdentifierValue {
     return reflection.isInstance(item, IdentifierValue.$type);
 }
 
+export interface ImportStatement extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'ImportStatement';
+    target: ImportTarget;
+}
+
+export const ImportStatement = {
+    $type: 'ImportStatement',
+    target: 'target'
+} as const;
+
+export function isImportStatement(item: unknown): item is ImportStatement {
+    return reflection.isInstance(item, ImportStatement.$type);
+}
+
+export interface ImportTarget extends langium.AstNode {
+    readonly $container: ImportStatement;
+    readonly $type: 'ImportTarget';
+    name?: string;
+    path?: StringValue;
+}
+
+export const ImportTarget = {
+    $type: 'ImportTarget',
+    name: 'name',
+    path: 'path'
+} as const;
+
+export function isImportTarget(item: unknown): item is ImportTarget {
+    return reflection.isInstance(item, ImportTarget.$type);
+}
+
 export interface KeyValue extends langium.AstNode {
     readonly $container: ObjectValue;
     readonly $type: 'KeyValue';
@@ -894,7 +927,7 @@ export function isStandardConnection(item: unknown): item is StandardConnection 
     return reflection.isInstance(item, StandardConnection.$type);
 }
 
-export type Statement = ComponentDeclaration | ConnectionStatement | CustomSymbol | DrawingStatement | LayoutElement | LayoutGroup | TagDeclarations;
+export type Statement = ComponentDeclaration | ConnectionStatement | CustomSymbol | DrawingStatement | ImportStatement | LayoutElement | LayoutGroup | TagDeclarations;
 
 export const Statement = {
     $type: 'Statement'
@@ -905,7 +938,7 @@ export function isStatement(item: unknown): item is Statement {
 }
 
 export interface StringValue extends langium.AstNode {
-    readonly $container: ArrayValue | KeyValue | TitleBlockAuthor | TitleBlockDate | TitleBlockTitle;
+    readonly $container: ArrayValue | ImportTarget | KeyValue | TitleBlockAuthor | TitleBlockDate | TitleBlockTitle;
     readonly $type: 'StringValue';
     value: string;
 }
@@ -1257,6 +1290,8 @@ export type KassaAstType = {
     DrawingWidth: DrawingWidth
     HexColor: HexColor
     IdentifierValue: IdentifierValue
+    ImportStatement: ImportStatement
+    ImportTarget: ImportTarget
     KeyValue: KeyValue
     LayoutComponent: LayoutComponent
     LayoutElement: LayoutElement
@@ -1636,6 +1671,27 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: [LiteralValue.$type]
+        },
+        ImportStatement: {
+            name: ImportStatement.$type,
+            properties: {
+                target: {
+                    name: ImportStatement.target
+                }
+            },
+            superTypes: [Statement.$type]
+        },
+        ImportTarget: {
+            name: ImportTarget.$type,
+            properties: {
+                name: {
+                    name: ImportTarget.name
+                },
+                path: {
+                    name: ImportTarget.path
+                }
+            },
+            superTypes: []
         },
         KeyValue: {
             name: KeyValue.$type,

@@ -1,0 +1,5 @@
+import "panel1.kassa" // panel1, v1: Valve --> v2: Valve
+import "panel2.kassa" // panel2, v3: Valve --> v4: Valve
+
+// v2 is from panel1, v3 is from panel2
+v2 --> v3

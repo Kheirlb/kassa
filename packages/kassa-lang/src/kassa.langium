@@ -7,6 +7,7 @@ import "./kassa-tags"
 import "./kassa-symbols"
 import "./kassa-layout"
 import "./kassa-drawing"
+import "./kassa-reuse"
 
 entry Model:
   (statements+=Statement)*;
@@ -18,5 +19,6 @@ Statement:
 | LayoutGroup
 | LayoutElement
 | DrawingStatement
+| ImportStatement
 | CustomSymbol
 ;
