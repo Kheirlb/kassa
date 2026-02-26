@@ -1,11 +1,10 @@
 import "./kassa-base"
+import "./kassa-components"
 
-ImportStatement:
-  'import' target=ImportTarget;
+FileImport: //NEW: imports of the same file are gathered in a list
+  'import' '{' 
+    componentImports+=ComponentImport (',' componentImports+=ComponentImport)* 
+  '}' 'from' file=StringValue; 
 
-ImportTarget:
-  path=StringValue | name=Identifier;
-
-// SheetGroup:
-//   'sheet' name=Identifier '='? block=SheetBlock;
-
+ComponentImport:
+  componentId=[ComponentDeclaration] ('as' name=Identifier)?;

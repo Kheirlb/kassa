@@ -29,12 +29,14 @@ export type KassaKeywordNames =
     | ">"
     | "["
     | "]"
+    | "as"
     | "author"
     | "auto"
     | "color"
     | "date"
     | "drawing"
     | "false"
+    | "from"
     | "hardware"
     | "height"
     | "import"
@@ -156,6 +158,23 @@ export const ComponentDeclaration = {
 
 export function isComponentDeclaration(item: unknown): item is ComponentDeclaration {
     return reflection.isInstance(item, ComponentDeclaration.$type);
+}
+
+export interface ComponentImport extends langium.AstNode {
+    readonly $container: FileImport;
+    readonly $type: 'ComponentImport';
+    componentId: langium.Reference<ComponentDeclaration>;
+    name?: string;
+}
+
+export const ComponentImport = {
+    $type: 'ComponentImport',
+    componentId: 'componentId',
+    name: 'name'
+} as const;
+
+export function isComponentImport(item: unknown): item is ComponentImport {
+    return reflection.isInstance(item, ComponentImport.$type);
 }
 
 export interface ComponentNameProperty extends langium.AstNode {
@@ -532,6 +551,23 @@ export function isDrawingWidth(item: unknown): item is DrawingWidth {
     return reflection.isInstance(item, DrawingWidth.$type);
 }
 
+export interface FileImport extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'FileImport';
+    componentImports: Array<ComponentImport>;
+    file: StringValue;
+}
+
+export const FileImport = {
+    $type: 'FileImport',
+    componentImports: 'componentImports',
+    file: 'file'
+} as const;
+
+export function isFileImport(item: unknown): item is FileImport {
+    return reflection.isInstance(item, FileImport.$type);
+}
+
 export interface HexColor extends langium.AstNode {
     readonly $container: TagColorProperty;
     readonly $type: 'HexColor';
@@ -560,38 +596,6 @@ export const IdentifierValue = {
 
 export function isIdentifierValue(item: unknown): item is IdentifierValue {
     return reflection.isInstance(item, IdentifierValue.$type);
-}
-
-export interface ImportStatement extends langium.AstNode {
-    readonly $container: Model;
-    readonly $type: 'ImportStatement';
-    target: ImportTarget;
-}
-
-export const ImportStatement = {
-    $type: 'ImportStatement',
-    target: 'target'
-} as const;
-
-export function isImportStatement(item: unknown): item is ImportStatement {
-    return reflection.isInstance(item, ImportStatement.$type);
-}
-
-export interface ImportTarget extends langium.AstNode {
-    readonly $container: ImportStatement;
-    readonly $type: 'ImportTarget';
-    name?: string;
-    path?: StringValue;
-}
-
-export const ImportTarget = {
-    $type: 'ImportTarget',
-    name: 'name',
-    path: 'path'
-} as const;
-
-export function isImportTarget(item: unknown): item is ImportTarget {
-    return reflection.isInstance(item, ImportTarget.$type);
 }
 
 export interface KeyValue extends langium.AstNode {
@@ -697,11 +701,13 @@ export function isMirror(item: unknown): item is Mirror {
 
 export interface Model extends langium.AstNode {
     readonly $type: 'Model';
+    fileImports: Array<FileImport>;
     statements: Array<Statement>;
 }
 
 export const Model = {
     $type: 'Model',
+    fileImports: 'fileImports',
     statements: 'statements'
 } as const;
 
@@ -927,7 +933,7 @@ export function isStandardConnection(item: unknown): item is StandardConnection 
     return reflection.isInstance(item, StandardConnection.$type);
 }
 
-export type Statement = ComponentDeclaration | ConnectionStatement | CustomSymbol | DrawingStatement | ImportStatement | LayoutElement | LayoutGroup | TagDeclarations;
+export type Statement = ComponentDeclaration | ConnectionStatement | CustomSymbol | DrawingStatement | LayoutElement | LayoutGroup | TagDeclarations;
 
 export const Statement = {
     $type: 'Statement'
@@ -938,7 +944,7 @@ export function isStatement(item: unknown): item is Statement {
 }
 
 export interface StringValue extends langium.AstNode {
-    readonly $container: ArrayValue | ImportTarget | KeyValue | TitleBlockAuthor | TitleBlockDate | TitleBlockTitle;
+    readonly $container: ArrayValue | FileImport | KeyValue | TitleBlockAuthor | TitleBlockDate | TitleBlockTitle;
     readonly $type: 'StringValue';
     value: string;
 }
@@ -1263,6 +1269,7 @@ export type KassaAstType = {
     Color: Color
     ComponentBlock: ComponentBlock
     ComponentDeclaration: ComponentDeclaration
+    ComponentImport: ComponentImport
     ComponentNameProperty: ComponentNameProperty
     ComponentOptionsProperty: ComponentOptionsProperty
     ComponentProperty: ComponentProperty
@@ -1288,10 +1295,9 @@ export type KassaAstType = {
     DrawingStatement: DrawingStatement
     DrawingTitleBlock: DrawingTitleBlock
     DrawingWidth: DrawingWidth
+    FileImport: FileImport
     HexColor: HexColor
     IdentifierValue: IdentifierValue
-    ImportStatement: ImportStatement
-    ImportTarget: ImportTarget
     KeyValue: KeyValue
     LayoutComponent: LayoutComponent
     LayoutElement: LayoutElement
@@ -1401,6 +1407,19 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: [Statement.$type]
+        },
+        ComponentImport: {
+            name: ComponentImport.$type,
+            properties: {
+                componentId: {
+                    name: ComponentImport.componentId,
+                    referenceType: ComponentDeclaration.$type
+                },
+                name: {
+                    name: ComponentImport.name
+                }
+            },
+            superTypes: []
         },
         ComponentNameProperty: {
             name: ComponentNameProperty.$type,
@@ -1654,6 +1673,19 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [DrawingProperty.$type]
         },
+        FileImport: {
+            name: FileImport.$type,
+            properties: {
+                componentImports: {
+                    name: FileImport.componentImports,
+                    defaultValue: []
+                },
+                file: {
+                    name: FileImport.file
+                }
+            },
+            superTypes: []
+        },
         HexColor: {
             name: HexColor.$type,
             properties: {
@@ -1671,27 +1703,6 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: [LiteralValue.$type]
-        },
-        ImportStatement: {
-            name: ImportStatement.$type,
-            properties: {
-                target: {
-                    name: ImportStatement.target
-                }
-            },
-            superTypes: [Statement.$type]
-        },
-        ImportTarget: {
-            name: ImportTarget.$type,
-            properties: {
-                name: {
-                    name: ImportTarget.name
-                },
-                path: {
-                    name: ImportTarget.path
-                }
-            },
-            superTypes: []
         },
         KeyValue: {
             name: KeyValue.$type,
@@ -1765,6 +1776,10 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         Model: {
             name: Model.$type,
             properties: {
+                fileImports: {
+                    name: Model.fileImports,
+                    defaultValue: []
+                },
                 statements: {
                     name: Model.statements,
                     defaultValue: []

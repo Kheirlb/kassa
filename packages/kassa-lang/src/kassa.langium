@@ -10,7 +10,7 @@ import "./kassa-drawing"
 import "./kassa-reuse"
 
 entry Model:
-  (statements+=Statement)*;
+  (fileImports+=FileImport | statements+=Statement)*;
 
 Statement:
   ConnectionStatement
@@ -19,6 +19,5 @@ Statement:
 | LayoutGroup
 | LayoutElement
 | DrawingStatement
-| ImportStatement
 | CustomSymbol
 ;
