@@ -10,8 +10,8 @@ v0: Valve
 v1: Valve {}
 v2: Valve { name: "Name" }
 v3: Valve {
-  name: "Valve with Tag"
-  tags: [testTagRename]
+  name: "Valve with Tag",
+  tags: [testTagRename],
   hardware: [mcmaster."47865K21", default."PART 1"]
 }
 
@@ -31,6 +31,9 @@ symbol CustomValve<Valve> {
 v0 --> v1
 --> v2 [outlet]
 --> [inlet] v3
+
+// v00: Valve --> v01: Valve --> v02: Valve --> v03: Valve --> v04: Valve --> v05: Valve --> v06: Valve --> v07: Valve --> v08: Valve
+v00: Valve --> v01: Valve --> v02: Valve --> v03: Valve --> v04: Valve --> v05: Valve
 
 // Layout examples.
 layout optionalLayoutGroup {
