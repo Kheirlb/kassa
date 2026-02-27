@@ -1,7 +1,7 @@
 // Tags here.
-tag testTagRename { name: "Test Tag", color: green }
+tag testTagRename { name: "Test Tags", color: green }
 tagset testTags {
-  name: "Test Tags"
+  name: "Test Tagsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
   tags: [testTagRename]
 }
 
@@ -17,40 +17,48 @@ v3: Valve {
 
 // Custom symbol.
 symbol CustomTank<Tank> {
-  port inlet { 
+  port inlet = {
     x: 35
     y: 50
     rot: 180
   }
 }
-symbol CustomValve<Valve> {
-  
-}
+symbol CustomValve<Valve> { }
 
 // Connections below.
 v0 --> v1
 --> v2 [outlet]
 --> [inlet] v3
+// v0 --> v1
+// --> v2 [outlet]
+// --> [inlet] v3
 
+v00: Valve
+--> v01: Valve
+--> v02: Valve
+--> v03: Valve
+--> v04: Valve
+--> v05: Valve
+--> v06: Valve
+--> v07: Valve
+--> v08: Valve
 // v00: Valve --> v01: Valve --> v02: Valve --> v03: Valve --> v04: Valve --> v05: Valve --> v06: Valve --> v07: Valve --> v08: Valve
-v00: Valve --> v01: Valve --> v02: Valve --> v03: Valve --> v04: Valve --> v05: Valve
+// v00: Valve --> v01: Valve --> v02: Valve --> v03: Valve --> v04: Valve --> v05: Valve
 
 // Layout examples.
 layout optionalLayoutGroup {
-  place v0 {
+  place v0 = {
     x: 10
     y: 10
     rot: 90
     mirror
   }
-  route v1 [
+  route v1 = [
     out 100
     right 50
     auto
   ]
-  route v2 [outlet] to [inlet] v3 [
-    bend -30
-  ]
+  route (v2 [outlet] --> [inlet] v3) = [bend -30]
 }
 
 // Drawing example.
@@ -58,9 +66,9 @@ drawing optionSheetName {
   height: 8.5
   width: 11
   scale: 1.5
-	titleBlock: {
-	  title: "Example P&ID"
-	  author: "Karl Parks"
-	  date: "2026"
-	}
+  titleBlock: {
+    title: "Example P&ID"
+    author: "Karl Parks"
+    date: "2026"
+  }
 }

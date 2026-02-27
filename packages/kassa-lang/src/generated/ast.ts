@@ -19,6 +19,8 @@ export const KassaTerminals = {
 export type KassaTerminalNames = keyof typeof KassaTerminals;
 
 export type KassaKeywordNames =
+    | "("
+    | ")"
     | ","
     | "-->"
     | "->"
@@ -51,7 +53,6 @@ export type KassaKeywordNames =
     | "tagset"
     | "title"
     | "titleBlock"
-    | "to"
     | "true"
     | "width"
     | "x"
@@ -172,7 +173,7 @@ export function isComponentNameProperty(item: unknown): item is ComponentNamePro
     return reflection.isInstance(item, ComponentNameProperty.$type);
 }
 
-export type ComponentOptionsProperty = OptionsList;
+export type ComponentOptionsProperty = OptionsArray;
 
 export const ComponentOptionsProperty = {
     $type: 'ComponentOptionsProperty'
@@ -578,8 +579,23 @@ export function isKeyValue(item: unknown): item is KeyValue {
     return reflection.isInstance(item, KeyValue.$type);
 }
 
+export interface LayoutBlock extends LayoutGroup {
+    readonly $type: 'LayoutBlock';
+    layoutElements: Array<LayoutElement>;
+}
+
+export const LayoutBlock = {
+    $type: 'LayoutBlock',
+    layoutElements: 'layoutElements',
+    name: 'name'
+} as const;
+
+export function isLayoutBlock(item: unknown): item is LayoutBlock {
+    return reflection.isInstance(item, LayoutBlock.$type);
+}
+
 export interface LayoutComponent extends langium.AstNode {
-    readonly $container: LayoutGroup | Model;
+    readonly $container: LayoutBlock | Model;
     readonly $type: 'LayoutComponent';
     block: LayoutPlaceBlock;
     componentId: langium.Reference<ComponentDeclaration>;
@@ -606,15 +622,12 @@ export function isLayoutElement(item: unknown): item is LayoutElement {
 }
 
 export interface LayoutGroup extends langium.AstNode {
-    readonly $container: Model;
-    readonly $type: 'LayoutGroup';
-    layoutElements: Array<LayoutElement>;
+    readonly $type: 'LayoutBlock' | 'LayoutGroup';
     name?: string;
 }
 
 export const LayoutGroup = {
     $type: 'LayoutGroup',
-    layoutElements: 'layoutElements',
     name: 'name'
 } as const;
 
@@ -707,7 +720,7 @@ export function isObjectValue(item: unknown): item is ObjectValue {
 }
 
 export interface OptionRef extends langium.AstNode {
-    readonly $container: OptionsList;
+    readonly $container: OptionsArray;
     readonly $type: 'OptionRef';
     key: string;
     source: string;
@@ -723,19 +736,19 @@ export function isOptionRef(item: unknown): item is OptionRef {
     return reflection.isInstance(item, OptionRef.$type);
 }
 
-export interface OptionsList extends langium.AstNode {
+export interface OptionsArray extends langium.AstNode {
     readonly $container: ComponentBlock;
-    readonly $type: 'OptionsList';
+    readonly $type: 'OptionsArray';
     option: Array<OptionRef>;
 }
 
-export const OptionsList = {
-    $type: 'OptionsList',
+export const OptionsArray = {
+    $type: 'OptionsArray',
     option: 'option'
 } as const;
 
-export function isOptionsList(item: unknown): item is OptionsList {
-    return reflection.isInstance(item, OptionsList.$type);
+export function isOptionsArray(item: unknown): item is OptionsArray {
+    return reflection.isInstance(item, OptionsArray.$type);
 }
 
 export interface OptionsSource extends langium.AstNode {
@@ -818,7 +831,7 @@ export function isRouteArray(item: unknown): item is RouteArray {
 }
 
 export interface RouteBasicConnection extends langium.AstNode {
-    readonly $container: LayoutGroup | Model;
+    readonly $container: LayoutBlock | Model;
     readonly $type: 'RouteBasicConnection';
     array: RouteArray;
     fromComponentId: langium.Reference<ComponentDeclaration>;
@@ -851,7 +864,7 @@ export function isRouteConnection(item: unknown): item is RouteConnection {
 }
 
 export interface RouteNamedConnection extends langium.AstNode {
-    readonly $container: LayoutGroup | Model;
+    readonly $container: LayoutBlock | Model;
     readonly $type: 'RouteNamedConnection';
     array: RouteArray;
     componentId: langium.Reference<ComponentDeclaration>;
@@ -917,6 +930,21 @@ export const StringValue = {
 
 export function isStringValue(item: unknown): item is StringValue {
     return reflection.isInstance(item, StringValue.$type);
+}
+
+export interface TagArray extends langium.AstNode {
+    readonly $container: ComponentBlock | TagSetBlock;
+    readonly $type: 'TagArray';
+    elements: Array<TagRef>;
+}
+
+export const TagArray = {
+    $type: 'TagArray',
+    elements: 'elements'
+} as const;
+
+export function isTagArray(item: unknown): item is TagArray {
+    return reflection.isInstance(item, TagArray.$type);
 }
 
 export interface TagBlock extends langium.AstNode {
@@ -1002,7 +1030,7 @@ export function isTagProperty(item: unknown): item is TagProperty {
 }
 
 export interface TagRef extends langium.AstNode {
-    readonly $container: TagRefList;
+    readonly $container: TagArray;
     readonly $type: 'TagRef';
     ref: langium.Reference<TagDeclaration>;
 }
@@ -1014,21 +1042,6 @@ export const TagRef = {
 
 export function isTagRef(item: unknown): item is TagRef {
     return reflection.isInstance(item, TagRef.$type);
-}
-
-export interface TagRefList extends langium.AstNode {
-    readonly $container: ComponentBlock | TagSetBlock;
-    readonly $type: 'TagRefList';
-    elements: Array<TagRef>;
-}
-
-export const TagRefList = {
-    $type: 'TagRefList',
-    elements: 'elements'
-} as const;
-
-export function isTagRefList(item: unknown): item is TagRefList {
-    return reflection.isInstance(item, TagRefList.$type);
 }
 
 export interface TagSetBlock extends langium.AstNode {
@@ -1088,7 +1101,7 @@ export function isTagSetProperty(item: unknown): item is TagSetProperty {
     return reflection.isInstance(item, TagSetProperty.$type);
 }
 
-export type TagSetTagsProperty = TagRefList;
+export type TagSetTagsProperty = TagArray;
 
 export const TagSetTagsProperty = {
     $type: 'TagSetTagsProperty'
@@ -1258,6 +1271,7 @@ export type KassaAstType = {
     HexColor: HexColor
     IdentifierValue: IdentifierValue
     KeyValue: KeyValue
+    LayoutBlock: LayoutBlock
     LayoutComponent: LayoutComponent
     LayoutElement: LayoutElement
     LayoutGroup: LayoutGroup
@@ -1268,7 +1282,7 @@ export type KassaAstType = {
     NumberValue: NumberValue
     ObjectValue: ObjectValue
     OptionRef: OptionRef
-    OptionsList: OptionsList
+    OptionsArray: OptionsArray
     OptionsSource: OptionsSource
     PlaceProperty: PlaceProperty
     Port: Port
@@ -1282,6 +1296,7 @@ export type KassaAstType = {
     StandardConnection: StandardConnection
     Statement: Statement
     StringValue: StringValue
+    TagArray: TagArray
     TagBlock: TagBlock
     TagColorProperty: TagColorProperty
     TagDeclaration: TagDeclaration
@@ -1289,7 +1304,6 @@ export type KassaAstType = {
     TagNameProperty: TagNameProperty
     TagProperty: TagProperty
     TagRef: TagRef
-    TagRefList: TagRefList
     TagSetBlock: TagSetBlock
     TagSetDeclaration: TagSetDeclaration
     TagSetNameProperty: TagSetNameProperty
@@ -1649,6 +1663,19 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: []
         },
+        LayoutBlock: {
+            name: LayoutBlock.$type,
+            properties: {
+                layoutElements: {
+                    name: LayoutBlock.layoutElements,
+                    defaultValue: []
+                },
+                name: {
+                    name: LayoutBlock.name
+                }
+            },
+            superTypes: [LayoutGroup.$type]
+        },
         LayoutComponent: {
             name: LayoutComponent.$type,
             properties: {
@@ -1671,10 +1698,6 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         LayoutGroup: {
             name: LayoutGroup.$type,
             properties: {
-                layoutElements: {
-                    name: LayoutGroup.layoutElements,
-                    defaultValue: []
-                },
                 name: {
                     name: LayoutGroup.name
                 }
@@ -1747,11 +1770,11 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: []
         },
-        OptionsList: {
-            name: OptionsList.$type,
+        OptionsArray: {
+            name: OptionsArray.$type,
             properties: {
                 option: {
-                    name: OptionsList.option,
+                    name: OptionsArray.option,
                     defaultValue: []
                 }
             },
@@ -1881,6 +1904,16 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [LiteralValue.$type]
         },
+        TagArray: {
+            name: TagArray.$type,
+            properties: {
+                elements: {
+                    name: TagArray.elements,
+                    defaultValue: []
+                }
+            },
+            superTypes: [TagSetTagsProperty.$type]
+        },
         TagBlock: {
             name: TagBlock.$type,
             properties: {
@@ -1942,16 +1975,6 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: []
-        },
-        TagRefList: {
-            name: TagRefList.$type,
-            properties: {
-                elements: {
-                    name: TagRefList.elements,
-                    defaultValue: []
-                }
-            },
-            superTypes: [TagSetTagsProperty.$type]
         },
         TagSetBlock: {
             name: TagSetBlock.$type,

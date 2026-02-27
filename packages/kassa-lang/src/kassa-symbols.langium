@@ -12,7 +12,7 @@ CustomSymbolProperty:
   CystomSymbolElement;
 
 CystomSymbolElement:
-  'port' name=Identifier '='? block=DefinePortBlock;
+  'port' name=Identifier '=' block=DefinePortBlock;
 
 DefinePortBlock:
   '{' (properties+=PortProperty (','? properties+=PortProperty)*)? ','? '}';
