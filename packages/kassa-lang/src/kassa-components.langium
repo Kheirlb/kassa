@@ -20,9 +20,9 @@ OptionsSource:
   name=Identifier;
 
 ComponentOptionsProperty:
-  'hardware' ':' OptionsList;
+  'hardware' ':' OptionsArray;
 
-OptionsList:
+OptionsArray:
   '[' (option+=OptionRef (','? option+=OptionRef)*)? ','? ']';
 
 OptionRef:

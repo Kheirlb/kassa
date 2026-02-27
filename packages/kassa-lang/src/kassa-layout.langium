@@ -4,13 +4,16 @@ import "./kassa-connections"
 // ---- layout statements ----
 
 LayoutGroup:
-  'layout' name=Identifier? '='? '{' layoutElements+=LayoutElement+ '}';
+  'layout' name=Identifier? '='? LayoutBlock;
+
+LayoutBlock:
+  '{' layoutElements+=LayoutElement+ '}';
 
 LayoutElement:
   LayoutComponent | RouteConnection;
 
 LayoutComponent:
-  'place' componentId=[ComponentDeclaration] '='? block=LayoutPlaceBlock;
+  'place' componentId=[ComponentDeclaration] '=' block=LayoutPlaceBlock;
 
 LayoutPlaceBlock:
   '{' (properties+=PlaceProperty (','? properties+=PlaceProperty)*)? ','?  '}';
@@ -37,10 +40,10 @@ RouteConnection:
   RouteNamedConnection | RouteBasicConnection;
 
 RouteNamedConnection:
-  'route' componentId=[ComponentDeclaration] '='? array=RouteArray;
+  'route' componentId=[ComponentDeclaration] '=' array=RouteArray;
 
 RouteBasicConnection:
-  'route' fromComponentId=[ComponentDeclaration] outlet=Port? 'to' inlet=Port? toComponentId=[ComponentDeclaration] '='? array=RouteArray;
+  'route' '(' fromComponentId=[ComponentDeclaration] outlet=Port? '-->' inlet=Port? toComponentId=[ComponentDeclaration] ')' '=' array=RouteArray;
 
 RouteArray:
   '[' (elements+=RouteSection (','? elements+=RouteSection)*)? ','? ']';

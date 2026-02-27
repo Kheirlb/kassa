@@ -141,3 +141,5 @@ vite.config.ts.timestamp-*
 # Standard output directories
 dist
 bin
+
+examples/rocket.kassa

@@ -44,9 +44,9 @@ TagSetNameProperty:
   'name' ':' value=String;
 
 TagSetTagsProperty:
-  'tags' ':' TagRefList;
+  'tags' ':' TagArray;
 
-TagRefList:
+TagArray:
   '[' (elements+=TagRef (','? elements+=TagRef)*)? ','? ']';
 
 TagRef:
