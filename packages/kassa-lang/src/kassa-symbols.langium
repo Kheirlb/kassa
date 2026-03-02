@@ -1,15 +1,24 @@
 import "./kassa-base"
 import "./kassa-layout"
 
-// ---- custom symbol ----
-CustomSymbol:
-  'symbol' name=Identifier '<' symbolInput=Identifier '>' ('='? block=CustomSymbolBlock)?;
+// ---- symbol/component definition ----
+SymbolStatement:
+  'symbol' name=Identifier base=BaseSymbol? ('='? block=CustomSymbolBlock)?;
+
+BaseSymbol:
+  '<' symbolInput=Identifier '>';
 
 CustomSymbolBlock:
   '{' (properties+=CustomSymbolProperty (','? properties+=CustomSymbolProperty)*)? ','? '}';
 
 CustomSymbolProperty:
-  CystomSymbolElement;
+  SvgRef | LabelLocation | CystomSymbolElement;
+
+SvgRef:
+  'svg' ':' key=StringValue;
+
+LabelLocation:
+  'label' ':' location=Identifier;
 
 CystomSymbolElement:
   'port' name=Identifier '=' block=DefinePortBlock;

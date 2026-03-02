@@ -18,5 +18,5 @@ Statement:
 | LayoutGroup
 | LayoutElement
 | DrawingStatement
-| CustomSymbol
+| SymbolStatement
 ;
