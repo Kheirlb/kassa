@@ -14,6 +14,7 @@ v3: Valve {
   tags: [testTagRename],
   hardware: [mcmaster."47865K21", default."PART 1"]
 }
+cyl: Cylinder
 
 // Custom symbol.
 symbol CustomTank<Tank> {
@@ -41,7 +42,7 @@ v00: Valve
 --> v05: Valve
 --> v06: Valve
 --> v07: Valve
---> v08: Valve
+--> v08: CustomValve
 // v00: Valve --> v01: Valve --> v02: Valve --> v03: Valve --> v04: Valve --> v05: Valve --> v06: Valve --> v07: Valve --> v08: Valve
 // v00: Valve --> v01: Valve --> v02: Valve --> v03: Valve --> v04: Valve --> v05: Valve
 

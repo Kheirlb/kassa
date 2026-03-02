@@ -39,6 +39,7 @@ export type KassaKeywordNames =
     | "false"
     | "hardware"
     | "height"
+    | "label"
     | "layout"
     | "mirror"
     | "name"
@@ -47,6 +48,7 @@ export type KassaKeywordNames =
     | "rot"
     | "route"
     | "scale"
+    | "svg"
     | "symbol"
     | "tag"
     | "tags"
@@ -82,6 +84,21 @@ export type Auto = 'auto';
 
 export function isAuto(item: unknown): item is Auto {
     return item === 'auto';
+}
+
+export interface BaseSymbol extends langium.AstNode {
+    readonly $container: SymbolStatement;
+    readonly $type: 'BaseSymbol';
+    symbolInput: string;
+}
+
+export const BaseSymbol = {
+    $type: 'BaseSymbol',
+    symbolInput: 'symbolInput'
+} as const;
+
+export function isBaseSymbol(item: unknown): item is BaseSymbol {
+    return reflection.isInstance(item, BaseSymbol.$type);
 }
 
 export interface BasicColor extends langium.AstNode {
@@ -143,7 +160,7 @@ export interface ComponentDeclaration extends langium.AstNode {
     readonly $container: ConnectedComponentDefine | Model;
     readonly $type: 'ComponentDeclaration';
     name: string;
-    type: ComponentType;
+    type: langium.Reference<SymbolStatement>;
     value?: ComponentBlock;
 }
 
@@ -191,21 +208,6 @@ export const ComponentProperty = {
 
 export function isComponentProperty(item: unknown): item is ComponentProperty {
     return reflection.isInstance(item, ComponentProperty.$type);
-}
-
-export interface ComponentType extends langium.AstNode {
-    readonly $container: ComponentDeclaration;
-    readonly $type: 'ComponentType';
-    name: string;
-}
-
-export const ComponentType = {
-    $type: 'ComponentType',
-    name: 'name'
-} as const;
-
-export function isComponentType(item: unknown): item is ComponentType {
-    return reflection.isInstance(item, ComponentType.$type);
 }
 
 export interface ConnectedComponent extends langium.AstNode {
@@ -320,27 +322,8 @@ export function isConnectionStatement(item: unknown): item is ConnectionStatemen
     return reflection.isInstance(item, ConnectionStatement.$type);
 }
 
-export interface CustomSymbol extends langium.AstNode {
-    readonly $container: Model;
-    readonly $type: 'CustomSymbol';
-    block?: CustomSymbolBlock;
-    name: string;
-    symbolInput: string;
-}
-
-export const CustomSymbol = {
-    $type: 'CustomSymbol',
-    block: 'block',
-    name: 'name',
-    symbolInput: 'symbolInput'
-} as const;
-
-export function isCustomSymbol(item: unknown): item is CustomSymbol {
-    return reflection.isInstance(item, CustomSymbol.$type);
-}
-
 export interface CustomSymbolBlock extends langium.AstNode {
-    readonly $container: CustomSymbol;
+    readonly $container: SymbolStatement;
     readonly $type: 'CustomSymbolBlock';
     properties: Array<CustomSymbolProperty>;
 }
@@ -354,7 +337,7 @@ export function isCustomSymbolBlock(item: unknown): item is CustomSymbolBlock {
     return reflection.isInstance(item, CustomSymbolBlock.$type);
 }
 
-export type CustomSymbolProperty = CystomSymbolElement;
+export type CustomSymbolProperty = CystomSymbolElement | LabelLocation | SvgRef;
 
 export const CustomSymbolProperty = {
     $type: 'CustomSymbolProperty'
@@ -577,6 +560,21 @@ export const KeyValue = {
 
 export function isKeyValue(item: unknown): item is KeyValue {
     return reflection.isInstance(item, KeyValue.$type);
+}
+
+export interface LabelLocation extends langium.AstNode {
+    readonly $container: CustomSymbolBlock;
+    readonly $type: 'LabelLocation';
+    location: string;
+}
+
+export const LabelLocation = {
+    $type: 'LabelLocation',
+    location: 'location'
+} as const;
+
+export function isLabelLocation(item: unknown): item is LabelLocation {
+    return reflection.isInstance(item, LabelLocation.$type);
 }
 
 export interface LayoutBlock extends LayoutGroup {
@@ -907,7 +905,7 @@ export function isStandardConnection(item: unknown): item is StandardConnection 
     return reflection.isInstance(item, StandardConnection.$type);
 }
 
-export type Statement = ComponentDeclaration | ConnectionStatement | CustomSymbol | DrawingStatement | LayoutElement | LayoutGroup | TagDeclarations;
+export type Statement = ComponentDeclaration | ConnectionStatement | DrawingStatement | LayoutElement | LayoutGroup | SymbolStatement | TagDeclarations;
 
 export const Statement = {
     $type: 'Statement'
@@ -918,7 +916,7 @@ export function isStatement(item: unknown): item is Statement {
 }
 
 export interface StringValue extends langium.AstNode {
-    readonly $container: ArrayValue | KeyValue | TitleBlockAuthor | TitleBlockDate | TitleBlockTitle;
+    readonly $container: ArrayValue | KeyValue | SvgRef | TitleBlockAuthor | TitleBlockDate | TitleBlockTitle;
     readonly $type: 'StringValue';
     value: string;
 }
@@ -930,6 +928,40 @@ export const StringValue = {
 
 export function isStringValue(item: unknown): item is StringValue {
     return reflection.isInstance(item, StringValue.$type);
+}
+
+export interface SvgRef extends langium.AstNode {
+    readonly $container: CustomSymbolBlock;
+    readonly $type: 'SvgRef';
+    key: StringValue;
+}
+
+export const SvgRef = {
+    $type: 'SvgRef',
+    key: 'key'
+} as const;
+
+export function isSvgRef(item: unknown): item is SvgRef {
+    return reflection.isInstance(item, SvgRef.$type);
+}
+
+export interface SymbolStatement extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'SymbolStatement';
+    base?: BaseSymbol;
+    block?: CustomSymbolBlock;
+    name: string;
+}
+
+export const SymbolStatement = {
+    $type: 'SymbolStatement',
+    base: 'base',
+    block: 'block',
+    name: 'name'
+} as const;
+
+export function isSymbolStatement(item: unknown): item is SymbolStatement {
+    return reflection.isInstance(item, SymbolStatement.$type);
 }
 
 export interface TagArray extends langium.AstNode {
@@ -1238,6 +1270,7 @@ export function isZPos(item: unknown): item is ZPos {
 
 export type KassaAstType = {
     ArrayValue: ArrayValue
+    BaseSymbol: BaseSymbol
     BasicColor: BasicColor
     BooleanValue: BooleanValue
     Color: Color
@@ -1246,7 +1279,6 @@ export type KassaAstType = {
     ComponentNameProperty: ComponentNameProperty
     ComponentOptionsProperty: ComponentOptionsProperty
     ComponentProperty: ComponentProperty
-    ComponentType: ComponentType
     ConnectedComponent: ConnectedComponent
     ConnectedComponentDefine: ConnectedComponentDefine
     ConnectedComponentRef: ConnectedComponentRef
@@ -1254,7 +1286,6 @@ export type KassaAstType = {
     ConnectionKind: ConnectionKind
     ConnectionStart: ConnectionStart
     ConnectionStatement: ConnectionStatement
-    CustomSymbol: CustomSymbol
     CustomSymbolBlock: CustomSymbolBlock
     CustomSymbolProperty: CustomSymbolProperty
     CystomSymbolElement: CystomSymbolElement
@@ -1271,6 +1302,7 @@ export type KassaAstType = {
     HexColor: HexColor
     IdentifierValue: IdentifierValue
     KeyValue: KeyValue
+    LabelLocation: LabelLocation
     LayoutBlock: LayoutBlock
     LayoutComponent: LayoutComponent
     LayoutElement: LayoutElement
@@ -1296,6 +1328,8 @@ export type KassaAstType = {
     StandardConnection: StandardConnection
     Statement: Statement
     StringValue: StringValue
+    SvgRef: SvgRef
+    SymbolStatement: SymbolStatement
     TagArray: TagArray
     TagBlock: TagBlock
     TagColorProperty: TagColorProperty
@@ -1331,6 +1365,15 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: [Value.$type]
+        },
+        BaseSymbol: {
+            name: BaseSymbol.$type,
+            properties: {
+                symbolInput: {
+                    name: BaseSymbol.symbolInput
+                }
+            },
+            superTypes: []
         },
         BasicColor: {
             name: BasicColor.$type,
@@ -1373,7 +1416,8 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                     name: ComponentDeclaration.name
                 },
                 type: {
-                    name: ComponentDeclaration.type
+                    name: ComponentDeclaration.type,
+                    referenceType: SymbolStatement.$type
                 },
                 value: {
                     name: ComponentDeclaration.value
@@ -1399,15 +1443,6 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         ComponentProperty: {
             name: ComponentProperty.$type,
             properties: {
-            },
-            superTypes: []
-        },
-        ComponentType: {
-            name: ComponentType.$type,
-            properties: {
-                name: {
-                    name: ComponentType.name
-                }
             },
             superTypes: []
         },
@@ -1489,21 +1524,6 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         ConnectionStatement: {
             name: ConnectionStatement.$type,
             properties: {
-            },
-            superTypes: [Statement.$type]
-        },
-        CustomSymbol: {
-            name: CustomSymbol.$type,
-            properties: {
-                block: {
-                    name: CustomSymbol.block
-                },
-                name: {
-                    name: CustomSymbol.name
-                },
-                symbolInput: {
-                    name: CustomSymbol.symbolInput
-                }
             },
             superTypes: [Statement.$type]
         },
@@ -1662,6 +1682,15 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: []
+        },
+        LabelLocation: {
+            name: LabelLocation.$type,
+            properties: {
+                location: {
+                    name: LabelLocation.location
+                }
+            },
+            superTypes: [CustomSymbolProperty.$type]
         },
         LayoutBlock: {
             name: LayoutBlock.$type,
@@ -1903,6 +1932,30 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: [LiteralValue.$type]
+        },
+        SvgRef: {
+            name: SvgRef.$type,
+            properties: {
+                key: {
+                    name: SvgRef.key
+                }
+            },
+            superTypes: [CustomSymbolProperty.$type]
+        },
+        SymbolStatement: {
+            name: SymbolStatement.$type,
+            properties: {
+                base: {
+                    name: SymbolStatement.base
+                },
+                block: {
+                    name: SymbolStatement.block
+                },
+                name: {
+                    name: SymbolStatement.name
+                }
+            },
+            superTypes: [Statement.$type]
         },
         TagArray: {
             name: TagArray.$type,

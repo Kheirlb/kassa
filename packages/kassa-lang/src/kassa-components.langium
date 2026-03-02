@@ -1,11 +1,9 @@
 import "./kassa-base"
 import "./kassa-tags"
+import "./kassa-symbols"
 
 ComponentDeclaration:
-  name=Identifier ':' type=ComponentType ('='? value=ComponentBlock)?;
-
-ComponentType:
-  name=Identifier;
+  name=Identifier ':' type=[SymbolStatement] ('='? value=ComponentBlock)?;
 
 ComponentBlock:
   '{' (properties+=ComponentProperty (','? properties+=ComponentProperty)*)? ','? '}';

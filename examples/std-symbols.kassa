@@ -1,0 +1,22 @@
+// ---- 2d symbols (components) ---
+symbol Valve = {
+  svg: "valve"
+  label: bottom_mid
+  port inlet  = { x: 30 y: 60 rot: 180 }
+  port outlet = { x: 90 y: 60 rot: 0 }
+}
+
+symbol MotorValve <ValveSymbol> = {
+  svg: "valve-m"
+}
+
+symbol Cylinder = {
+  svg: "cylinder"
+  label: bottom
+  port p1 = { x: 60, y: 20, rot: 0 }
+}
+
+// TODO: ---- separate symbols from components ---
+// component Valve = {
+//   symbol: ValveSymbol
+// }
