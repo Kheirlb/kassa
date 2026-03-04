@@ -16,7 +16,7 @@ export class KassaFormatter extends AbstractFormatter {
             ast.isLayoutBlock(node) ||
             ast.isLayoutPlaceBlock(node) ||
             ast.isDefinePortBlock(node) ||
-            ast.isCustomSymbolBlock(node) ||
+            ast.isSymbolBlock(node) ||
             ast.isDrawingTitleBlock(node)
         )) {
             const formatter = this.getNodeFormatter(node);

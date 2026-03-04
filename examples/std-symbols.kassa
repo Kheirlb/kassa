@@ -6,7 +6,7 @@ symbol Valve = {
   port outlet = { x: 90 y: 60 rot: 0 }
 }
 
-symbol MotorValve <ValveSymbol> = {
+symbol MotorValve <Valve> = {
   svg: "valve-m"
 }
 
@@ -14,6 +14,10 @@ symbol Cylinder = {
   svg: "cylinder"
   label: bottom
   port p1 = { x: 60, y: 20, rot: 0 }
+}
+
+symbol Tank = {
+  svg: "tank"
 }
 
 // TODO: ---- separate symbols from components ---

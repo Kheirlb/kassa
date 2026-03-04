@@ -1,7 +1,6 @@
 import "./kassa-base"
 import "./kassa-components"
 import "./kassa-connections"
-// ---- layout statements ----
 
 LayoutGroup:
   'layout' name=Identifier? '='? LayoutBlock;
@@ -43,7 +42,7 @@ RouteNamedConnection:
   'route' componentId=[ComponentDeclaration] '=' array=RouteArray;
 
 RouteBasicConnection:
-  'route' '(' fromComponentId=[ComponentDeclaration] outlet=Port? '-->' inlet=Port? toComponentId=[ComponentDeclaration] ')' '=' array=RouteArray;
+  'route' '(' fromComponentId=[ComponentDeclaration] outlet=PortRef? '-->' inlet=PortRef? toComponentId=[ComponentDeclaration] ')' '=' array=RouteArray;
 
 RouteArray:
   '[' (elements+=RouteSection (','? elements+=RouteSection)*)? ','? ']';

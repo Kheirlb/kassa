@@ -3,16 +3,16 @@ import "./kassa-layout"
 
 // ---- symbol/component definition ----
 SymbolStatement:
-  'symbol' name=Identifier base=BaseSymbol? ('='? block=CustomSymbolBlock)?;
+  'symbol' name=Identifier base=BaseSymbol? ('='? block=SymbolBlock)?;
 
 BaseSymbol:
-  '<' symbolInput=Identifier '>';
+  '<' symbolInput=[SymbolStatement] '>';
 
-CustomSymbolBlock:
-  '{' (properties+=CustomSymbolProperty (','? properties+=CustomSymbolProperty)*)? ','? '}';
+SymbolBlock:
+  '{' (properties+=SymbolProperty (','? properties+=SymbolProperty)*)? ','? '}';
 
-CustomSymbolProperty:
-  SvgRef | LabelLocation | CystomSymbolElement;
+SymbolProperty:
+  SvgRef | LabelLocation | PortElement;
 
 SvgRef:
   'svg' ':' key=StringValue;
@@ -20,7 +20,7 @@ SvgRef:
 LabelLocation:
   'label' ':' location=Identifier;
 
-CystomSymbolElement:
+PortElement:
   'port' name=Identifier '=' block=DefinePortBlock;
 
 DefinePortBlock:
