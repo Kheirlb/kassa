@@ -89,7 +89,7 @@ export function isAuto(item: unknown): item is Auto {
 export interface BaseSymbol extends langium.AstNode {
     readonly $container: SymbolStatement;
     readonly $type: 'BaseSymbol';
-    symbolInput: string;
+    symbolInput: langium.Reference<SymbolStatement>;
 }
 
 export const BaseSymbol = {
@@ -159,15 +159,15 @@ export function isComponentBlock(item: unknown): item is ComponentBlock {
 export interface ComponentDeclaration extends langium.AstNode {
     readonly $container: ConnectedComponentDefine | Model;
     readonly $type: 'ComponentDeclaration';
+    componentType: langium.Reference<SymbolStatement>;
     name: string;
-    type: langium.Reference<SymbolStatement>;
     value?: ComponentBlock;
 }
 
 export const ComponentDeclaration = {
     $type: 'ComponentDeclaration',
+    componentType: 'componentType',
     name: 'name',
-    type: 'type',
     value: 'value'
 } as const;
 
@@ -211,7 +211,7 @@ export function isComponentProperty(item: unknown): item is ComponentProperty {
 }
 
 export interface ConnectedComponent extends langium.AstNode {
-    readonly $container: ConnectionStart | DirectConnection | StandardConnection;
+    readonly $container: ConnectionStatement | DirectConnection | StandardConnection;
     readonly $type: 'ConnectedComponent';
     define?: ConnectedComponentDefine;
     ref?: ConnectedComponentRef;
@@ -231,8 +231,8 @@ export interface ConnectedComponentDefine extends langium.AstNode {
     readonly $container: ConnectedComponent;
     readonly $type: 'ConnectedComponentDefine';
     componentId: ComponentDeclaration;
-    inlet?: Port;
-    outlet?: Port;
+    inlet?: PortRef;
+    outlet?: PortRef;
 }
 
 export const ConnectedComponentDefine = {
@@ -249,14 +249,14 @@ export function isConnectedComponentDefine(item: unknown): item is ConnectedComp
 export interface ConnectedComponentRef extends langium.AstNode {
     readonly $container: ConnectedComponent;
     readonly $type: 'ConnectedComponentRef';
-    componentId: langium.Reference<ComponentDeclaration>;
-    inlet?: Port;
-    outlet?: Port;
+    componentIdRef: langium.Reference<ComponentDeclaration>;
+    inlet?: PortRef;
+    outlet?: PortRef;
 }
 
 export const ConnectedComponentRef = {
     $type: 'ConnectedComponentRef',
-    componentId: 'componentId',
+    componentIdRef: 'componentIdRef',
     inlet: 'inlet',
     outlet: 'outlet'
 } as const;
@@ -265,107 +265,42 @@ export function isConnectedComponentRef(item: unknown): item is ConnectedCompone
     return reflection.isInstance(item, ConnectedComponentRef.$type);
 }
 
-export interface ConnectionContinue extends langium.AstNode {
-    readonly $container: Model;
-    readonly $type: 'ConnectionContinue';
-    connections: Array<ConnectionKind>;
-}
-
-export const ConnectionContinue = {
-    $type: 'ConnectionContinue',
-    connections: 'connections'
-} as const;
-
-export function isConnectionContinue(item: unknown): item is ConnectionContinue {
-    return reflection.isInstance(item, ConnectionContinue.$type);
-}
-
 export interface ConnectionKind extends langium.AstNode {
-    readonly $container: ConnectionContinue | ConnectionStart;
+    readonly $container: ConnectionStatement;
     readonly $type: 'ConnectionKind';
-    kind: DirectConnection | StandardConnection;
+    direct?: DirectConnection;
+    standard?: StandardConnection;
 }
 
 export const ConnectionKind = {
     $type: 'ConnectionKind',
-    kind: 'kind'
+    direct: 'direct',
+    standard: 'standard'
 } as const;
 
 export function isConnectionKind(item: unknown): item is ConnectionKind {
     return reflection.isInstance(item, ConnectionKind.$type);
 }
 
-export interface ConnectionStart extends langium.AstNode {
+export interface ConnectionStatement extends langium.AstNode {
     readonly $container: Model;
-    readonly $type: 'ConnectionStart';
+    readonly $type: 'ConnectionStatement';
     connections: Array<ConnectionKind>;
     start: ConnectedComponent;
 }
 
-export const ConnectionStart = {
-    $type: 'ConnectionStart',
+export const ConnectionStatement = {
+    $type: 'ConnectionStatement',
     connections: 'connections',
     start: 'start'
-} as const;
-
-export function isConnectionStart(item: unknown): item is ConnectionStart {
-    return reflection.isInstance(item, ConnectionStart.$type);
-}
-
-export type ConnectionStatement = ConnectionContinue | ConnectionStart;
-
-export const ConnectionStatement = {
-    $type: 'ConnectionStatement'
 } as const;
 
 export function isConnectionStatement(item: unknown): item is ConnectionStatement {
     return reflection.isInstance(item, ConnectionStatement.$type);
 }
 
-export interface CustomSymbolBlock extends langium.AstNode {
-    readonly $container: SymbolStatement;
-    readonly $type: 'CustomSymbolBlock';
-    properties: Array<CustomSymbolProperty>;
-}
-
-export const CustomSymbolBlock = {
-    $type: 'CustomSymbolBlock',
-    properties: 'properties'
-} as const;
-
-export function isCustomSymbolBlock(item: unknown): item is CustomSymbolBlock {
-    return reflection.isInstance(item, CustomSymbolBlock.$type);
-}
-
-export type CustomSymbolProperty = CystomSymbolElement | LabelLocation | SvgRef;
-
-export const CustomSymbolProperty = {
-    $type: 'CustomSymbolProperty'
-} as const;
-
-export function isCustomSymbolProperty(item: unknown): item is CustomSymbolProperty {
-    return reflection.isInstance(item, CustomSymbolProperty.$type);
-}
-
-export interface CystomSymbolElement extends langium.AstNode {
-    readonly $container: CustomSymbolBlock;
-    readonly $type: 'CystomSymbolElement';
-    block: DefinePortBlock;
-    name: string;
-}
-
-export const CystomSymbolElement = {
-    $type: 'CystomSymbolElement',
-    block: 'block',
-    name: 'name'
-} as const;
-
-export function isCystomSymbolElement(item: unknown): item is CystomSymbolElement {
-    return reflection.isInstance(item, CystomSymbolElement.$type);
-}
-
 export interface DefinePortBlock extends langium.AstNode {
-    readonly $container: CystomSymbolElement;
+    readonly $container: PortElement;
     readonly $type: 'DefinePortBlock';
     properties: Array<PortProperty>;
 }
@@ -563,7 +498,7 @@ export function isKeyValue(item: unknown): item is KeyValue {
 }
 
 export interface LabelLocation extends langium.AstNode {
-    readonly $container: CustomSymbolBlock;
+    readonly $container: SymbolBlock;
     readonly $type: 'LabelLocation';
     location: string;
 }
@@ -773,19 +708,21 @@ export function isPlaceProperty(item: unknown): item is PlaceProperty {
     return reflection.isInstance(item, PlaceProperty.$type);
 }
 
-export interface Port extends langium.AstNode {
-    readonly $container: ConnectedComponentDefine | ConnectedComponentRef | RouteBasicConnection;
-    readonly $type: 'Port';
-    portName: string;
+export interface PortElement extends langium.AstNode {
+    readonly $container: SymbolBlock;
+    readonly $type: 'PortElement';
+    block: DefinePortBlock;
+    name: string;
 }
 
-export const Port = {
-    $type: 'Port',
-    portName: 'portName'
+export const PortElement = {
+    $type: 'PortElement',
+    block: 'block',
+    name: 'name'
 } as const;
 
-export function isPort(item: unknown): item is Port {
-    return reflection.isInstance(item, Port.$type);
+export function isPortElement(item: unknown): item is PortElement {
+    return reflection.isInstance(item, PortElement.$type);
 }
 
 export type PortProperty = Rot | XPos | YPos;
@@ -796,6 +733,21 @@ export const PortProperty = {
 
 export function isPortProperty(item: unknown): item is PortProperty {
     return reflection.isInstance(item, PortProperty.$type);
+}
+
+export interface PortRef extends langium.AstNode {
+    readonly $container: ConnectedComponentDefine | ConnectedComponentRef | RouteBasicConnection;
+    readonly $type: 'PortRef';
+    portName: langium.Reference<PortElement>;
+}
+
+export const PortRef = {
+    $type: 'PortRef',
+    portName: 'portName'
+} as const;
+
+export function isPortRef(item: unknown): item is PortRef {
+    return reflection.isInstance(item, PortRef.$type);
 }
 
 export interface Rot extends langium.AstNode {
@@ -833,8 +785,8 @@ export interface RouteBasicConnection extends langium.AstNode {
     readonly $type: 'RouteBasicConnection';
     array: RouteArray;
     fromComponentId: langium.Reference<ComponentDeclaration>;
-    inlet?: Port;
-    outlet?: Port;
+    inlet?: PortRef;
+    outlet?: PortRef;
     toComponentId: langium.Reference<ComponentDeclaration>;
 }
 
@@ -931,7 +883,7 @@ export function isStringValue(item: unknown): item is StringValue {
 }
 
 export interface SvgRef extends langium.AstNode {
-    readonly $container: CustomSymbolBlock;
+    readonly $container: SymbolBlock;
     readonly $type: 'SvgRef';
     key: StringValue;
 }
@@ -945,11 +897,36 @@ export function isSvgRef(item: unknown): item is SvgRef {
     return reflection.isInstance(item, SvgRef.$type);
 }
 
+export interface SymbolBlock extends langium.AstNode {
+    readonly $container: SymbolStatement;
+    readonly $type: 'SymbolBlock';
+    properties: Array<SymbolProperty>;
+}
+
+export const SymbolBlock = {
+    $type: 'SymbolBlock',
+    properties: 'properties'
+} as const;
+
+export function isSymbolBlock(item: unknown): item is SymbolBlock {
+    return reflection.isInstance(item, SymbolBlock.$type);
+}
+
+export type SymbolProperty = LabelLocation | PortElement | SvgRef;
+
+export const SymbolProperty = {
+    $type: 'SymbolProperty'
+} as const;
+
+export function isSymbolProperty(item: unknown): item is SymbolProperty {
+    return reflection.isInstance(item, SymbolProperty.$type);
+}
+
 export interface SymbolStatement extends langium.AstNode {
     readonly $container: Model;
     readonly $type: 'SymbolStatement';
     base?: BaseSymbol;
-    block?: CustomSymbolBlock;
+    block?: SymbolBlock;
     name: string;
 }
 
@@ -1282,13 +1259,8 @@ export type KassaAstType = {
     ConnectedComponent: ConnectedComponent
     ConnectedComponentDefine: ConnectedComponentDefine
     ConnectedComponentRef: ConnectedComponentRef
-    ConnectionContinue: ConnectionContinue
     ConnectionKind: ConnectionKind
-    ConnectionStart: ConnectionStart
     ConnectionStatement: ConnectionStatement
-    CustomSymbolBlock: CustomSymbolBlock
-    CustomSymbolProperty: CustomSymbolProperty
-    CystomSymbolElement: CystomSymbolElement
     DefinePortBlock: DefinePortBlock
     DirectConnection: DirectConnection
     Direction: Direction
@@ -1317,8 +1289,9 @@ export type KassaAstType = {
     OptionsArray: OptionsArray
     OptionsSource: OptionsSource
     PlaceProperty: PlaceProperty
-    Port: Port
+    PortElement: PortElement
     PortProperty: PortProperty
+    PortRef: PortRef
     Rot: Rot
     RouteArray: RouteArray
     RouteBasicConnection: RouteBasicConnection
@@ -1329,6 +1302,8 @@ export type KassaAstType = {
     Statement: Statement
     StringValue: StringValue
     SvgRef: SvgRef
+    SymbolBlock: SymbolBlock
+    SymbolProperty: SymbolProperty
     SymbolStatement: SymbolStatement
     TagArray: TagArray
     TagBlock: TagBlock
@@ -1370,7 +1345,8 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             name: BaseSymbol.$type,
             properties: {
                 symbolInput: {
-                    name: BaseSymbol.symbolInput
+                    name: BaseSymbol.symbolInput,
+                    referenceType: SymbolStatement.$type
                 }
             },
             superTypes: []
@@ -1412,12 +1388,12 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         ComponentDeclaration: {
             name: ComponentDeclaration.$type,
             properties: {
+                componentType: {
+                    name: ComponentDeclaration.componentType,
+                    referenceType: SymbolStatement.$type
+                },
                 name: {
                     name: ComponentDeclaration.name
-                },
-                type: {
-                    name: ComponentDeclaration.type,
-                    referenceType: SymbolStatement.$type
                 },
                 value: {
                     name: ComponentDeclaration.value
@@ -1476,8 +1452,8 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         ConnectedComponentRef: {
             name: ConnectedComponentRef.$type,
             properties: {
-                componentId: {
-                    name: ConnectedComponentRef.componentId,
+                componentIdRef: {
+                    name: ConnectedComponentRef.componentIdRef,
                     referenceType: ComponentDeclaration.$type
                 },
                 inlet: {
@@ -1489,71 +1465,30 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: []
         },
-        ConnectionContinue: {
-            name: ConnectionContinue.$type,
-            properties: {
-                connections: {
-                    name: ConnectionContinue.connections,
-                    defaultValue: []
-                }
-            },
-            superTypes: [ConnectionStatement.$type]
-        },
         ConnectionKind: {
             name: ConnectionKind.$type,
             properties: {
-                kind: {
-                    name: ConnectionKind.kind
+                direct: {
+                    name: ConnectionKind.direct
+                },
+                standard: {
+                    name: ConnectionKind.standard
                 }
             },
             superTypes: []
-        },
-        ConnectionStart: {
-            name: ConnectionStart.$type,
-            properties: {
-                connections: {
-                    name: ConnectionStart.connections,
-                    defaultValue: []
-                },
-                start: {
-                    name: ConnectionStart.start
-                }
-            },
-            superTypes: [ConnectionStatement.$type]
         },
         ConnectionStatement: {
             name: ConnectionStatement.$type,
             properties: {
+                connections: {
+                    name: ConnectionStatement.connections,
+                    defaultValue: []
+                },
+                start: {
+                    name: ConnectionStatement.start
+                }
             },
             superTypes: [Statement.$type]
-        },
-        CustomSymbolBlock: {
-            name: CustomSymbolBlock.$type,
-            properties: {
-                properties: {
-                    name: CustomSymbolBlock.properties,
-                    defaultValue: []
-                }
-            },
-            superTypes: []
-        },
-        CustomSymbolProperty: {
-            name: CustomSymbolProperty.$type,
-            properties: {
-            },
-            superTypes: []
-        },
-        CystomSymbolElement: {
-            name: CystomSymbolElement.$type,
-            properties: {
-                block: {
-                    name: CystomSymbolElement.block
-                },
-                name: {
-                    name: CystomSymbolElement.name
-                }
-            },
-            superTypes: [CustomSymbolProperty.$type]
         },
         DefinePortBlock: {
             name: DefinePortBlock.$type,
@@ -1690,7 +1625,7 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                     name: LabelLocation.location
                 }
             },
-            superTypes: [CustomSymbolProperty.$type]
+            superTypes: [SymbolProperty.$type]
         },
         LayoutBlock: {
             name: LayoutBlock.$type,
@@ -1824,18 +1759,31 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: []
         },
-        Port: {
-            name: Port.$type,
+        PortElement: {
+            name: PortElement.$type,
             properties: {
-                portName: {
-                    name: Port.portName
+                block: {
+                    name: PortElement.block
+                },
+                name: {
+                    name: PortElement.name
                 }
             },
-            superTypes: []
+            superTypes: [SymbolProperty.$type]
         },
         PortProperty: {
             name: PortProperty.$type,
             properties: {
+            },
+            superTypes: []
+        },
+        PortRef: {
+            name: PortRef.$type,
+            properties: {
+                portName: {
+                    name: PortRef.portName,
+                    referenceType: PortElement.$type
+                }
             },
             superTypes: []
         },
@@ -1940,7 +1888,23 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                     name: SvgRef.key
                 }
             },
-            superTypes: [CustomSymbolProperty.$type]
+            superTypes: [SymbolProperty.$type]
+        },
+        SymbolBlock: {
+            name: SymbolBlock.$type,
+            properties: {
+                properties: {
+                    name: SymbolBlock.properties,
+                    defaultValue: []
+                }
+            },
+            superTypes: []
+        },
+        SymbolProperty: {
+            name: SymbolProperty.$type,
+            properties: {
+            },
+            superTypes: []
         },
         SymbolStatement: {
             name: SymbolStatement.$type,

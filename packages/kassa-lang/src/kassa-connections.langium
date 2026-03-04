@@ -1,16 +1,10 @@
 import "./kassa-components"
 
 ConnectionStatement:
-  ConnectionStart | ConnectionContinue;
-
-ConnectionStart:
   start=ConnectedComponent connections+=ConnectionKind+;
 
-ConnectionContinue:
-  connections+=ConnectionKind+; // starts with an operator implicitly
-
 ConnectionKind:
-  (kind=StandardConnection | kind=DirectConnection);
+  standard=StandardConnection | direct=DirectConnection;
 
 StandardConnection:
   operator='-->' target=ConnectedComponent;
@@ -22,10 +16,10 @@ ConnectedComponent:
   ref=ConnectedComponentRef | define=ConnectedComponentDefine;
 
 ConnectedComponentRef:
-  inlet=Port? componentId=[ComponentDeclaration] outlet=Port?;
+  inlet=PortRef? componentIdRef=[ComponentDeclaration] outlet=PortRef?;
 
 ConnectedComponentDefine:
-  inlet=Port? componentId=ComponentDeclaration outlet=Port?;
+  inlet=PortRef? componentId=ComponentDeclaration outlet=PortRef?;
 
-Port:
-  '[' portName=Identifier ']';
+PortRef:
+  '[' portName=[PortElement] ']';

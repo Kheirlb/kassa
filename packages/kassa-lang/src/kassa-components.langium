@@ -3,7 +3,7 @@ import "./kassa-tags"
 import "./kassa-symbols"
 
 ComponentDeclaration:
-  name=Identifier ':' type=[SymbolStatement] ('='? value=ComponentBlock)?;
+  name=Identifier ':' componentType=[SymbolStatement] ('='? value=ComponentBlock)?;
 
 ComponentBlock:
   '{' (properties+=ComponentProperty (','? properties+=ComponentProperty)*)? ','? '}';
