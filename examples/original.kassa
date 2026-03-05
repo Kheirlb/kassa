@@ -1,5 +1,5 @@
-// v1: Valve
-// v3: Valve
-// v1 [outlet] --> [inlet] v2: Valve
-// place v1 = { x: 100, y: 100, rot: 0 }
-// place v2 = {}
+v1: Valve
+v3: Valve
+v1 [outlet] --> [inlet] v2: Valve
+place v1 = { x: 100, y: 100, rot: 0 }
+place v2 = {}
