@@ -1,4 +1,4 @@
 // Declare and define in place.
-v0: Valve
-v1: Valve
-v0 [outlet] --> [inlet] v1 --> v2: Valve --> v0
+v00: Valve
+// v10: Valve
+v00 --> v10: Valve
