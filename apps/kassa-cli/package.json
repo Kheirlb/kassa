@@ -8,8 +8,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -b tsconfig.json",
-    "start": "pnpm build && node dist/src/index.js",
-    "kassa": "node dist/src/index.js"
+    "start": "pnpm build && node dist/index.js",
+    "kassa": "node dist/index.js"
   },
   "keywords": [],
   "author": "",

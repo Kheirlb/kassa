@@ -4,7 +4,7 @@ Kassa is a schematic editor for plumbing and instrumentation diagrams (P&amp;ID)
 https://karlparks.com/kassa/
 
 # User Flows
-Basic designer flow:
+Basic local designer flow:
 ```mermaid
 flowchart LR
     Install --> Edit --> Run --> Export
@@ -24,7 +24,7 @@ Expecations:
 
 ## Everyday
 - `pnpm build`
-- `kassa check ./examples/hello.kassa`
+- `pnpm kassa` (eventually) `kassa check ./examples/hello.kassa`
 
 ## Flowchart
 Package organization scaffold status for MVP.
@@ -38,7 +38,7 @@ flowchart BT
     layout[kassa-layout<br/>Generates Layout]
     render[kassa-renderer<br/>SVG renderer]
     cli[kassa-cli<br/>Export json/svg/etc]
-    vscode[kassa-vscode-ext VSCode Extension]
+    vscode[kassa-vscode-ext<br/>VSCode Extension]
 
     core --> lang
     lang --> compiler
