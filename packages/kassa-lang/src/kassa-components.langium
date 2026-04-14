@@ -2,22 +2,54 @@ import "./kassa-base"
 import "./kassa-tags"
 import "./kassa-symbols"
 
-ComponentDeclaration:
-  name=Identifier ':' componentType=[SymbolStatement] ('='? value=ComponentBlock)?;
+ComponentStatement:
+  'component' name=Identifier base=BaseComponent? ('='? block=ComponentBlock)?;
+
+BaseComponent:
+  '<' componentInput=[ComponentStatement] '>';
 
 ComponentBlock:
   '{' (properties+=ComponentProperty (','? properties+=ComponentProperty)*)? ','? '}';
 
 ComponentProperty:
-  ComponentNameProperty | TagSetTagsProperty | ComponentOptionsProperty;
+  SymbolRef | PortElement;
 
-ComponentNameProperty:
+SymbolRef:
+  'symbol' ':' symbolRef=[SymbolStatement];
+
+PortElement:
+  'port' name=Identifier '=' block=DefinePortBlock;
+
+DefinePortBlock:
+  '{' (properties+=PortProperty (','? properties+=PortProperty)*)? ','? '}';
+
+PortProperty:
+  PortInterface | Limits;
+
+PortInterface:
+  'interface' ':' interface=InterfaceSpec;
+
+// --- InterfaceSpec
+InterfaceSpec:
+  NptInterface | OrbInterface | SwagelokInterface | FlangeInterface | RefInterface;
+
+RefInterface:
+  ref=[InterfaceDeclaration];
+
+// --- Instance ---
+ComponentInstanceDeclaration:
+  name=Identifier ':' componentType=[SymbolStatement] ('='? value=ComponentInstanceBlock)?;
+
+ComponentInstanceBlock:
+  '{' (properties+=ComponentInstanceProperty (','? properties+=ComponentInstanceProperty)*)? ','? '}';
+
+ComponentInstanceProperty:
+  ComponentInstanceNameProperty | TagSetTagsProperty | ComponentInstanceOptionsProperty;
+
+ComponentInstanceNameProperty:
   'name' ':' value=String;
 
-OptionsSource:
-  name=Identifier;
-
-ComponentOptionsProperty:
+ComponentInstanceOptionsProperty:
   'hardware' ':' OptionsArray;
 
 OptionsArray:

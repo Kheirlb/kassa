@@ -1,10 +1,32 @@
 // ---- 2d symbols (components) ---
 
-symbol Valve = {
+symbol ValveSymbol = {
   svg: "valve"
   label: bottom_mid
   port inlet  = { x: 30 y: 60 rot: 180 }
   port outlet = { x: 90 y: 60 rot: 0 }
+}
+
+portType NPT {}
+portType Swagelok { compatibleWith: [Yorlok] }
+portType Yorlok { compatibleWith: [Swagelok] }
+portType AN {}
+portType MS33649 {}
+
+component ValveComponent = {
+  symbol: ValveSymbol
+  port inlet = NPT {
+    size: 1/2 in
+  }
+  port outlet = NPT {
+    size: 1/4 in
+  }
+}
+
+v100: ValveComponent = {
+  name: "V-100",
+  tags: [fakeTag],
+  hardware: [mcmaster.SOMEPN, inventory.SOMESERIAL] // this loads in maxPressure and Cv and history in some library consistent way friendly to the engineer.
 }
 
 symbol MotorValve <Valve> = {
@@ -195,8 +217,3 @@ symbol Hose = {
   port inlet  = { x: 0 y: 60 rot: 180 }
   port outlet = { x: 120 y: 60 rot: 0 }
 }
-
-// TODO: ---- separate symbols from components ---
-// component Valve = {
-//   symbol: ValveSymbol
-// }

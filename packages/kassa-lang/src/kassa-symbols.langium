@@ -12,7 +12,7 @@ SymbolBlock:
   '{' (properties+=SymbolProperty (','? properties+=SymbolProperty)*)? ','? '}';
 
 SymbolProperty:
-  SvgRef | LabelLocation | PortElement;
+  SvgRef | LabelLocation | SymbolPortElement;
 
 SvgRef:
   'svg' ':' key=StringValue;
@@ -20,11 +20,11 @@ SvgRef:
 LabelLocation:
   'label' ':' location=Identifier;
 
-PortElement:
-  'port' name=Identifier '=' block=DefinePortBlock;
+SymbolPortElement:
+  'port' name=Identifier '=' block=DefineSymbolPortBlock;
 
-DefinePortBlock:
-  '{' (properties+=PortProperty (','? properties+=PortProperty)*)? ','? '}';
+DefineSymbolPortBlock:
+  '{' (properties+=SymbolPortProperty (','? properties+=SymbolPortProperty)*)? ','? '}';
 
-PortProperty:
+SymbolPortProperty:
   XPos | YPos | Rot;
