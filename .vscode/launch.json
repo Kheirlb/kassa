@@ -7,7 +7,7 @@
       "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/apps/kassa-vscode-ext",
-        "${workspaceFolder}/examples/"
+        "${workspaceFolder}/examplesDev/"
       ],
       "outFiles": [
         "${workspaceFolder}/apps/kassa-vscode-ext/dist/**/*.js",

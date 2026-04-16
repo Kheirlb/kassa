@@ -39,6 +39,7 @@ export type KassaKeywordNames =
     | "false"
     | "hardware"
     | "height"
+    | "import"
     | "label"
     | "layout"
     | "mirror"
@@ -480,6 +481,21 @@ export function isIdentifierValue(item: unknown): item is IdentifierValue {
     return reflection.isInstance(item, IdentifierValue.$type);
 }
 
+export interface Import extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'Import';
+    path: string;
+}
+
+export const Import = {
+    $type: 'Import',
+    path: 'path'
+} as const;
+
+export function isImport(item: unknown): item is Import {
+    return reflection.isInstance(item, Import.$type);
+}
+
 export interface KeyValue extends langium.AstNode {
     readonly $container: ObjectValue;
     readonly $type: 'KeyValue';
@@ -610,11 +626,13 @@ export function isMirror(item: unknown): item is Mirror {
 
 export interface Model extends langium.AstNode {
     readonly $type: 'Model';
+    imports: Array<Import>;
     statements: Array<Statement>;
 }
 
 export const Model = {
     $type: 'Model',
+    imports: 'imports',
     statements: 'statements'
 } as const;
 
@@ -1273,6 +1291,7 @@ export type KassaAstType = {
     DrawingWidth: DrawingWidth
     HexColor: HexColor
     IdentifierValue: IdentifierValue
+    Import: Import
     KeyValue: KeyValue
     LabelLocation: LabelLocation
     LayoutBlock: LayoutBlock
@@ -1606,6 +1625,15 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [LiteralValue.$type]
         },
+        Import: {
+            name: Import.$type,
+            properties: {
+                path: {
+                    name: Import.path
+                }
+            },
+            superTypes: []
+        },
         KeyValue: {
             name: KeyValue.$type,
             properties: {
@@ -1696,6 +1724,10 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         Model: {
             name: Model.$type,
             properties: {
+                imports: {
+                    name: Model.imports,
+                    defaultValue: []
+                },
                 statements: {
                     name: Model.statements,
                     defaultValue: []
