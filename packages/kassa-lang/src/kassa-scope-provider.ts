@@ -1,6 +1,7 @@
 import type { AstNodeDescription, LangiumDocument, ReferenceInfo, Scope } from 'langium';
 import { AstUtils, DefaultScopeComputation, EMPTY_SCOPE } from 'langium';
 import { DefaultScopeProvider, stream, StreamScope } from 'langium';
+import { dirname, join } from 'node:path'; // TODO: Remove dep.
 import * as ast from './generated/ast.js';
 
 export class KassaScopeComputation extends DefaultScopeComputation {}
@@ -51,18 +52,66 @@ export class KassaScopeProvider extends DefaultScopeProvider {
       }
     }
 
-    // Component declarations needs to look at the entire document.
-    // Even stuff defined in a connection.
-    if (referenceType !== 'ComponentDeclaration') {
-      return super.getScope(context);
+    // For `v1: Valve`, restrict visible types to:
+    // - same-file top-level declarations
+    // - imported-file top-level exported declarations
+    //
+    // Adjust this condition if your actual reference site differs.
+    if (
+      ast.isComponentDeclaration(context.container) &&
+      context.property === 'componentType'
+    ) {
+      const document = AstUtils.getDocument(context.container);
+      const model = document.parseResult.value as ast.Model;
+
+      const descriptions: AstNodeDescription[] = [];
+
+      // Same-file declarations that should be usable as component types
+      for (const stmt of model.statements ?? []) {
+        if (ast.isSymbolStatement(stmt)) {
+          descriptions.push(this.descriptions.createDescription(stmt, stmt.name));
+        }
+
+        // Later, add more allowed imported type kinds here if needed.
+        // Example:
+        // if (ast.isWhateverTypeStatement(stmt)) {
+        //   descriptions.push(this.descriptions.createDescription(stmt, stmt.name));
+        // }
+      }
+
+      // Imported-file exported declarations
+      const currentUri = document.uri;
+      const currentDir = dirname(currentUri.path);
+      const uris = new Set<string>();
+
+      for (const fileImport of model.imports ?? []) {
+        // TODO: Figure out how to handle imports without node.js?
+        const filePath = join(currentDir, fileImport.path);
+        const uri = currentUri.with({ path: filePath });
+        uris.add(uri.toString());
+      }
+
+      // Pull globally exported elements from only those imported files
+      const importedDescriptions = this.indexManager.allElements(referenceType, uris).toArray();
+
+      return this.createScope(
+        [...descriptions, ...importedDescriptions],
+        EMPTY_SCOPE
+      );
     }
 
-    const doc = AstUtils.getDocument(context.container);
-    const root = doc.parseResult.value;
-    const localDescs = AstUtils.streamAllContents(root)
-      .filter(ast.isComponentDeclaration)
-      .map(node => this.descriptions.createDescription(node, node.name));
+    // Component declarations needs to look at the entire document.
+    // Even stuff defined in a connection.
+    if (referenceType === 'ComponentDeclaration') {
+      const doc = AstUtils.getDocument(context.container);
+      const root = doc.parseResult.value;
+      const localDescs = AstUtils.streamAllContents(root)
+        .filter(ast.isComponentDeclaration)
+        .map(node => this.descriptions.createDescription(node, node.name));
 
-    return this.createScope(localDescs, EMPTY_SCOPE);
+      return this.createScope(localDescs, EMPTY_SCOPE);
+    }
+
+    return super.getScope(context);
   }
 }

@@ -22,9 +22,13 @@ Expecations:
 - https://pnpm.io/installation
 - `pnpm install`
 
-## Everyday
+## Everyday cli
 - `pnpm build`
 - `pnpm kassa` (eventually) `kassa check ./examples/hello.kassa`
+
+## Everyday ect
+- `pnpm build`
+- F5
 
 ## Flowchart
 Package organization scaffold status for MVP.

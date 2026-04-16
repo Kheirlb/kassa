@@ -9,7 +9,11 @@ import "./kassa-layout"
 import "./kassa-drawing"
 
 entry Model:
-  (statements+=Statement)*;
+  imports+=Import*
+  statements+=Statement*;
+
+Import:
+  'import' path=String;
 
 Statement:
   ConnectionStatement
