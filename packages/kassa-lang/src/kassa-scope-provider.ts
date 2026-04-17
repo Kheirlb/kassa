@@ -1,8 +1,9 @@
-import type { AstNodeDescription, LangiumDocument, ReferenceInfo, Scope } from 'langium';
-import { AstUtils, DefaultScopeComputation, EMPTY_SCOPE } from 'langium';
+import type { AstNodeDescription, IndexManager, LangiumDocument, LangiumDocuments, ReferenceInfo, Scope } from 'langium';
+import { AstUtils, DefaultScopeComputation, EMPTY_SCOPE, URI } from 'langium';
 import { DefaultScopeProvider, stream, StreamScope } from 'langium';
 import { dirname, join } from 'node:path'; // TODO: Remove dep.
 import * as ast from './generated/ast.js';
+import { KassaServices } from './kassa-module.js';
 
 export class KassaScopeComputation extends DefaultScopeComputation {}
 
@@ -10,6 +11,16 @@ export class KassaScopeComputation extends DefaultScopeComputation {}
  * Kassa scope provider (that should be just the default currently).
  */
 export class KassaScopeProvider extends DefaultScopeProvider {
+
+  constructor(services: KassaServices) {
+    super(services);
+    this.langiumDocuments = services.shared.workspace.LangiumDocuments;
+    this.indexManager = services.shared.workspace.IndexManager;
+  }
+
+  protected readonly langiumDocuments: LangiumDocuments;
+  protected readonly indexManager: IndexManager;
+
   override getScope(context: ReferenceInfo): Scope {
     const referenceType = this.reflection.getReferenceType(context);
 
@@ -79,15 +90,20 @@ export class KassaScopeProvider extends DefaultScopeProvider {
         // }
       }
 
-      // Imported-file exported declarations
-      const currentUri = document.uri;
-      const currentDir = dirname(currentUri.path);
+      // Load builtin library.
       const uris = new Set<string>();
+      uris.add(URI.parse('builtin:///library.kassa').toString());
 
+      // Handle imported-file exported declarations.
+      const currentUri = document.uri;
       for (const fileImport of model.imports ?? []) {
+        if (!fileImport.path) continue; // import is empty.
+        // console.log(`[kassa-lang] fileImport`, fileImport.path);
         // TODO: Figure out how to handle imports without node.js?
+        const currentDir = dirname(currentUri.path);
         const filePath = join(currentDir, fileImport.path);
         const uri = currentUri.with({ path: filePath });
+        // console.log(`[kassa-lang] uri`, uri.toString());
         uris.add(uri.toString());
       }
 

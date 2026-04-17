@@ -1,8 +1,9 @@
-import { type Module, inject } from 'langium';
+import { type Module, inject, DeepPartial } from 'langium';
 import { createDefaultModule, createDefaultSharedModule, type DefaultSharedModuleContext, type LangiumServices, type LangiumSharedServices, type PartialLangiumServices } from 'langium/lsp';
 import { KassaGeneratedModule, KassaGeneratedSharedModule } from './generated/module.js';
 import { KassaScopeComputation, KassaScopeProvider } from './kassa-scope-provider.js';
 import { KassaFormatter } from './kassa-formatter.js';
+import { KassaWorkspaceManager } from './kassa-workspace-manager.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -32,6 +33,14 @@ export const KassaModule: Module<KassaServices, PartialLangiumServices & KassaAd
     }
 };
 
+export type KassaSharedServices = LangiumSharedServices;
+
+export const KassaSharedModule: Module<KassaSharedServices, DeepPartial<KassaSharedServices>> = {
+    workspace: {
+        WorkspaceManager: (services) => new KassaWorkspaceManager(services)
+    }
+}
+
 /**
  * Create the full set of services required by Langium.
  *
@@ -53,7 +62,8 @@ export function createKassaServices(context: DefaultSharedModuleContext): {
 } {
     const shared = inject(
         createDefaultSharedModule(context),
-        KassaGeneratedSharedModule
+        KassaGeneratedSharedModule,
+        KassaSharedModule
     );
     const Kassa = inject(
         createDefaultModule({ shared }),

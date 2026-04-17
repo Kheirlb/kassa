@@ -2,12 +2,15 @@ import type { LanguageClientOptions, ServerOptions } from 'vscode-languageclient
 import type * as vscode from 'vscode';
 import * as path from 'node:path';
 import { LanguageClient, TransportKind } from 'vscode-languageclient/node.js';
+import { DslLibraryFileSystemProvider } from './fileSystemProvider.js';
 
 let client: LanguageClient;
 
 // This function is called when the extension is activated.
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-    console.log("[kassa-ext] activate()");
+    console.log("[kassa-ext] activate(), registering file system provider...");
+    DslLibraryFileSystemProvider.register(context);
+    console.log("[kassa-ext] activate(), starting language client...");
     client = await startLanguageClient(context);
 }
 
@@ -35,7 +38,10 @@ async function startLanguageClient(context: vscode.ExtensionContext): Promise<La
 
     // Options to control the language client
     const clientOptions: LanguageClientOptions = {
-        documentSelector: [{ scheme: '*', language: 'kassa' }]
+        documentSelector: [
+            { scheme: 'file', language: 'kassa' },
+            { scheme: 'builtin', language: 'kassa' }
+        ]
     };
 
     // Create the language client and start the client.
