@@ -33,7 +33,8 @@
     ]
   },
   "activationEvents": [
-    "onLanguage:kassa"
+    "onLanguage:kassa",
+    "onFileSystem:builtin"
   ],
   "keywords": [],
   "author": "",
