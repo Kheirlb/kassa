@@ -1,8 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Command } from 'commander';
-import { tightExpansionLayout } from '@kassa/layout';
-import { renderSvgFromLayout } from '@kassa/renderer';
+import { renderSvg } from '@kassa/renderer';
 import { compileProjectFromMemory } from '@kassa/compiler'; 
 
 // Create a function that reads the provided file from disk.
@@ -33,7 +32,8 @@ program
   .description('Compile a Kassa file to IR')
   .option('-o, --out <file>', 'Output file (default: stdout)')
   .action(async (file, options) => {
-    const result = await compileProjectFromMemory(file, readFileFromDisk);
+    const entryPath = path.resolve(file);
+    const result = await compileProjectFromMemory(entryPath, readFileFromDisk);
     const output = JSON.stringify(result, null, 2);
 
     if (options.out) {
@@ -47,8 +47,7 @@ program
   .command('render <file>')
   .action(async (file) => {
     const project = await compileProjectFromMemory(file, readFileFromDisk);
-    const layout = tightExpansionLayout(project);
-    const svg = renderSvgFromLayout(layout);
+    const svg = renderSvg();
     console.log(svg);
   });
 

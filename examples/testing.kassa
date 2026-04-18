@@ -1,0 +1,75 @@
+// Tags here.
+tag testTagRename { name: "Test Tags", color: green }
+tagset testTags {
+  name: "Test Tagsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+  tags: [testTagRename]
+}
+
+// Components here.
+v0: Valve
+v1: Valve {}
+v2: Valve { name: "Name" }
+v3: Valve {
+  name: "Valve with Tag",
+  tags: [testTagRename],
+  hardware: [mcmaster."47865K21", default."PART 1"]
+}
+cyl: Cylinder
+
+// Custom symbol.
+symbol CustomTank <Tank> {
+  port inlet = {
+    x: 35
+    y: 50
+    rot: 180
+  }
+}
+symbol CustomValve <Valve> { }
+
+// Connections below.
+v0 --> v1
+--> v2 [outlet]
+--> [inlet] v3
+// v0 --> v1
+// --> v2 [outlet]
+// --> [inlet] v3
+
+v00: Valve
+--> v01: Valve
+--> v02: Valve
+--> v03: Valve
+--> v04: Valve
+--> v05: Valve
+--> v06: Valve
+--> v07: Valve
+--> v08: CustomValve
+// v00: Valve --> v01: Valve --> v02: Valve --> v03: Valve --> v04: Valve --> v05: Valve --> v06: Valve --> v07: Valve --> v08: Valve
+// v00: Valve --> v01: Valve --> v02: Valve --> v03: Valve --> v04: Valve --> v05: Valve
+
+// Layout examples.
+layout optionalLayoutGroup {
+  place v0 = {
+    x: 10
+    y: 10
+    rot: 90
+    mirror
+  }
+  route v1 = [
+    out 100
+    right 50
+    auto
+  ]
+  route (v2 [outlet] --> [inlet] v3) = [bend -30]
+}
+
+// Drawing example.
+drawing optionSheetName {
+  height: 8.5
+  width: 11
+  scale: 1.5
+  titleBlock: {
+    title: "Example P&ID"
+    author: "Karl Parks"
+    date: "2026"
+  }
+}
