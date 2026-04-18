@@ -1,38 +1,49 @@
 # kassa
-Kassa is a schematic editor for plumbing and instrumentation diagrams (P&amp;ID)
+Kassa is a modern schematic editor for plumbing and instrumentation diagrams (P&amp;ID)
 
 https://karlparks.com/kassa/
 
 # User Flows
-Basic local designer flow:
+## 1 - Primary
+Primary **local** designer flow:
 ```mermaid
 flowchart LR
     Install --> Edit --> Run --> Export
 ```
 Expecations:
-- Find cool idea online (hello there)
+- Find cool idea online and now you are here... hello there ;)
 - Install VS Code and the Kassa VS Code Extension
 - Create new Kassa project with `Kassa: New Project`
 - Run the debugger via F5 (starts compiler and opens preview)
 - Edit `.kassa` file, save, and watch the preview refresh
 - Export svg as needed
 
+## 2 - App
+TODO
+
+## 3 - Browser
+TODO
+
 # Development
 ## Installation
-- https://pnpm.io/installation
+- Close this repo
+- Install pnpm https://pnpm.io/installation
 - `pnpm install`
 
 ## Everyday cli
-- `pnpm build`
-- `pnpm kassa` (eventually) `kassa check ./examples/hello.kassa`
+- `pnpm kassa check ./examples/hello.kassa`
+- `pnpm kassa compile ./examples/hello.kassa`
+- `pnpm kassa render ./examples/hello.kassa`
 
-## Everyday ect
+Use `pnpm -s kassa:raw` to skip build and hide pnpm context.
+
+## Everyday editing with the VSCode Extension
 - `pnpm build`
 - F5
 
 ## Flowchart
-Package organization scaffold status for MVP.
-Current goal: each one has a working "build" command.
+Repo organization status for MVP.
+Current goal: make compiler output real
 
 ```mermaid
 flowchart BT
@@ -57,9 +68,13 @@ flowchart BT
 
     render --> vscode
 
-    classDef todo stroke-width:2px,stroke-dasharray:5 5;
+    classDef todo stroke-width:2px,stroke-dasharray:5;
+    classDef focus stroke:orange,stroke-width:2px,stroke-dasharray:5;
 
-    class vscode todo
+    class compiler focus
+    class core todo
+    class layout todo
+    class render todo
 ```
 
 Later details:

@@ -6,10 +6,11 @@
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": "kassa",
   "scripts": {
     "build": "tsc -b tsconfig.json",
-    "start": "pnpm build && node dist/index.js",
-    "kassa": "node dist/index.js"
+    "dev": "pnpm build && node dist/index.js",
+    "start": "node dist/index.js"
   },
   "keywords": [],
   "author": "",

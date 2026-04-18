@@ -36,11 +36,11 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): KassaProject {
   const models = docs.map(d => d.parseResult.value); // typed Model
   const model = models[0]; // TODO: handle multiple models
 
-  for (const statement of model.statements) {
-    if (isConnectionStatement(statement)) {
-      console.log("Found a connection statement:", statement);
-    }
-  }
+  // for (const statement of model.statements) {
+  //   if (isConnectionStatement(statement)) {
+  //     console.log("Found a connection statement:", statement);
+  //   }
+  // }
 
   // TODO: lower models -> IR
   return {
