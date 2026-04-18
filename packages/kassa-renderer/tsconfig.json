@@ -8,4 +8,9 @@
     "moduleResolution": "NodeNext"
   },
   "include": ["src"],
+  "references": [
+    {
+      "path": "../kassa-compiler"
+    }
+  ]
 }

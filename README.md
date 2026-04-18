@@ -49,8 +49,7 @@ Current goal: make compiler output real
 flowchart BT
     core[kassa-core<br/>Types]
     lang[kassa-lang<br/>DSL & AST]
-    compiler[kassa-compiler<br/>Validation & Lowering]
-    layout[kassa-layout<br/>Generates Layout]
+    compiler[kassa-compiler<br/>Validation, Lowering, & Layout]
     render[kassa-renderer<br/>SVG renderer]
     cli[kassa-cli<br/>Export json/svg/etc]
     vscode[kassa-vscode-ext<br/>VSCode Extension]
@@ -59,21 +58,18 @@ flowchart BT
     lang --> compiler
     core --> compiler
 
-    compiler --> layout
-    layout --> render
+    compiler --> render
     compiler --> cli
 
     render --> cli
     core --> cli
 
-    render --> vscode
+    lang --> vscode
 
     classDef todo stroke-width:2px,stroke-dasharray:5;
     classDef focus stroke:orange,stroke-width:2px,stroke-dasharray:5;
 
     class compiler focus
-    class core todo
-    class layout todo
     class render todo
 ```
 
@@ -82,3 +78,4 @@ Later details:
 - kassa-runtime/kassa-runtime-server (rust?, data bindings support)
 - kassa-app (tauri/rust, data bindings support)
 - kassa-ui (svelte/typescript)
+- kassa-layout (generate graphs/layouts)

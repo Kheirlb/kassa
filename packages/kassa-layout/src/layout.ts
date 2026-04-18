@@ -1,7 +1,7 @@
 import { KassaLayout } from "./layout-types.js";
-import { KassaProject } from "@kassa/core";
+// import { KassaProject } from "@kassa/core";
 
-export function tightExpansionLayout(project: KassaProject): KassaLayout {
+export function buildLayout(input: any): KassaLayout {
   return {
     nodes: [], edges: []
   };

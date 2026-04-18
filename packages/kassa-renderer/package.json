@@ -14,6 +14,6 @@
   "license": "ISC",
   "packageManager": "pnpm@10.28.1",
   "dependencies": {
-    "@kassa/layout": "workspace:*"
+    "@kassa/compiler": "workspace:*"
   }
 }

@@ -134,9 +134,9 @@ importers:
 
   packages/kassa-renderer:
     dependencies:
-      '@kassa/layout':
+      '@kassa/compiler':
         specifier: workspace:*
-        version: link:../kassa-layout
+        version: link:../kassa-compiler
 
 packages:
 

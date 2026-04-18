@@ -7,5 +7,13 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../kassa-core"
+    },
+    {
+      "path": "../kassa-lang"
+    }
+  ]
 }
