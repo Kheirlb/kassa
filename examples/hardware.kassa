@@ -1,0 +1,4 @@
+v3: Valve {
+  name: "Valve with hardware",
+  hardware: [mcmaster."47865K21", default."PART 1"]
+}
