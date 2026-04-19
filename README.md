@@ -26,7 +26,7 @@ TODO
 
 # Development
 ## Installation
-- Close this repo
+- Clone this repo
 - Install pnpm https://pnpm.io/installation
 - `pnpm install`
 
