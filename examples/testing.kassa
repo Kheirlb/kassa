@@ -1,3 +1,5 @@
+import "symbols.kassa"
+
 // Tags here.
 tag testTagRename { name: "Test Tags", color: green }
 tagset testTags {
@@ -24,7 +26,7 @@ symbol CustomTank <Tank> {
     rot: 180
   }
 }
-symbol CustomValve <Valve> { }
+// symbol CustomValve <Valve> { }
 
 // Connections below.
 v0 --> v1

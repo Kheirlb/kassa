@@ -53,6 +53,7 @@ export type ComponentDefinition = {
   svg?: string
   label?: string
   ports: Port[]
+  // isBuiltin?: boolean // include builtin status/version?
 }
 
 export type ComponentInstance = {
