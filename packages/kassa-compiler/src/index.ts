@@ -1,6 +1,6 @@
 import { builtinKassa, createKassaServices } from "@kassa/lang";
 import type { CompilerResult, ComponentInstance, ConnectionInstance, Project } from "@kassa/core";
-import { ComponentNameProperty, isConnectionStatement, Model } from "@kassa/lang/ast";
+import { ComponentDeclaration, ComponentNameProperty, isComponentDeclaration, isConnectionStatement, isTagDeclaration, isTagDeclarations, isTagSetDeclaration, Model, OptionsArray, TagArray, TagColorProperty, TagNameProperty, TagSetNameProperty, TagSetTagsProperty } from "@kassa/lang/ast";
 import { EmptyFileSystem, URI, LangiumDocument } from "langium";
 
 export async function compileProjectFromMemory(
@@ -43,15 +43,15 @@ export async function compileProjectFromMemory(
 
 // Handle new component instances.
 // TODO: Actually define this.
-export function defineComponentInstance(project: Project, id: string, type: string, name?: string) {
-  const component: ComponentInstance = {
-    id,
-    type,
-    name: name ?? id,
-    tags: [],
-    hardware: []
+export function defineComponentInstance(componentId: ComponentDeclaration): ComponentInstance {
+  const nameProperty = componentId.value?.properties.find((p): p is ComponentNameProperty => p.$type === "ComponentNameProperty");
+  return {
+    id: componentId.name,
+    type: componentId.componentType.ref?.name ?? "unknown",
+    name: nameProperty?.value ?? componentId.name,
+    tags: componentId.value?.properties.filter((p): p is TagArray => p.$type === "TagArray").flatMap(p => p.elements.map(t => t.ref.ref?.name ?? "unknown")) ?? [],
+    hardware: componentId.value?.properties.find((p): p is OptionsArray => p.$type === "OptionsArray")?.option.map(o => `${o.source}.${o.key}`) ?? []
   }
-  project.components.push(component);
 }
 
 export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult {
@@ -74,21 +74,18 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult
   }
 
   for (const statement of model.statements) {
-    if (isConnectionStatement(statement)) {
+    if (isComponentDeclaration(statement)) {
+      const component = defineComponentInstance(statement);
+      // TODO: don't allow duplicates?
+      defaultProject.components.push(component);
+    } else if (isConnectionStatement(statement)) {
       let sourceOutlet: string | undefined;
       let sourceName = "";
       if (statement.start.define) {
         sourceOutlet = statement.start.define.outlet?.portName.ref?.name;
         sourceName = statement.start.define.componentId.name;
         // Add component to project.
-        const nameProperty = statement.start.define.componentId.value?.properties.find((p): p is ComponentNameProperty => p.$type === "ComponentNameProperty");
-        const sourceComponent: ComponentInstance = {
-          id: statement.start.define.componentId.name,
-          type: statement.start.define.componentId.componentType.ref?.name ?? "unknown",
-          name: nameProperty?.value ?? statement.start.define.componentId.name,
-          tags: [],
-          hardware: []
-        }
+        const sourceComponent: ComponentInstance = defineComponentInstance(statement.start.define.componentId);
         // TODO: don't allow duplicates?
         defaultProject.components.push(sourceComponent);
       }
@@ -113,14 +110,7 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult
           maybeInlet = target.define.inlet?.portName.ref?.name;
           targetName = target.define.componentId.name;
           // Add component to project.
-          const nameProperty = target.define.componentId.value?.properties.find((p): p is ComponentNameProperty => p.$type === "ComponentNameProperty");
-          const targetComponent: ComponentInstance = {
-            id: target.define.componentId.name,
-            type: target.define.componentId.componentType.ref?.name ?? "unknown",
-            name: nameProperty?.value ?? target.define.componentId.name,
-            tags: [],
-            hardware: []
-          }
+          const targetComponent: ComponentInstance = defineComponentInstance(target.define.componentId);
           // TODO: don't allow duplicates?
           defaultProject.components.push(targetComponent);
           const connection: ConnectionInstance = {
@@ -153,12 +143,35 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult
           }
           // TODO: allow duplicates (or not?)
           defaultProject.connections.push(connection);
-          console.log(`ref ${sourceName} ${sourceOutlet ? `[${sourceOutlet}] ` : ""}${connectionSymbol} ${maybeInlet ? `[${maybeInlet}] ` : ""}${targetName}`)
+          // console.log(`ref ${sourceName} ${sourceOutlet ? `[${sourceOutlet}] ` : ""}${connectionSymbol} ${maybeInlet ? `[${maybeInlet}] ` : ""}${targetName}`)
           sourceOutlet = target.ref.outlet?.portName.ref?.name;
           // TODO: probably error if unknown.
           sourceName = targetName ?? "unknown";
         }
       }
+    } else if (isTagDeclaration(statement)) {
+      const color = statement.block?.properties.find((p): p is TagColorProperty => p.$type === "TagColorProperty")?.value;
+      let colorString = "default";
+      if (color) {
+        if (color.$type === "BasicColor") {
+          colorString = color.name;
+        } else if (color.$type === "HexColor") {
+          colorString = color.value;
+        }
+      }
+      const tag = {
+        id: statement.name,
+        name: statement.block?.properties.find((p): p is TagNameProperty => p.$type === "TagNameProperty")?.value ?? statement.name,
+        color: colorString
+      }
+      defaultProject.tags.push(tag);
+    } else if (isTagSetDeclaration(statement)) {
+      const tagSet = {
+        id: statement.name,
+        name: statement.block?.properties.find((p): p is TagSetNameProperty => p.$type === "TagSetNameProperty")?.value ?? statement.name,
+        tags: statement.block?.properties.filter((p): p is TagArray => p.$type === "TagArray").flatMap(p => p.elements.map(t => t.ref.ref?.name ?? "unknown")) ?? []
+      }
+      defaultProject.tagsets.push(tagSet);
     }
   }
 
