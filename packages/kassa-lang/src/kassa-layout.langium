@@ -39,7 +39,7 @@ RouteConnection:
   RouteNamedConnection | RouteBasicConnection;
 
 RouteNamedConnection:
-  'route' componentId=[ComponentDeclaration] '=' array=RouteArray;
+  'route'  namedConnection=[NamedConnection] '=' array=RouteArray;
 
 RouteBasicConnection:
   'route' '(' fromComponentId=[ComponentDeclaration] outlet=PortRef? '-->' inlet=PortRef? toComponentId=[ComponentDeclaration] ')' '=' array=RouteArray;

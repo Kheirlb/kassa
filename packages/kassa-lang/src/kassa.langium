@@ -18,6 +18,7 @@ Import:
 Statement:
   ConnectionStatement
 | ComponentDeclaration
+| NamedConnection
 | TagDeclarations
 | LayoutGroup
 | LayoutElement

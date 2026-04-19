@@ -97,11 +97,15 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult
       for (const connection of statement.connections) {
         let isDirectConnection = false;
         let connectionSymbol = "-->";
+        let namedConnection: string | undefined;
         let target = connection.standard?.target;
         if (connection.direct) {
           isDirectConnection = true;
           connectionSymbol = "->"
           target = connection.direct.target;
+          if (connection.direct.$type === "DirectConnectionToConnection") {
+            namedConnection = connection.direct.namedConnection.ref?.name;
+          }
         }
         if (!target) continue;
         let maybeInlet: string | undefined;
@@ -114,13 +118,14 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult
           // TODO: don't allow duplicates?
           defaultProject.components.push(targetComponent);
           const connection: ConnectionInstance = {
-            id: `connection-${sourceName}-${sourceOutlet ?? "auto"}-to-${targetName}-${maybeInlet ?? "auto"}`,
-            name: `${sourceName} ${sourceOutlet ? `[${sourceOutlet}] ` : ""}${connectionSymbol} ${maybeInlet ? `[${maybeInlet}] ` : ""}${targetName}`,
+            id: namedConnection ?? `connection-${sourceName}-${sourceOutlet ?? "auto"}-to-${targetName}-${maybeInlet ?? "auto"}`,
+            name: namedConnection ?? `${sourceName} ${sourceOutlet ? `[${sourceOutlet}] ` : ""}${connectionSymbol} ${maybeInlet ? `[${maybeInlet}] ` : ""}${targetName}`,
             from: sourceName,
             fromSubId: sourceOutlet ?? "",
             to: targetName,
             toSubId: maybeInlet ?? "",
-            isDirectConnection
+            isDirectConnection,
+            isNamedConnection: !!namedConnection
           }
           // TODO: allow duplicates (or not?)
           defaultProject.connections.push(connection);
@@ -133,13 +138,14 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult
           // TODO: probably error if unknown.
           targetName = target.ref.componentIdRef.ref?.name ?? "unknown";
           const connection: ConnectionInstance = {
-            id: `connection-${sourceName}-${sourceOutlet ?? "auto"}-to-${targetName}-${maybeInlet ?? "auto"}`,
-            name: `${sourceName} ${sourceOutlet ? `[${sourceOutlet}] ` : ""}${connectionSymbol} ${maybeInlet ? `[${maybeInlet}] ` : ""}${targetName}`,
+            id: namedConnection ?? `connection-${sourceName}-${sourceOutlet ?? "auto"}-to-${targetName}-${maybeInlet ?? "auto"}`,
+            name: namedConnection ?? `${sourceName} ${sourceOutlet ? `[${sourceOutlet}] ` : ""}${connectionSymbol} ${maybeInlet ? `[${maybeInlet}] ` : ""}${targetName}`,
             from: sourceName,
             fromSubId: sourceOutlet ?? "",
             to: targetName,
             toSubId: maybeInlet ?? "",
-            isDirectConnection
+            isDirectConnection,
+            isNamedConnection: !!namedConnection
           }
           // TODO: allow duplicates (or not?)
           defaultProject.connections.push(connection);

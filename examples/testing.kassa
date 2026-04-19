@@ -42,9 +42,13 @@ v00: Valve
 --> v05: Valve
 --> v06: Valve
 --> v07: Valve
---> v08: CustomValve
+-> v08: CustomValve
 // v00: Valve --> v01: Valve --> v02: Valve --> v03: Valve --> v04: Valve --> v05: Valve --> v06: Valve --> v07: Valve --> v08: Valve
 // v00: Valve --> v01: Valve --> v02: Valve --> v03: Valve --> v04: Valve --> v05: Valve
+
+conn1: NamedConnection
+conn2: NamedConnection
+vA: Valve [outlet] -> conn1 -> [inlet] vB: Valve
 
 // Layout examples.
 layout optionalLayoutGroup {
@@ -54,7 +58,7 @@ layout optionalLayoutGroup {
     rot: 90
     mirror
   }
-  route v1 = [
+  route conn1 = [
     out 100
     right 50
     auto
