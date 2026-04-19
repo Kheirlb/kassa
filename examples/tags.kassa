@@ -1,9 +1,24 @@
-tag testTagRename = {
-  name: "hi"
-  color: #FFFFFF
+tag tag1 = {
+  name: "general"
+  color: #ff9900
 }
 
-tagset testTags = {
-  name: "Test Tags",
-  tags: [testTagRename]
+tag tag2 = {
+  name: "kenobi"
+  color: blue
+}
+
+tagset tagSet1 = {
+  name: "Hello There",
+  tags: [tag1, tag2]
+}
+
+tagset tagSet2 = {
+  name: "Tag Set 2",
+  tags: []
+}
+
+v0: Valve {
+  name: "Valve with Tag",
+  tags: [tag1]
 }
