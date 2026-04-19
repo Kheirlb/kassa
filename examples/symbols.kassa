@@ -1,0 +1,9 @@
+symbol CustomValve <Valve> {
+  port inlet = {
+    x: 30
+    y: 60
+    rot: 0
+  }
+  svg: "customvalve.svg"
+  label: bottom
+}

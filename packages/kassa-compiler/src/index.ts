@@ -1,5 +1,5 @@
 import { builtinKassa, createKassaServices } from "@kassa/lang";
-import type { CompilerResult, ComponentInstance, ComponentLayout, ConnectionInstance, ConnectionPath, Project, ProjectLayout } from "@kassa/core";
+import type { CompilerResult, ComponentDefinition, ComponentInstance, ComponentLayout, ConnectionInstance, ConnectionPath, Port, Project, ProjectLayout } from "@kassa/core";
 import { ComponentDeclaration, ComponentNameProperty, DrawingHeight, DrawingScale, DrawingTitleBlock, DrawingWidth, isComponentDeclaration, isConnectionStatement, isDrawingStatement, isLayoutElement, isLayoutGroup, isSymbolStatement, isTagDeclaration, isTagDeclarations, isTagSetDeclaration, LayoutElement, Model, OptionsArray, TagArray, TagColorProperty, TagNameProperty, TagSetNameProperty, TagSetTagsProperty, TitleBlockAuthor, TitleBlockDate, TitleBlockTitle, XPos } from "@kassa/lang/ast";
 import { EmptyFileSystem, URI, LangiumDocument } from "langium";
 
@@ -268,7 +268,46 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult
       }
       defaultProject.drawings.push(drawing);
     } else if (isSymbolStatement(statement)) {
-      // TODO
+      let svg: string | undefined;
+      let labelLocation: string | undefined;
+      const ports: Port[] = [];
+      for (const symbolProp of statement.block?.properties || []) {
+        if (symbolProp.$type === "PortElement") {
+          const port: Port = {
+            id: symbolProp.name,
+            x: 0,
+            y: 0,
+            rot: 0
+          }
+          for (const portProp of symbolProp.block.properties) {
+            const value = Number(portProp.value.value);
+            if (portProp.$type === "XPos") {
+              port["x"] = value;
+            } else if (portProp.$type === "YPos") {
+              port["y"] = value;
+            } else if (portProp.$type === "Rot") {
+              port["rot"] = value;
+            } else {
+              // TODO: error handling for unknown property?
+            }
+          }
+          ports.push(port);
+        } else if (symbolProp.$type === "LabelLocation") {
+          labelLocation = symbolProp.location;
+        } else if (symbolProp.$type === "SvgRef") {
+          svg = symbolProp.key.value;
+        } else {
+          // TODO: error handling for unknown property?
+        }
+      };
+      const symbol: ComponentDefinition = {
+        id: statement.name,
+        ref: statement.base?.symbolInput.ref?.name,
+        ports,
+        svg,
+        label: labelLocation
+      }
+      defaultProject.componentDefinitions.push(symbol);
     }
   }
 
