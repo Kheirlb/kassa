@@ -13,6 +13,16 @@
         "${workspaceFolder}/apps/kassa-vscode-ext/dist/**/*.js",
         "${workspaceFolder}/packages/kassa-lang/dist/**/*.js"
       ]
+    },
+    {
+      "name": "Run Kassa Compiler",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/apps/kassa-cli/dist/index.js",
+      "args": [
+        "check",
+        "./examples/ports.kassa",
+      ]
     }
   ]
 }
