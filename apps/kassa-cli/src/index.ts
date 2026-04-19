@@ -23,17 +23,30 @@ program
   .command('check <file>')
   .description('Validate a Kassa file (no output)')
   .action(async (file) => {
-    const entryPath = path.resolve(file);
-    const result = await compileProjectFromMemory(entryPath, readFileFromDisk);
-    console.log("OK");
+    const filepath = path.resolve(file);
+    const result = await compileProjectFromMemory(filepath, {
+      readFile: readFileFromDisk,
+      resolveImport: (from, importPath) => path.resolve(path.dirname(from), importPath)
+    });
+    if (result.diagnostics.length === 0) {
+      console.log('No issues found.');
+    } else {
+      console.log('Diagnostics:');
+      for (const diag of result.diagnostics) {
+        console.log(`- [${diag.severity}] ${diag.message}`);
+      }
+    }
   });
 program
   .command('compile <file>')
   .description('Compile a Kassa file to IR')
   .option('-o, --out <file>', 'Output file (default: stdout)')
   .action(async (file, options) => {
-    const entryPath = path.resolve(file);
-    const result = await compileProjectFromMemory(entryPath, readFileFromDisk);
+    const filepath = path.resolve(file);
+    const result = await compileProjectFromMemory(filepath, {
+      readFile: readFileFromDisk,
+      resolveImport: (from, importPath) => path.resolve(path.dirname(from), importPath)
+    });
     const output = JSON.stringify(result, null, 2);
 
     if (options.out) {
@@ -46,7 +59,11 @@ program
 program
   .command('render <file>')
   .action(async (file) => {
-    const project = await compileProjectFromMemory(file, readFileFromDisk);
+    const filepath = path.resolve(file);
+    const result = await compileProjectFromMemory(filepath, {
+      readFile: readFileFromDisk,
+      resolveImport: (from, importPath) => path.resolve(path.dirname(from), importPath)
+    });
     const svg = renderSvg();
     console.log(svg);
   });
