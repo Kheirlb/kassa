@@ -1,6 +1,6 @@
 import { builtinKassa, createKassaServices } from "@kassa/lang";
-import type { CompilerResult, ComponentInstance, ConnectionInstance, Project } from "@kassa/core";
-import { ComponentDeclaration, ComponentNameProperty, isComponentDeclaration, isConnectionStatement, isTagDeclaration, isTagDeclarations, isTagSetDeclaration, Model, OptionsArray, TagArray, TagColorProperty, TagNameProperty, TagSetNameProperty, TagSetTagsProperty } from "@kassa/lang/ast";
+import type { CompilerResult, ComponentInstance, ComponentLayout, ConnectionInstance, ConnectionPath, Project, ProjectLayout } from "@kassa/core";
+import { ComponentDeclaration, ComponentNameProperty, DrawingHeight, DrawingScale, DrawingTitleBlock, DrawingWidth, isComponentDeclaration, isConnectionStatement, isDrawingStatement, isLayoutElement, isLayoutGroup, isSymbolStatement, isTagDeclaration, isTagDeclarations, isTagSetDeclaration, LayoutElement, Model, OptionsArray, TagArray, TagColorProperty, TagNameProperty, TagSetNameProperty, TagSetTagsProperty, TitleBlockAuthor, TitleBlockDate, TitleBlockTitle, XPos } from "@kassa/lang/ast";
 import { EmptyFileSystem, URI, LangiumDocument } from "langium";
 
 export async function compileProjectFromMemory(
@@ -54,6 +54,57 @@ export function defineComponentInstance(componentId: ComponentDeclaration): Comp
   }
 }
 
+// Generate connection id.
+export function defineConnectionId(sourceName: string, sourceOutlet: string | undefined, targetName: string, targetInlet: string | undefined): string {
+  return `connection-${sourceName}.${sourceOutlet ?? "auto"}-to-${targetName}.${targetInlet ?? "auto"}`;
+}
+
+export function parseLayoutElement(element: LayoutElement, layoutGroup: ProjectLayout) {
+  if (element.$type === "LayoutComponent") {
+    const componentLayout: ComponentLayout = {
+      componentId: element.componentId.ref?.name ?? "unknown",
+      x: Number(element.block?.properties.find((p): p is XPos => p.$type === "XPos")?.value.value ?? 0),
+      y: Number(element.block?.properties.find((p): p is XPos => p.$type === "YPos")?.value.value ?? 0),
+      rot: Number(element.block?.properties.find((p): p is XPos => p.$type === "Rot")?.value.value ?? 0),
+      mirror: element.block?.properties.some(p => p.$type === "Mirror") ?? false
+    }
+    layoutGroup.componentPositions.push(componentLayout);
+  } else {
+    let connectionId = "";
+    if (element.$type === "RouteNamedConnection") {
+      connectionId = element.namedConnection.ref?.name ?? "unknown";
+    } else {
+      connectionId = defineConnectionId(
+        element.fromComponentId.ref?.name ?? "unknown",
+        element.outlet?.portName.ref?.name,
+        element.toComponentId.ref?.name ?? "unknown",
+        element.inlet?.portName.ref?.name
+      );
+    }
+    const connectionPath: ConnectionPath = {
+      connectionId: connectionId,
+      segments: element.array.elements.map(element => {
+        if (element.$type === "Direction") {
+          const direction = element.dir; // "out", "left", "right", "bend"
+          const amount = Number(element.amount.value);
+          if (direction === "bend") {
+            return { deg: amount };
+          } else if (direction === "left") {
+            return { deg: -90, length: amount };
+          } else if (direction === "right") {
+            return { deg: 90, length: amount };
+          } else {
+            return { length: amount };
+          }
+        } else {
+          return { auto: true };
+        }
+      })
+    }
+    layoutGroup.connectionPaths.push(connectionPath);
+  }
+}
+
 export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult {
   const diagnostics = docs.flatMap(d => d.diagnostics ?? []);
   const models = docs.map(d => d.parseResult.value); // typed Model
@@ -71,6 +122,13 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult
     schematics: [],
     tags: [],
     tagsets: []
+  }
+
+  const defaultLayoutGroup: ProjectLayout = {
+    id: "default-layout-group",
+    name: "Default Layout Group",
+    componentPositions: [],
+    connectionPaths: []
   }
 
   for (const statement of model.statements) {
@@ -118,7 +176,7 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult
           // TODO: don't allow duplicates?
           defaultProject.components.push(targetComponent);
           const connection: ConnectionInstance = {
-            id: namedConnection ?? `connection-${sourceName}-${sourceOutlet ?? "auto"}-to-${targetName}-${maybeInlet ?? "auto"}`,
+            id: namedConnection ?? defineConnectionId(sourceName, sourceOutlet, targetName, maybeInlet),
             name: namedConnection ?? `${sourceName} ${sourceOutlet ? `[${sourceOutlet}] ` : ""}${connectionSymbol} ${maybeInlet ? `[${maybeInlet}] ` : ""}${targetName}`,
             from: sourceName,
             fromSubId: sourceOutlet ?? "",
@@ -138,7 +196,7 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult
           // TODO: probably error if unknown.
           targetName = target.ref.componentIdRef.ref?.name ?? "unknown";
           const connection: ConnectionInstance = {
-            id: namedConnection ?? `connection-${sourceName}-${sourceOutlet ?? "auto"}-to-${targetName}-${maybeInlet ?? "auto"}`,
+            id: namedConnection ?? defineConnectionId(sourceName, sourceOutlet, targetName, maybeInlet),
             name: namedConnection ?? `${sourceName} ${sourceOutlet ? `[${sourceOutlet}] ` : ""}${connectionSymbol} ${maybeInlet ? `[${maybeInlet}] ` : ""}${targetName}`,
             from: sourceName,
             fromSubId: sourceOutlet ?? "",
@@ -178,8 +236,43 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult
         tags: statement.block?.properties.filter((p): p is TagArray => p.$type === "TagArray").flatMap(p => p.elements.map(t => t.ref.ref?.name ?? "unknown")) ?? []
       }
       defaultProject.tagsets.push(tagSet);
+    } else if (isLayoutElement(statement)) {
+      // TODO: Avoid double parsing LayoutElements if also in isLayoutGroup below?
+      parseLayoutElement(statement, defaultLayoutGroup);
+    } else if (isLayoutGroup(statement)) {
+      const layoutGroup: ProjectLayout = {
+        id: statement.name ?? "unnamed-layout", // TODO: better id generation, avoid duplicates?
+        name: statement.name ?? "Unnamed Layout",
+        componentPositions: [],
+        connectionPaths: []
+      }
+      statement.block.layoutElements.forEach(element => {
+        parseLayoutElement(element, layoutGroup);
+      })
+      defaultProject.layouts.push(layoutGroup);
+    } else if (isDrawingStatement(statement)) {
+      const height = Number(statement.block?.properties.find((p): p is DrawingHeight => p.$type === "DrawingHeight")?.value.value ?? 11);
+      const width = Number(statement.block?.properties.find((p): p is DrawingWidth => p.$type === "DrawingWidth")?.value.value ?? 8.5);
+      const scale = Number(statement.block?.properties.find((p): p is DrawingScale => p.$type === "DrawingScale")?.value.value ?? 1);
+      const titleBlock = statement.block?.properties.find((p): p is DrawingTitleBlock => p.$type === "DrawingTitleBlock")?.value;
+      const drawing = {
+        id: statement.name ?? "unnamed-drawing", // TODO: better id generation, avoid duplicates?
+        height,
+        width,
+        scale,
+        titleBlock: titleBlock ? { 
+          title: titleBlock.properties.find((p): p is TitleBlockTitle => p.$type === "TitleBlockTitle")?.value.value ?? "",
+          author: titleBlock.properties.find((p): p is TitleBlockAuthor => p.$type === "TitleBlockAuthor")?.value.value ?? "",
+          date: titleBlock.properties.find((p): p is TitleBlockDate => p.$type === "TitleBlockDate")?.value.value ?? ""
+        } : undefined
+      }
+      defaultProject.drawings.push(drawing);
+    } else if (isSymbolStatement(statement)) {
+      // TODO
     }
   }
+
+  defaultProject.layouts.push(defaultLayoutGroup);
 
   // TODO: lower models -> IR
   return {

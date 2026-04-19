@@ -1933,11 +1933,16 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
             "cardinality": "?"
           },
           {
-            "$type": "RuleCall",
-            "rule": {
-              "$ref": "#/rules@53"
-            },
-            "arguments": []
+            "$type": "Assignment",
+            "feature": "block",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@53"
+              },
+              "arguments": []
+            }
           }
         ]
       },

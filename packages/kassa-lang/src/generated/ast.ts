@@ -560,15 +560,15 @@ export function isLabelLocation(item: unknown): item is LabelLocation {
     return reflection.isInstance(item, LabelLocation.$type);
 }
 
-export interface LayoutBlock extends LayoutGroup {
+export interface LayoutBlock extends langium.AstNode {
+    readonly $container: LayoutGroup;
     readonly $type: 'LayoutBlock';
     layoutElements: Array<LayoutElement>;
 }
 
 export const LayoutBlock = {
     $type: 'LayoutBlock',
-    layoutElements: 'layoutElements',
-    name: 'name'
+    layoutElements: 'layoutElements'
 } as const;
 
 export function isLayoutBlock(item: unknown): item is LayoutBlock {
@@ -603,12 +603,15 @@ export function isLayoutElement(item: unknown): item is LayoutElement {
 }
 
 export interface LayoutGroup extends langium.AstNode {
-    readonly $type: 'LayoutBlock' | 'LayoutGroup';
+    readonly $container: Model;
+    readonly $type: 'LayoutGroup';
+    block: LayoutBlock;
     name?: string;
 }
 
 export const LayoutGroup = {
     $type: 'LayoutGroup',
+    block: 'block',
     name: 'name'
 } as const;
 
@@ -1736,12 +1739,9 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 layoutElements: {
                     name: LayoutBlock.layoutElements,
                     defaultValue: []
-                },
-                name: {
-                    name: LayoutBlock.name
                 }
             },
-            superTypes: [LayoutGroup.$type]
+            superTypes: []
         },
         LayoutComponent: {
             name: LayoutComponent.$type,
@@ -1765,6 +1765,9 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         LayoutGroup: {
             name: LayoutGroup.$type,
             properties: {
+                block: {
+                    name: LayoutGroup.block
+                },
                 name: {
                     name: LayoutGroup.name
                 }
