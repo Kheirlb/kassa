@@ -51,6 +51,12 @@ conn2: NamedConnection
 vA: Valve [outlet] -> conn1 -> [inlet] vB: Valve
 
 // Layout examples.
+place v1 = {
+  x: 60
+  y: 30
+  rot: 180
+}
+
 layout optionalLayoutGroup {
   place v0 = {
     x: 10
@@ -68,8 +74,8 @@ layout optionalLayoutGroup {
 
 // Drawing example.
 drawing optionSheetName {
-  height: 8.5
-  width: 11
+  height: 11
+  width: 8.5
   scale: 1.5
   titleBlock: {
     title: "Example P&ID"

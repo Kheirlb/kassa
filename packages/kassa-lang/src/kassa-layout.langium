@@ -3,7 +3,7 @@ import "./kassa-components"
 import "./kassa-connections"
 
 LayoutGroup:
-  'layout' name=Identifier? '='? LayoutBlock;
+  'layout' name=Identifier? '='? block=LayoutBlock;
 
 LayoutBlock:
   '{' layoutElements+=LayoutElement+ '}';
@@ -52,6 +52,21 @@ RouteSection:
 
 Direction:
   dir=Identifier? amount=NumberValue;
+
+// RouteSection:
+//   Out | Left | Right | Bend | Auto;
+
+// Out:
+//   'out' value=NumberValue;
+
+// Left:
+//   'left' value=NumberValue;
+
+// Right:
+//   'right' value=NumberValue;
+
+// Bend:
+//   'bend' value=NumberValue;
 
 Auto returns string:
   'auto';

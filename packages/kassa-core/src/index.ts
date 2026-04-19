@@ -130,7 +130,7 @@ export type Drawing = {
   width: number
   height: number
   scale: number
-  titleBlock: {
+  titleBlock?: {
     title: string
     author: string
     date: string
