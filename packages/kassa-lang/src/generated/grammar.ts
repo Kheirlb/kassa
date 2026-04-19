@@ -102,6 +102,13 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
           {
             "$type": "RuleCall",
             "rule": {
+              "$ref": "#/rules@80"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
               "$ref": "#/rules@26"
             },
             "arguments": []
@@ -123,7 +130,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@78"
+              "$ref": "#/rules@81"
             },
             "arguments": []
           },
@@ -2359,12 +2366,12 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
           },
           {
             "$type": "Assignment",
-            "feature": "componentId",
+            "feature": "namedConnection",
             "operator": "=",
             "terminal": {
               "$type": "CrossReference",
               "type": {
-                "$ref": "#/rules@18"
+                "$ref": "#/rules@80"
               },
               "deprecatedSyntax": false,
               "isMulti": false
@@ -2426,7 +2433,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@77"
+                "$ref": "#/rules@78"
               },
               "arguments": []
             },
@@ -2443,7 +2450,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@77"
+                "$ref": "#/rules@78"
               },
               "arguments": []
             },
@@ -2642,7 +2649,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@74"
+                "$ref": "#/rules@75"
               },
               "arguments": []
             }
@@ -2724,7 +2731,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@74"
+                "$ref": "#/rules@75"
               },
               "arguments": []
             }
@@ -2738,6 +2745,32 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
     {
       "$type": "ParserRule",
       "name": "DirectConnection",
+      "definition": {
+        "$type": "Alternatives",
+        "elements": [
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@74"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@79"
+            },
+            "arguments": []
+          }
+        ]
+      },
+      "entry": false,
+      "fragment": false,
+      "parameters": []
+    },
+    {
+      "$type": "ParserRule",
+      "name": "DirectConnectionToComponent",
       "definition": {
         "$type": "Group",
         "elements": [
@@ -2757,7 +2790,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@74"
+                "$ref": "#/rules@75"
               },
               "arguments": []
             }
@@ -2781,7 +2814,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@75"
+                "$ref": "#/rules@76"
               },
               "arguments": []
             }
@@ -2793,7 +2826,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@76"
+                "$ref": "#/rules@77"
               },
               "arguments": []
             }
@@ -2817,7 +2850,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@77"
+                "$ref": "#/rules@78"
               },
               "arguments": []
             },
@@ -2843,7 +2876,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@77"
+                "$ref": "#/rules@78"
               },
               "arguments": []
             },
@@ -2868,7 +2901,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@77"
+                "$ref": "#/rules@78"
               },
               "arguments": []
             },
@@ -2893,7 +2926,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@77"
+                "$ref": "#/rules@78"
               },
               "arguments": []
             },
@@ -2940,6 +2973,93 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
     },
     {
       "$type": "ParserRule",
+      "name": "DirectConnectionToConnection",
+      "definition": {
+        "$type": "Group",
+        "elements": [
+          {
+            "$type": "Assignment",
+            "feature": "operator1",
+            "operator": "=",
+            "terminal": {
+              "$type": "Keyword",
+              "value": "->"
+            }
+          },
+          {
+            "$type": "Assignment",
+            "feature": "namedConnection",
+            "operator": "=",
+            "terminal": {
+              "$type": "CrossReference",
+              "type": {
+                "$ref": "#/rules@80"
+              },
+              "deprecatedSyntax": false,
+              "isMulti": false
+            }
+          },
+          {
+            "$type": "Assignment",
+            "feature": "operator2",
+            "operator": "=",
+            "terminal": {
+              "$type": "Keyword",
+              "value": "->"
+            }
+          },
+          {
+            "$type": "Assignment",
+            "feature": "target",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@75"
+              },
+              "arguments": []
+            }
+          }
+        ]
+      },
+      "entry": false,
+      "fragment": false,
+      "parameters": []
+    },
+    {
+      "$type": "ParserRule",
+      "name": "NamedConnection",
+      "definition": {
+        "$type": "Group",
+        "elements": [
+          {
+            "$type": "Assignment",
+            "feature": "name",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@12"
+              },
+              "arguments": []
+            }
+          },
+          {
+            "$type": "Keyword",
+            "value": ":"
+          },
+          {
+            "$type": "Keyword",
+            "value": "NamedConnection"
+          }
+        ]
+      },
+      "entry": false,
+      "fragment": false,
+      "parameters": []
+    },
+    {
+      "$type": "ParserRule",
       "name": "DrawingStatement",
       "definition": {
         "$type": "Group",
@@ -2975,7 +3095,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@79"
+                    "$ref": "#/rules@82"
                   },
                   "arguments": []
                 }
@@ -3009,7 +3129,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@80"
+                    "$ref": "#/rules@83"
                   },
                   "arguments": []
                 }
@@ -3029,7 +3149,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
                     "terminal": {
                       "$type": "RuleCall",
                       "rule": {
-                        "$ref": "#/rules@80"
+                        "$ref": "#/rules@83"
                       },
                       "arguments": []
                     }
@@ -3064,28 +3184,28 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@81"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
-              "$ref": "#/rules@82"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
-              "$ref": "#/rules@83"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
               "$ref": "#/rules@84"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@85"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@86"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@87"
             },
             "arguments": []
           }
@@ -3212,7 +3332,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@85"
+                "$ref": "#/rules@88"
               },
               "arguments": []
             }
@@ -3243,7 +3363,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@86"
+                    "$ref": "#/rules@89"
                   },
                   "arguments": []
                 }
@@ -3263,7 +3383,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
                     "terminal": {
                       "$type": "RuleCall",
                       "rule": {
-                        "$ref": "#/rules@86"
+                        "$ref": "#/rules@89"
                       },
                       "arguments": []
                     }
@@ -3298,21 +3418,21 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@87"
+              "$ref": "#/rules@90"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@88"
+              "$ref": "#/rules@91"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@89"
+              "$ref": "#/rules@92"
             },
             "arguments": []
           }

@@ -10,6 +10,9 @@ StandardConnection:
   operator='-->' target=ConnectedComponent;
 
 DirectConnection:
+  DirectConnectionToComponent | DirectConnectionToConnection;
+
+DirectConnectionToComponent:
   operator='->' target=ConnectedComponent;
 
 ConnectedComponent:
@@ -23,3 +26,9 @@ ConnectedComponentDefine:
 
 PortRef:
   '[' portName=[PortElement] ']';
+
+DirectConnectionToConnection:
+  operator1='->' namedConnection=[NamedConnection] operator2='->' target=ConnectedComponent;
+
+NamedConnection:
+  name=Identifier ':' 'NamedConnection';

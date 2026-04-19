@@ -29,6 +29,7 @@ export type KassaKeywordNames =
     | "<"
     | "="
     | ">"
+    | "NamedConnection"
     | "["
     | "]"
     | "author"
@@ -212,7 +213,7 @@ export function isComponentProperty(item: unknown): item is ComponentProperty {
 }
 
 export interface ConnectedComponent extends langium.AstNode {
-    readonly $container: ConnectionStatement | DirectConnection | StandardConnection;
+    readonly $container: ConnectionStatement | DirectConnectionToComponent | DirectConnectionToConnection | StandardConnection;
     readonly $type: 'ConnectedComponent';
     define?: ConnectedComponentDefine;
     ref?: ConnectedComponentRef;
@@ -315,21 +316,52 @@ export function isDefinePortBlock(item: unknown): item is DefinePortBlock {
     return reflection.isInstance(item, DefinePortBlock.$type);
 }
 
-export interface DirectConnection extends langium.AstNode {
-    readonly $container: ConnectionKind;
-    readonly $type: 'DirectConnection';
-    operator: '->';
-    target: ConnectedComponent;
-}
+export type DirectConnection = DirectConnectionToComponent | DirectConnectionToConnection;
 
 export const DirectConnection = {
-    $type: 'DirectConnection',
-    operator: 'operator',
-    target: 'target'
+    $type: 'DirectConnection'
 } as const;
 
 export function isDirectConnection(item: unknown): item is DirectConnection {
     return reflection.isInstance(item, DirectConnection.$type);
+}
+
+export interface DirectConnectionToComponent extends langium.AstNode {
+    readonly $container: ConnectionKind;
+    readonly $type: 'DirectConnectionToComponent';
+    operator: '->';
+    target: ConnectedComponent;
+}
+
+export const DirectConnectionToComponent = {
+    $type: 'DirectConnectionToComponent',
+    operator: 'operator',
+    target: 'target'
+} as const;
+
+export function isDirectConnectionToComponent(item: unknown): item is DirectConnectionToComponent {
+    return reflection.isInstance(item, DirectConnectionToComponent.$type);
+}
+
+export interface DirectConnectionToConnection extends langium.AstNode {
+    readonly $container: ConnectionKind;
+    readonly $type: 'DirectConnectionToConnection';
+    namedConnection: langium.Reference<NamedConnection>;
+    operator1: '->';
+    operator2: '->';
+    target: ConnectedComponent;
+}
+
+export const DirectConnectionToConnection = {
+    $type: 'DirectConnectionToConnection',
+    namedConnection: 'namedConnection',
+    operator1: 'operator1',
+    operator2: 'operator2',
+    target: 'target'
+} as const;
+
+export function isDirectConnectionToConnection(item: unknown): item is DirectConnectionToConnection {
+    return reflection.isInstance(item, DirectConnectionToConnection.$type);
 }
 
 export interface Direction extends langium.AstNode {
@@ -640,6 +672,21 @@ export function isModel(item: unknown): item is Model {
     return reflection.isInstance(item, Model.$type);
 }
 
+export interface NamedConnection extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'NamedConnection';
+    name: string;
+}
+
+export const NamedConnection = {
+    $type: 'NamedConnection',
+    name: 'name'
+} as const;
+
+export function isNamedConnection(item: unknown): item is NamedConnection {
+    return reflection.isInstance(item, NamedConnection.$type);
+}
+
 export interface NumberValue extends langium.AstNode {
     readonly $container: ArrayValue | Direction | DrawingHeight | DrawingScale | DrawingWidth | KeyValue | Rot | TitleBlockDate | XPos | YPos | ZPos;
     readonly $type: 'NumberValue';
@@ -835,13 +882,13 @@ export interface RouteNamedConnection extends langium.AstNode {
     readonly $container: LayoutBlock | Model;
     readonly $type: 'RouteNamedConnection';
     array: RouteArray;
-    componentId: langium.Reference<ComponentDeclaration>;
+    namedConnection: langium.Reference<NamedConnection>;
 }
 
 export const RouteNamedConnection = {
     $type: 'RouteNamedConnection',
     array: 'array',
-    componentId: 'componentId'
+    namedConnection: 'namedConnection'
 } as const;
 
 export function isRouteNamedConnection(item: unknown): item is RouteNamedConnection {
@@ -875,7 +922,7 @@ export function isStandardConnection(item: unknown): item is StandardConnection 
     return reflection.isInstance(item, StandardConnection.$type);
 }
 
-export type Statement = ComponentDeclaration | ConnectionStatement | DrawingStatement | LayoutElement | LayoutGroup | SymbolStatement | TagDeclarations;
+export type Statement = ComponentDeclaration | ConnectionStatement | DrawingStatement | LayoutElement | LayoutGroup | NamedConnection | SymbolStatement | TagDeclarations;
 
 export const Statement = {
     $type: 'Statement'
@@ -1281,6 +1328,8 @@ export type KassaAstType = {
     ConnectionStatement: ConnectionStatement
     DefinePortBlock: DefinePortBlock
     DirectConnection: DirectConnection
+    DirectConnectionToComponent: DirectConnectionToComponent
+    DirectConnectionToConnection: DirectConnectionToConnection
     Direction: Direction
     DrawingBlock: DrawingBlock
     DrawingHeight: DrawingHeight
@@ -1302,6 +1351,7 @@ export type KassaAstType = {
     LiteralValue: LiteralValue
     Mirror: Mirror
     Model: Model
+    NamedConnection: NamedConnection
     NumberValue: NumberValue
     ObjectValue: ObjectValue
     OptionRef: OptionRef
@@ -1522,14 +1572,39 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         DirectConnection: {
             name: DirectConnection.$type,
             properties: {
-                operator: {
-                    name: DirectConnection.operator
-                },
-                target: {
-                    name: DirectConnection.target
-                }
             },
             superTypes: []
+        },
+        DirectConnectionToComponent: {
+            name: DirectConnectionToComponent.$type,
+            properties: {
+                operator: {
+                    name: DirectConnectionToComponent.operator
+                },
+                target: {
+                    name: DirectConnectionToComponent.target
+                }
+            },
+            superTypes: [DirectConnection.$type]
+        },
+        DirectConnectionToConnection: {
+            name: DirectConnectionToConnection.$type,
+            properties: {
+                namedConnection: {
+                    name: DirectConnectionToConnection.namedConnection,
+                    referenceType: NamedConnection.$type
+                },
+                operator1: {
+                    name: DirectConnectionToConnection.operator1
+                },
+                operator2: {
+                    name: DirectConnectionToConnection.operator2
+                },
+                target: {
+                    name: DirectConnectionToConnection.target
+                }
+            },
+            superTypes: [DirectConnection.$type]
         },
         Direction: {
             name: Direction.$type,
@@ -1735,6 +1810,15 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: []
         },
+        NamedConnection: {
+            name: NamedConnection.$type,
+            properties: {
+                name: {
+                    name: NamedConnection.name
+                }
+            },
+            superTypes: [Statement.$type]
+        },
         NumberValue: {
             name: NumberValue.$type,
             properties: {
@@ -1873,9 +1957,9 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 array: {
                     name: RouteNamedConnection.array
                 },
-                componentId: {
-                    name: RouteNamedConnection.componentId,
-                    referenceType: ComponentDeclaration.$type
+                namedConnection: {
+                    name: RouteNamedConnection.namedConnection,
+                    referenceType: NamedConnection.$type
                 }
             },
             superTypes: [RouteConnection.$type]

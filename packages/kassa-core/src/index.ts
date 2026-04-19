@@ -71,6 +71,7 @@ export type ConnectionInstance = {
   to: string
   toSubId: string
   isDirectConnection: boolean // no wire or tubing
+  isNamedConnection: boolean // has a name
 }
 
 export type Group = {
