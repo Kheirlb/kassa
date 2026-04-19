@@ -8,6 +8,5 @@
     "declarationMap": true,
     "sourceMap": true,
     "skipLibCheck": true,
-    "baseUrl": "."
   }
 }
