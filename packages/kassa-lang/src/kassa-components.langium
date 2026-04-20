@@ -18,10 +18,13 @@ OptionsSource:
   name=Identifier;
 
 ComponentOptionsProperty:
-  'hardware' ':' OptionsArray;
+  'hardware' ':' HardwareOptionsArray;
 
-OptionsArray:
-  '[' (option+=OptionRef (','? option+=OptionRef)*)? ','? ']';
+HardwareOptionsArray:
+  '[' (option+=HardwareOptionRef (','? option+=HardwareOptionRef)*)? ','? ']';
 
-OptionRef:
-  source=Identifier '.' key=(Identifier | String | Number);
+ImportCsv:
+  'load' path=String 'as' name=Identifier;
+
+HardwareOptionRef:
+  source=[ImportCsv] '.' key=(Identifier | String | Number);

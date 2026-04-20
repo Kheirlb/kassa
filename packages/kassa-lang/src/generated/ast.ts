@@ -32,6 +32,7 @@ export type KassaKeywordNames =
     | "NamedConnection"
     | "["
     | "]"
+    | "as"
     | "author"
     | "auto"
     | "color"
@@ -44,6 +45,7 @@ export type KassaKeywordNames =
     | "import"
     | "label"
     | "layout"
+    | "load"
     | "mirror"
     | "name"
     | "place"
@@ -194,7 +196,7 @@ export function isComponentNameProperty(item: unknown): item is ComponentNamePro
     return reflection.isInstance(item, ComponentNameProperty.$type);
 }
 
-export type ComponentOptionsProperty = OptionsArray;
+export type ComponentOptionsProperty = HardwareOptionsArray;
 
 export const ComponentOptionsProperty = {
     $type: 'ComponentOptionsProperty'
@@ -517,6 +519,38 @@ export function isDrawingWidth(item: unknown): item is DrawingWidth {
     return reflection.isInstance(item, DrawingWidth.$type);
 }
 
+export interface HardwareOptionRef extends langium.AstNode {
+    readonly $container: HardwareOptionsArray;
+    readonly $type: 'HardwareOptionRef';
+    key: string;
+    source: langium.Reference<ImportCsv>;
+}
+
+export const HardwareOptionRef = {
+    $type: 'HardwareOptionRef',
+    key: 'key',
+    source: 'source'
+} as const;
+
+export function isHardwareOptionRef(item: unknown): item is HardwareOptionRef {
+    return reflection.isInstance(item, HardwareOptionRef.$type);
+}
+
+export interface HardwareOptionsArray extends langium.AstNode {
+    readonly $container: ComponentBlock;
+    readonly $type: 'HardwareOptionsArray';
+    option: Array<HardwareOptionRef>;
+}
+
+export const HardwareOptionsArray = {
+    $type: 'HardwareOptionsArray',
+    option: 'option'
+} as const;
+
+export function isHardwareOptionsArray(item: unknown): item is HardwareOptionsArray {
+    return reflection.isInstance(item, HardwareOptionsArray.$type);
+}
+
 export interface HexColor extends langium.AstNode {
     readonly $container: TagColorProperty;
     readonly $type: 'HexColor';
@@ -560,6 +594,23 @@ export const Import = {
 
 export function isImport(item: unknown): item is Import {
     return reflection.isInstance(item, Import.$type);
+}
+
+export interface ImportCsv extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'ImportCsv';
+    name: string;
+    path: string;
+}
+
+export const ImportCsv = {
+    $type: 'ImportCsv',
+    name: 'name',
+    path: 'path'
+} as const;
+
+export function isImportCsv(item: unknown): item is ImportCsv {
+    return reflection.isInstance(item, ImportCsv.$type);
 }
 
 export interface KeyValue extends langium.AstNode {
@@ -695,12 +746,14 @@ export function isMirror(item: unknown): item is Mirror {
 
 export interface Model extends langium.AstNode {
     readonly $type: 'Model';
+    csvImports: Array<ImportCsv>;
     imports: Array<Import>;
     statements: Array<Statement>;
 }
 
 export const Model = {
     $type: 'Model',
+    csvImports: 'csvImports',
     imports: 'imports',
     statements: 'statements'
 } as const;
@@ -752,38 +805,6 @@ export const ObjectValue = {
 
 export function isObjectValue(item: unknown): item is ObjectValue {
     return reflection.isInstance(item, ObjectValue.$type);
-}
-
-export interface OptionRef extends langium.AstNode {
-    readonly $container: OptionsArray;
-    readonly $type: 'OptionRef';
-    key: string;
-    source: string;
-}
-
-export const OptionRef = {
-    $type: 'OptionRef',
-    key: 'key',
-    source: 'source'
-} as const;
-
-export function isOptionRef(item: unknown): item is OptionRef {
-    return reflection.isInstance(item, OptionRef.$type);
-}
-
-export interface OptionsArray extends langium.AstNode {
-    readonly $container: ComponentBlock;
-    readonly $type: 'OptionsArray';
-    option: Array<OptionRef>;
-}
-
-export const OptionsArray = {
-    $type: 'OptionsArray',
-    option: 'option'
-} as const;
-
-export function isOptionsArray(item: unknown): item is OptionsArray {
-    return reflection.isInstance(item, OptionsArray.$type);
 }
 
 export interface OptionsSource extends langium.AstNode {
@@ -1404,9 +1425,12 @@ export type KassaAstType = {
     DrawingStatement: DrawingStatement
     DrawingTitleBlock: DrawingTitleBlock
     DrawingWidth: DrawingWidth
+    HardwareOptionRef: HardwareOptionRef
+    HardwareOptionsArray: HardwareOptionsArray
     HexColor: HexColor
     IdentifierValue: IdentifierValue
     Import: Import
+    ImportCsv: ImportCsv
     KeyValue: KeyValue
     LabelLocation: LabelLocation
     LayoutBlock: LayoutBlock
@@ -1420,8 +1444,6 @@ export type KassaAstType = {
     NamedConnection: NamedConnection
     NumberValue: NumberValue
     ObjectValue: ObjectValue
-    OptionRef: OptionRef
-    OptionsArray: OptionsArray
     OptionsSource: OptionsSource
     PlaceProperty: PlaceProperty
     PortElement: PortElement
@@ -1773,6 +1795,29 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [DrawingProperty.$type]
         },
+        HardwareOptionRef: {
+            name: HardwareOptionRef.$type,
+            properties: {
+                key: {
+                    name: HardwareOptionRef.key
+                },
+                source: {
+                    name: HardwareOptionRef.source,
+                    referenceType: ImportCsv.$type
+                }
+            },
+            superTypes: []
+        },
+        HardwareOptionsArray: {
+            name: HardwareOptionsArray.$type,
+            properties: {
+                option: {
+                    name: HardwareOptionsArray.option,
+                    defaultValue: []
+                }
+            },
+            superTypes: [ComponentOptionsProperty.$type]
+        },
         HexColor: {
             name: HexColor.$type,
             properties: {
@@ -1796,6 +1841,18 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             properties: {
                 path: {
                     name: Import.path
+                }
+            },
+            superTypes: []
+        },
+        ImportCsv: {
+            name: ImportCsv.$type,
+            properties: {
+                name: {
+                    name: ImportCsv.name
+                },
+                path: {
+                    name: ImportCsv.path
                 }
             },
             superTypes: []
@@ -1890,6 +1947,10 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         Model: {
             name: Model.$type,
             properties: {
+                csvImports: {
+                    name: Model.csvImports,
+                    defaultValue: []
+                },
                 imports: {
                     name: Model.imports,
                     defaultValue: []
@@ -1928,28 +1989,6 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: [Value.$type]
-        },
-        OptionRef: {
-            name: OptionRef.$type,
-            properties: {
-                key: {
-                    name: OptionRef.key
-                },
-                source: {
-                    name: OptionRef.source
-                }
-            },
-            superTypes: []
-        },
-        OptionsArray: {
-            name: OptionsArray.$type,
-            properties: {
-                option: {
-                    name: OptionsArray.option,
-                    defaultValue: []
-                }
-            },
-            superTypes: [ComponentOptionsProperty.$type]
         },
         OptionsSource: {
             name: OptionsSource.$type,

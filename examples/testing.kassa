@@ -1,4 +1,5 @@
 import "symbols.kassa"
+load "sample.csv" as mcmaster
 
 // Tags here.
 tag testTagRename { name: "Test Tags", color: green }

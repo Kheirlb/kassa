@@ -29,7 +29,7 @@ export class KassaFormatter extends AbstractFormatter {
         }
 
         if (shouldFormatBlock && (ast.isArrayValue(node) || 
-            ast.isOptionsArray(node) ||
+            ast.isHardwareOptionsArray(node) ||
             ast.isRouteArray(node) ||
             ast.isTagArray(node))
         ) {

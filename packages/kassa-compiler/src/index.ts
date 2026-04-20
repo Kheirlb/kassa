@@ -1,6 +1,6 @@
 import { builtinKassa, createKassaServices } from "@kassa/lang";
 import type { CompilerResult, ComponentDefinition, ComponentInstance, ComponentLayout, ConnectionInstance, ConnectionPath, Port, Project, ProjectLayout } from "@kassa/core";
-import { ComponentDeclaration, ComponentNameProperty, ConnectionStatement, DrawingHeight, DrawingScale, DrawingTitleBlock, DrawingWidth, isComponentDeclaration, isConnectionGroup, isConnectionStatement, isDrawingStatement, isLayoutElement, isLayoutGroup, isSymbolStatement, isTagDeclaration, isTagDeclarations, isTagSetDeclaration, LayoutElement, Model, OptionsArray, TagArray, TagColorProperty, TagNameProperty, TagSetNameProperty, TagSetTagsProperty, TitleBlockAuthor, TitleBlockDate, TitleBlockTitle, XPos } from "@kassa/lang/ast";
+import { ComponentDeclaration, ComponentNameProperty, ConnectionStatement, DrawingHeight, DrawingScale, DrawingTitleBlock, DrawingWidth, isComponentDeclaration, isConnectionGroup, isConnectionStatement, isDrawingStatement, isLayoutElement, isLayoutGroup, isSymbolStatement, isTagDeclaration, isTagDeclarations, isTagSetDeclaration, LayoutElement, Model, HardwareOptionsArray, TagArray, TagColorProperty, TagNameProperty, TagSetNameProperty, TagSetTagsProperty, TitleBlockAuthor, TitleBlockDate, TitleBlockTitle, XPos } from "@kassa/lang/ast";
 import { EmptyFileSystem, URI, LangiumDocument } from "langium";
 
 type FileSystemHost = {
@@ -70,7 +70,7 @@ export function defineComponentInstance(componentId: ComponentDeclaration): Comp
     type: componentId.componentType.ref?.name ?? "unknown",
     name: nameProperty?.value ?? componentId.name,
     tags: componentId.value?.properties.filter((p): p is TagArray => p.$type === "TagArray").flatMap(p => p.elements.map(t => t.ref.ref?.name ?? "unknown")) ?? [],
-    hardware: componentId.value?.properties.find((p): p is OptionsArray => p.$type === "OptionsArray")?.option.map(o => `${o.source}.${o.key}`) ?? []
+    hardware: componentId.value?.properties.find((p): p is HardwareOptionsArray => p.$type === "HardwareOptionsArray")?.option.map(o => `${o.source}.${o.key}`) ?? []
   }
 }
 
