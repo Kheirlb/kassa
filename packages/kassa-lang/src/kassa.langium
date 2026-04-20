@@ -12,6 +12,7 @@ import "./kassa-schematics"
 
 entry Model:
   imports+=Import*
+  csvImports+=ImportCsv*
   statements+=Statement*;
 
 Import:

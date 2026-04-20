@@ -66,8 +66,6 @@ export class KassaScopeProvider extends DefaultScopeProvider {
     // For `v1: Valve`, restrict visible types to:
     // - same-file top-level declarations
     // - imported-file top-level exported declarations
-    //
-    // Adjust this condition if your actual reference site differs.
     if (
       ast.isComponentDeclaration(context.container) &&
       context.property === 'componentType'
@@ -82,12 +80,6 @@ export class KassaScopeProvider extends DefaultScopeProvider {
         if (ast.isSymbolStatement(stmt)) {
           descriptions.push(this.descriptions.createDescription(stmt, stmt.name));
         }
-
-        // Later, add more allowed imported type kinds here if needed.
-        // Example:
-        // if (ast.isWhateverTypeStatement(stmt)) {
-        //   descriptions.push(this.descriptions.createDescription(stmt, stmt.name));
-        // }
       }
 
       // Load builtin library.
