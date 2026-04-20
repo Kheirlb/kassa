@@ -8,6 +8,7 @@ import "./kassa-symbols"
 import "./kassa-layout"
 import "./kassa-drawing"
 import "./kassa-groups"
+import "./kassa-schematics"
 
 entry Model:
   imports+=Import*
@@ -26,4 +27,5 @@ Statement:
 | LayoutElement
 | DrawingStatement
 | SymbolStatement
+| SchematicStatement
 ;

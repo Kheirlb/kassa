@@ -89,3 +89,22 @@ drawing optionSheetName {
     date: "2026"
   }
 }
+
+schematic Schematic1 {
+	// Actually connect.
+	connect optionalGroupName {
+	    v1 --> vG: CustomValve
+  }
+
+	// And layout.
+	layout optionalLayoutName {
+    place vG = {
+      x: 10
+      y: 10
+      rot: 90
+      mirror
+    }
+	}
+
+	drawing: optionSheetName
+}
