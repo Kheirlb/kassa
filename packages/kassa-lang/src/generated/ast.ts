@@ -51,6 +51,7 @@ export type KassaKeywordNames =
     | "rot"
     | "route"
     | "scale"
+    | "schematic"
     | "svg"
     | "symbol"
     | "tag"
@@ -269,7 +270,7 @@ export function isConnectedComponentRef(item: unknown): item is ConnectedCompone
 }
 
 export interface ConnectionGroup extends langium.AstNode {
-    readonly $container: Model;
+    readonly $container: Model | SchematicStatement;
     readonly $type: 'ConnectionGroup';
     connectionStatements: Array<ConnectionStatement>;
     name: string;
@@ -437,6 +438,21 @@ export const DrawingProperty = {
 
 export function isDrawingProperty(item: unknown): item is DrawingProperty {
     return reflection.isInstance(item, DrawingProperty.$type);
+}
+
+export interface DrawingRef extends langium.AstNode {
+    readonly $container: SchematicStatement;
+    readonly $type: 'DrawingRef';
+    ref: langium.Reference<DrawingStatement>;
+}
+
+export const DrawingRef = {
+    $type: 'DrawingRef',
+    ref: 'ref'
+} as const;
+
+export function isDrawingRef(item: unknown): item is DrawingRef {
+    return reflection.isInstance(item, DrawingRef.$type);
 }
 
 export interface DrawingScale extends langium.AstNode {
@@ -621,7 +637,7 @@ export function isLayoutElement(item: unknown): item is LayoutElement {
 }
 
 export interface LayoutGroup extends langium.AstNode {
-    readonly $container: Model;
+    readonly $container: Model | SchematicStatement;
     readonly $type: 'LayoutGroup';
     block: LayoutBlock;
     name?: string;
@@ -926,6 +942,33 @@ export function isRouteSection(item: unknown): item is RouteSection {
     return reflection.isInstance(item, RouteSection.$type);
 }
 
+export type SchematicOptions = ConnectionGroup | DrawingRef | LayoutGroup;
+
+export const SchematicOptions = {
+    $type: 'SchematicOptions'
+} as const;
+
+export function isSchematicOptions(item: unknown): item is SchematicOptions {
+    return reflection.isInstance(item, SchematicOptions.$type);
+}
+
+export interface SchematicStatement extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'SchematicStatement';
+    name: string;
+    options: Array<SchematicOptions>;
+}
+
+export const SchematicStatement = {
+    $type: 'SchematicStatement',
+    name: 'name',
+    options: 'options'
+} as const;
+
+export function isSchematicStatement(item: unknown): item is SchematicStatement {
+    return reflection.isInstance(item, SchematicStatement.$type);
+}
+
 export interface StandardConnection extends langium.AstNode {
     readonly $container: ConnectionKind;
     readonly $type: 'StandardConnection';
@@ -943,7 +986,7 @@ export function isStandardConnection(item: unknown): item is StandardConnection 
     return reflection.isInstance(item, StandardConnection.$type);
 }
 
-export type Statement = ComponentDeclaration | ConnectionGroup | ConnectionStatement | DrawingStatement | LayoutElement | LayoutGroup | NamedConnection | SymbolStatement | TagDeclarations;
+export type Statement = ComponentDeclaration | ConnectionGroup | ConnectionStatement | DrawingStatement | LayoutElement | LayoutGroup | NamedConnection | SchematicStatement | SymbolStatement | TagDeclarations;
 
 export const Statement = {
     $type: 'Statement'
@@ -1356,6 +1399,7 @@ export type KassaAstType = {
     DrawingBlock: DrawingBlock
     DrawingHeight: DrawingHeight
     DrawingProperty: DrawingProperty
+    DrawingRef: DrawingRef
     DrawingScale: DrawingScale
     DrawingStatement: DrawingStatement
     DrawingTitleBlock: DrawingTitleBlock
@@ -1389,6 +1433,8 @@ export type KassaAstType = {
     RouteConnection: RouteConnection
     RouteNamedConnection: RouteNamedConnection
     RouteSection: RouteSection
+    SchematicOptions: SchematicOptions
+    SchematicStatement: SchematicStatement
     StandardConnection: StandardConnection
     Statement: Statement
     StringValue: StringValue
@@ -1567,7 +1613,7 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                     name: ConnectionGroup.name
                 }
             },
-            superTypes: [Statement.$type]
+            superTypes: [SchematicOptions.$type, Statement.$type]
         },
         ConnectionKind: {
             name: ConnectionKind.$type,
@@ -1677,6 +1723,16 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             properties: {
             },
             superTypes: []
+        },
+        DrawingRef: {
+            name: DrawingRef.$type,
+            properties: {
+                ref: {
+                    name: DrawingRef.ref,
+                    referenceType: DrawingStatement.$type
+                }
+            },
+            superTypes: [SchematicOptions.$type]
         },
         DrawingScale: {
             name: DrawingScale.$type,
@@ -1804,7 +1860,7 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                     name: LayoutGroup.name
                 }
             },
-            superTypes: [Statement.$type]
+            superTypes: [SchematicOptions.$type, Statement.$type]
         },
         LayoutPlaceBlock: {
             name: LayoutPlaceBlock.$type,
@@ -2004,6 +2060,25 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             properties: {
             },
             superTypes: []
+        },
+        SchematicOptions: {
+            name: SchematicOptions.$type,
+            properties: {
+            },
+            superTypes: []
+        },
+        SchematicStatement: {
+            name: SchematicStatement.$type,
+            properties: {
+                name: {
+                    name: SchematicStatement.name
+                },
+                options: {
+                    name: SchematicStatement.options,
+                    defaultValue: []
+                }
+            },
+            superTypes: [Statement.$type]
         },
         StandardConnection: {
             name: StandardConnection.$type,
