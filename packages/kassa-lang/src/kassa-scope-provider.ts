@@ -1,34 +1,57 @@
-import type { AstNodeDescription, IndexManager, LangiumDocument, LangiumDocuments, ReferenceInfo, Scope } from 'langium';
-import { AstUtils, DefaultScopeComputation, EMPTY_SCOPE, URI } from 'langium';
-import { DefaultScopeProvider, stream, StreamScope } from 'langium';
+import { AstNodeDescription, DocumentCache, LangiumCoreServices, ReferenceInfo, Scope, URI } from 'langium';
+import { AstUtils, DefaultScopeComputation, EMPTY_SCOPE, MultiMapScope } from 'langium';
+import { DefaultScopeProvider } from 'langium';
 import { dirname, join } from 'node:path'; // TODO: Remove dep.
 import * as ast from './generated/ast.js';
-import { KassaServices } from './kassa-module.js';
 
 export class KassaScopeComputation extends DefaultScopeComputation {}
 
 /**
- * Kassa scope provider (that should be just the default currently).
+ * Kassa scope provider.
  */
 export class KassaScopeProvider extends DefaultScopeProvider {
+  // Cache for global scopes, which are expensive to compute and don't change often.
+  private documentCache: DocumentCache<string, Scope>;
 
-  constructor(services: KassaServices) {
+  constructor(services: LangiumCoreServices) {
     super(services);
-    this.langiumDocuments = services.shared.workspace.LangiumDocuments;
-    this.indexManager = services.shared.workspace.IndexManager;
+    this.documentCache = new DocumentCache<string, Scope>(services.shared);
   }
 
-  protected readonly langiumDocuments: LangiumDocuments;
-  protected readonly indexManager: IndexManager;
+  // https://github.com/eclipse-langium/langium/discussions/1957
+  // "Global" scope is now file + imports (including builtin).
+  protected override getGlobalScope(referenceType: string, context: ReferenceInfo): Scope {
+    const document = AstUtils.getDocument(context.container);
+    const currentUri = document.uri;
+    return this.documentCache.get(currentUri, referenceType, () => {
+      const currentDir = dirname(currentUri.path);
+      const uris = new Set<string>();
+      // Add current and builtin docuemnts to the scope.
+      uris.add(document.textDocument.uri);
+      uris.add(URI.parse('builtin:///library.kassa').toString());
+      const model = document.parseResult.value as ast.Model;
+      // Add imported files to the scope.
+      for (const fileImport of model.imports) {
+          const filePath = join(currentDir, fileImport.path);
+          const uri = currentUri.with({ path: filePath });
+          uris.add(uri.toString());
+      }
+
+      return new MultiMapScope(this.indexManager.allElements(referenceType, uris));
+    });
+  }
 
   override getScope(context: ReferenceInfo): Scope {
     const referenceType = this.reflection.getReferenceType(context);
 
-    // A port is a class member of sorts for a symbol.
-    // A port references is too nested to easily cross link, so we need to help langium here.
+    // A port is a "class member" of sorts for a symbol.
+    // Unfortunately, port references are too nested for Langium to easily cross link, so we need to help langium here.
+    // TODO: Make referenceType comparison more type safe.
     if (referenceType === 'PortElement') {
+      // Grab the symbol node that the port belongs to.
       const containerWithInfo = context.container.$container
       // Grab the related symbol nodes based on the component type.
+      // Ports can be defined in three-ish places:
       let symbolNode: ast.SymbolStatement | undefined;
       if (ast.isConnectedComponentDefine(containerWithInfo)) {
         symbolNode = containerWithInfo.componentId.componentType.ref;
@@ -52,8 +75,8 @@ export class KassaScopeProvider extends DefaultScopeProvider {
           if (ast.isPortElement(property)) {
             const desc = this.descriptions.createDescription(property, property.name)
             portDescs.push(desc)
-            // TODO: Make inlet work.
-            // "inlet" is being pushed, but unfortunately the intellisense doesn't work
+            // TODO: Implement custom completion provider.
+            // "inlet" is being correctly identified, but unfortunately the intellisense doesn't work
             // when it is partially typed "inle".
             // I know most languages require context before the cursor, but I was hoping
             // if v1 is already defined to the right, things would work.
@@ -63,51 +86,7 @@ export class KassaScopeProvider extends DefaultScopeProvider {
       }
     }
 
-    // For `v1: Valve`, restrict visible types to:
-    // - same-file top-level declarations
-    // - imported-file top-level exported declarations
-    if (
-      ast.isComponentDeclaration(context.container) &&
-      context.property === 'componentType'
-    ) {
-      const document = AstUtils.getDocument(context.container);
-      const model = document.parseResult.value as ast.Model;
-
-      const descriptions: AstNodeDescription[] = [];
-
-      // Same-file declarations that should be usable as component types
-      for (const stmt of model.statements ?? []) {
-        if (ast.isSymbolStatement(stmt)) {
-          descriptions.push(this.descriptions.createDescription(stmt, stmt.name));
-        }
-      }
-
-      // Load builtin library.
-      const uris = new Set<string>();
-      uris.add(URI.parse('builtin:///library.kassa').toString());
-
-      // Handle imported-file exported declarations.
-      const currentUri = document.uri;
-      for (const fileImport of model.imports ?? []) {
-        if (!fileImport.path) continue; // import is empty.
-        // console.log(`[kassa-lang] fileImport`, fileImport.path);
-        // TODO: Figure out how to handle imports without node.js?
-        const currentDir = dirname(currentUri.path);
-        const filePath = join(currentDir, fileImport.path);
-        const uri = currentUri.with({ path: filePath });
-        // console.log(`[kassa-lang] uri`, uri.toString());
-        uris.add(uri.toString());
-      }
-
-      // Pull globally exported elements from only those imported files
-      const importedDescriptions = this.indexManager.allElements(referenceType, uris).toArray();
-
-      return this.createScope(
-        [...descriptions, ...importedDescriptions],
-        EMPTY_SCOPE
-      );
-    }
-
+    // Langium by default does not include references that are nested.
     // Component declarations needs to look at the entire document.
     // Even stuff defined in a connection.
     if (referenceType === 'ComponentDeclaration') {
