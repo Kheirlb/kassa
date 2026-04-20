@@ -78,7 +78,6 @@ export type ConnectionInstance = {
 export type Group = {
   id: string
   name?: string
-  componentIds: string[]
   connectionIds: string[]
 }
 
