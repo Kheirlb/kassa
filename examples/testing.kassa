@@ -15,7 +15,7 @@ v2: Valve { name: "Name" }
 v3: Valve {
   name: "Valve with Tag",
   tags: [testTagRename],
-  hardware: [mcmaster."47865K21", default."PART 1"]
+  hardware: [mcmaster."47865K21"]
 }
 cyl: Cylinder
 
