@@ -7,6 +7,7 @@ import "./kassa-tags"
 import "./kassa-symbols"
 import "./kassa-layout"
 import "./kassa-drawing"
+import "./kassa-groups"
 
 entry Model:
   imports+=Import*
@@ -20,6 +21,7 @@ Statement:
 | ComponentDeclaration
 | NamedConnection
 | TagDeclarations
+| ConnectionGroup
 | LayoutGroup
 | LayoutElement
 | DrawingStatement

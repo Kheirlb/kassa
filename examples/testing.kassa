@@ -74,6 +74,10 @@ layout optionalLayoutGroup {
   route (v2 [outlet] --> [inlet] v3) = [bend -30]
 }
 
+connect groupName {
+  v00 --> v02
+}
+
 // Drawing example.
 drawing optionSheetName {
   height: 11

@@ -35,6 +35,7 @@ export type KassaKeywordNames =
     | "author"
     | "auto"
     | "color"
+    | "connect"
     | "date"
     | "drawing"
     | "false"
@@ -267,6 +268,23 @@ export function isConnectedComponentRef(item: unknown): item is ConnectedCompone
     return reflection.isInstance(item, ConnectedComponentRef.$type);
 }
 
+export interface ConnectionGroup extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'ConnectionGroup';
+    connectionStatements: Array<ConnectionStatement>;
+    name: string;
+}
+
+export const ConnectionGroup = {
+    $type: 'ConnectionGroup',
+    connectionStatements: 'connectionStatements',
+    name: 'name'
+} as const;
+
+export function isConnectionGroup(item: unknown): item is ConnectionGroup {
+    return reflection.isInstance(item, ConnectionGroup.$type);
+}
+
 export interface ConnectionKind extends langium.AstNode {
     readonly $container: ConnectionStatement;
     readonly $type: 'ConnectionKind';
@@ -285,7 +303,7 @@ export function isConnectionKind(item: unknown): item is ConnectionKind {
 }
 
 export interface ConnectionStatement extends langium.AstNode {
-    readonly $container: Model;
+    readonly $container: ConnectionGroup | Model;
     readonly $type: 'ConnectionStatement';
     connections: Array<ConnectionKind>;
     start: ConnectedComponent;
@@ -925,7 +943,7 @@ export function isStandardConnection(item: unknown): item is StandardConnection 
     return reflection.isInstance(item, StandardConnection.$type);
 }
 
-export type Statement = ComponentDeclaration | ConnectionStatement | DrawingStatement | LayoutElement | LayoutGroup | NamedConnection | SymbolStatement | TagDeclarations;
+export type Statement = ComponentDeclaration | ConnectionGroup | ConnectionStatement | DrawingStatement | LayoutElement | LayoutGroup | NamedConnection | SymbolStatement | TagDeclarations;
 
 export const Statement = {
     $type: 'Statement'
@@ -1327,6 +1345,7 @@ export type KassaAstType = {
     ConnectedComponent: ConnectedComponent
     ConnectedComponentDefine: ConnectedComponentDefine
     ConnectedComponentRef: ConnectedComponentRef
+    ConnectionGroup: ConnectionGroup
     ConnectionKind: ConnectionKind
     ConnectionStatement: ConnectionStatement
     DefinePortBlock: DefinePortBlock
@@ -1536,6 +1555,19 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: []
+        },
+        ConnectionGroup: {
+            name: ConnectionGroup.$type,
+            properties: {
+                connectionStatements: {
+                    name: ConnectionGroup.connectionStatements,
+                    defaultValue: []
+                },
+                name: {
+                    name: ConnectionGroup.name
+                }
+            },
+            superTypes: [Statement.$type]
         },
         ConnectionKind: {
             name: ConnectionKind.$type,

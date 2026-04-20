@@ -1,6 +1,6 @@
 import { builtinKassa, createKassaServices } from "@kassa/lang";
 import type { CompilerResult, ComponentDefinition, ComponentInstance, ComponentLayout, ConnectionInstance, ConnectionPath, Port, Project, ProjectLayout } from "@kassa/core";
-import { ComponentDeclaration, ComponentNameProperty, DrawingHeight, DrawingScale, DrawingTitleBlock, DrawingWidth, isComponentDeclaration, isConnectionStatement, isDrawingStatement, isLayoutElement, isLayoutGroup, isSymbolStatement, isTagDeclaration, isTagDeclarations, isTagSetDeclaration, LayoutElement, Model, OptionsArray, TagArray, TagColorProperty, TagNameProperty, TagSetNameProperty, TagSetTagsProperty, TitleBlockAuthor, TitleBlockDate, TitleBlockTitle, XPos } from "@kassa/lang/ast";
+import { ComponentDeclaration, ComponentNameProperty, ConnectionStatement, DrawingHeight, DrawingScale, DrawingTitleBlock, DrawingWidth, isComponentDeclaration, isConnectionGroup, isConnectionStatement, isDrawingStatement, isLayoutElement, isLayoutGroup, isSymbolStatement, isTagDeclaration, isTagDeclarations, isTagSetDeclaration, LayoutElement, Model, OptionsArray, TagArray, TagColorProperty, TagNameProperty, TagSetNameProperty, TagSetTagsProperty, TitleBlockAuthor, TitleBlockDate, TitleBlockTitle, XPos } from "@kassa/lang/ast";
 import { EmptyFileSystem, URI, LangiumDocument } from "langium";
 
 type FileSystemHost = {
@@ -125,6 +125,89 @@ export function parseLayoutElement(element: LayoutElement, layoutGroup: ProjectL
   }
 }
 
+export function parseConnectionStatement(statement: ConnectionStatement, project: Project): string[] {
+  let connectionIds: string[] = [];
+  let sourceOutlet: string | undefined;
+  let sourceName = "";
+  if (statement.start.define) {
+    sourceOutlet = statement.start.define.outlet?.portName.ref?.name;
+    sourceName = statement.start.define.componentId.name;
+    // Add component to project.
+    const sourceComponent: ComponentInstance = defineComponentInstance(statement.start.define.componentId);
+    // TODO: don't allow duplicates?
+    project.components.push(sourceComponent);
+  }
+  if (statement.start.ref) {
+    sourceOutlet = statement.start.ref.outlet?.portName.ref?.name;
+    // TODO: probably error if unknown.
+    sourceName = statement.start.ref.componentIdRef.ref?.name ?? "unknown";
+  }
+  for (const connection of statement.connections) {
+    let isDirectConnection = false;
+    let connectionSymbol = "-->";
+    let namedConnection: string | undefined;
+    let target = connection.standard?.target;
+    if (connection.direct) {
+      isDirectConnection = true;
+      connectionSymbol = "->"
+      target = connection.direct.target;
+      if (connection.direct.$type === "DirectConnectionToConnection") {
+        namedConnection = connection.direct.namedConnection.ref?.name;
+      }
+    }
+    if (!target) continue;
+    let maybeInlet: string | undefined;
+    let targetName: string;
+    if (target.define) {
+      maybeInlet = target.define.inlet?.portName.ref?.name;
+      targetName = target.define.componentId.name;
+      // Add component to project.
+      const targetComponent: ComponentInstance = defineComponentInstance(target.define.componentId);
+      // TODO: don't allow duplicates?
+      project.components.push(targetComponent);
+      const connection: ConnectionInstance = {
+        id: namedConnection ?? defineConnectionId(sourceName, sourceOutlet, targetName, maybeInlet),
+        name: namedConnection ?? `${sourceName} ${sourceOutlet ? `[${sourceOutlet}] ` : ""}${connectionSymbol} ${maybeInlet ? `[${maybeInlet}] ` : ""}${targetName}`,
+        from: sourceName,
+        fromSubId: sourceOutlet ?? "",
+        to: targetName,
+        toSubId: maybeInlet ?? "",
+        isDirectConnection,
+        isNamedConnection: !!namedConnection
+      }
+      // TODO: allow duplicates (or not?)
+      project.connections.push(connection);
+      connectionIds.push(connection.id);
+      // console.log(`def ${connection.name}`)
+      sourceOutlet = target.define.outlet?.portName.ref?.name;
+      sourceName = targetName;
+    }
+    if (target.ref) {
+      maybeInlet = target.ref.inlet?.portName.ref?.name;
+      // TODO: probably error if unknown.
+      targetName = target.ref.componentIdRef.ref?.name ?? "unknown";
+      const connection: ConnectionInstance = {
+        id: namedConnection ?? defineConnectionId(sourceName, sourceOutlet, targetName, maybeInlet),
+        name: namedConnection ?? `${sourceName} ${sourceOutlet ? `[${sourceOutlet}] ` : ""}${connectionSymbol} ${maybeInlet ? `[${maybeInlet}] ` : ""}${targetName}`,
+        from: sourceName,
+        fromSubId: sourceOutlet ?? "",
+        to: targetName,
+        toSubId: maybeInlet ?? "",
+        isDirectConnection,
+        isNamedConnection: !!namedConnection
+      }
+      // TODO: allow duplicates (or not?)
+      project.connections.push(connection);
+      connectionIds.push(connection.id);
+      // console.log(`ref ${sourceName} ${sourceOutlet ? `[${sourceOutlet}] ` : ""}${connectionSymbol} ${maybeInlet ? `[${maybeInlet}] ` : ""}${targetName}`)
+      sourceOutlet = target.ref.outlet?.portName.ref?.name;
+      // TODO: probably error if unknown.
+      sourceName = targetName ?? "unknown";
+    }
+  }
+  return connectionIds;
+}
+
 export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult {
   const diagnostics = docs.flatMap(d => d.diagnostics ?? []);
   const models = docs.map(d => d.parseResult.value); // typed Model
@@ -166,82 +249,7 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult
         // TODO: don't allow duplicates?
         defaultProject.components.push(component);
       } else if (isConnectionStatement(statement)) {
-        let sourceOutlet: string | undefined;
-        let sourceName = "";
-        if (statement.start.define) {
-          sourceOutlet = statement.start.define.outlet?.portName.ref?.name;
-          sourceName = statement.start.define.componentId.name;
-          // Add component to project.
-          const sourceComponent: ComponentInstance = defineComponentInstance(statement.start.define.componentId);
-          // TODO: don't allow duplicates?
-          defaultProject.components.push(sourceComponent);
-        }
-        if (statement.start.ref) {
-          sourceOutlet = statement.start.ref.outlet?.portName.ref?.name;
-          // TODO: probably error if unknown.
-          sourceName = statement.start.ref.componentIdRef.ref?.name ?? "unknown";
-        }
-        for (const connection of statement.connections) {
-          let isDirectConnection = false;
-          let connectionSymbol = "-->";
-          let namedConnection: string | undefined;
-          let target = connection.standard?.target;
-          if (connection.direct) {
-            isDirectConnection = true;
-            connectionSymbol = "->"
-            target = connection.direct.target;
-            if (connection.direct.$type === "DirectConnectionToConnection") {
-              namedConnection = connection.direct.namedConnection.ref?.name;
-            }
-          }
-          if (!target) continue;
-          let maybeInlet: string | undefined;
-          let targetName: string;
-          if (target.define) {
-            maybeInlet = target.define.inlet?.portName.ref?.name;
-            targetName = target.define.componentId.name;
-            // Add component to project.
-            const targetComponent: ComponentInstance = defineComponentInstance(target.define.componentId);
-            // TODO: don't allow duplicates?
-            defaultProject.components.push(targetComponent);
-            const connection: ConnectionInstance = {
-              id: namedConnection ?? defineConnectionId(sourceName, sourceOutlet, targetName, maybeInlet),
-              name: namedConnection ?? `${sourceName} ${sourceOutlet ? `[${sourceOutlet}] ` : ""}${connectionSymbol} ${maybeInlet ? `[${maybeInlet}] ` : ""}${targetName}`,
-              from: sourceName,
-              fromSubId: sourceOutlet ?? "",
-              to: targetName,
-              toSubId: maybeInlet ?? "",
-              isDirectConnection,
-              isNamedConnection: !!namedConnection
-            }
-            // TODO: allow duplicates (or not?)
-            defaultProject.connections.push(connection);
-            // console.log(`def ${connection.name}`)
-            sourceOutlet = target.define.outlet?.portName.ref?.name;
-            sourceName = targetName;
-          }
-          if (target.ref) {
-            maybeInlet = target.ref.inlet?.portName.ref?.name;
-            // TODO: probably error if unknown.
-            targetName = target.ref.componentIdRef.ref?.name ?? "unknown";
-            const connection: ConnectionInstance = {
-              id: namedConnection ?? defineConnectionId(sourceName, sourceOutlet, targetName, maybeInlet),
-              name: namedConnection ?? `${sourceName} ${sourceOutlet ? `[${sourceOutlet}] ` : ""}${connectionSymbol} ${maybeInlet ? `[${maybeInlet}] ` : ""}${targetName}`,
-              from: sourceName,
-              fromSubId: sourceOutlet ?? "",
-              to: targetName,
-              toSubId: maybeInlet ?? "",
-              isDirectConnection,
-              isNamedConnection: !!namedConnection
-            }
-            // TODO: allow duplicates (or not?)
-            defaultProject.connections.push(connection);
-            // console.log(`ref ${sourceName} ${sourceOutlet ? `[${sourceOutlet}] ` : ""}${connectionSymbol} ${maybeInlet ? `[${maybeInlet}] ` : ""}${targetName}`)
-            sourceOutlet = target.ref.outlet?.portName.ref?.name;
-            // TODO: probably error if unknown.
-            sourceName = targetName ?? "unknown";
-          }
-        }
+        parseConnectionStatement(statement, defaultProject);
       } else if (isTagDeclaration(statement)) {
         const color = statement.block?.properties.find((p): p is TagColorProperty => p.$type === "TagColorProperty")?.value;
         let colorString = "default";
@@ -339,6 +347,18 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult
           // TODO: Indicate builtin status.
         }
         defaultProject.componentDefinitions.push(symbol);
+      } else if (isConnectionGroup(statement)) {
+        const connectionIds: string[] = [];
+        for (const connection of statement.connectionStatements) {
+          const ids = parseConnectionStatement(connection, defaultProject);
+          connectionIds.push(...ids);
+        }
+        const group = {
+          id: statement.name,
+          name: statement.name,
+          connectionIds
+        }
+        defaultProject.groups.push(group);
       }
     }
   }
