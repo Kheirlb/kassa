@@ -36,6 +36,10 @@ export async function compileProjectFromMemory(
   langiumDocs.addDocument(entryDoc);
   allDocs.push(entryDoc);
 
+  // Track URIs we have added so we don't add duplicates when handling imports.
+  const addedUris = new Set<string>();
+  addedUris.add(entryUri.toString());
+
   // Get all imports and create documents for them as well.
   // TODO: handle recursion, circular imports, missing files, etc.
   const model = entryDoc.parseResult.value;
@@ -43,10 +47,11 @@ export async function compileProjectFromMemory(
     const filepath = host.resolveImport(entryId, importedFile.path);
     const importedUri = URI.parse(filepath);
     const importedText = host.readFile(filepath);
-    if (importedText) {
+    if (importedText && !addedUris.has(importedUri.toString())) {
       const importedDoc = factory.fromString<Model>(importedText, importedUri);
       langiumDocs.addDocument(importedDoc);
       allDocs.push(importedDoc);
+      addedUris.add(importedUri.toString());
     }
   }
 

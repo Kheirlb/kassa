@@ -1,15 +1,19 @@
 import "symbols.kassa"
+import "symbols.kassa"
 load "sample.csv" as mcmaster
 
 // Tags here.
 tag testTagRename { name: "Test Tags", color: green }
 tagset testTags {
   name: "Test Tagsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
-  tags: [testTagRename]
+  tags: [testTagRename, testTagRename]
 }
 
 // Components here.
 v0: Valve
+// v0: Valve {
+//   name: "Name defined here but not there"
+// }
 v1: Valve {}
 v2: Valve { name: "Name" }
 v3: Valve {
@@ -20,11 +24,15 @@ v3: Valve {
 cyl: Cylinder
 
 // Custom symbol.
+// symbol CustomTank
 symbol CustomTank <Tank> {
   port inlet = {
     x: 35
     y: 50
     rot: 180
+  }
+  port inlet = {
+    
   }
 }
 // symbol CustomValve <Valve> { }

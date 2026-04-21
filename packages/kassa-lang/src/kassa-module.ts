@@ -4,11 +4,15 @@ import { KassaGeneratedModule, KassaGeneratedSharedModule } from './generated/mo
 import { KassaScopeComputation, KassaScopeProvider } from './kassa-scope-provider.js';
 import { KassaFormatter } from './kassa-formatter.js';
 import { KassaWorkspaceManager } from './kassa-workspace-manager.js';
+import { KassaValidator, registerValidationChecks } from './kassa-validation.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
  */
 export type KassaAddedServices = {
+    validation: {
+        KassaValidator: KassaValidator
+    }
 }
 
 /**
@@ -30,6 +34,9 @@ export const KassaModule: Module<KassaServices, PartialLangiumServices & KassaAd
     },
     lsp: {
         Formatter: () => new KassaFormatter()
+    },
+    validation: {
+        KassaValidator: () => new KassaValidator()
     }
 };
 
@@ -71,6 +78,7 @@ export function createKassaServices(context: DefaultSharedModuleContext): {
         KassaModule
     );
     shared.ServiceRegistry.register(Kassa);
+    registerValidationChecks(Kassa);
     if (!context.connection) {
         // We don't run inside a language server
         // Therefore, initialize the configuration provider instantly

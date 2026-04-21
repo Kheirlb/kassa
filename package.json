@@ -9,7 +9,8 @@
     "build:devlang": "pnpm --filter @kassa/lang --filter kassa-vscode-ext build",
     "build:cli": "pnpm --filter 'kassa-cli...' build",
     "kassa": "pnpm run build:cli && node apps/kassa-cli/dist/index.js",
-    "kassa:raw": "node apps/kassa-cli/dist/index.js"
+    "kassa:raw": "node apps/kassa-cli/dist/index.js",
+    "package:ext": "pnpm --filter kassa-vscode-ext package"
   },
   "keywords": [],
   "author": "",

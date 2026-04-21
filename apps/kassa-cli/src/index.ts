@@ -15,22 +15,17 @@ function readFileFromDisk(id: string): string | undefined {
   }
 }
 
-function checkDiagnostics(diagnostics: CoreDiagnostic[]) {
-  if (diagnostics.length === 0) {
-    return false;
-  }
-  let hasError = false;
-  console.log(`Found ${diagnostics.length} diagnostic(s):`);
+function checkDiagnostics(diagnostics: CoreDiagnostic[]): boolean {
+  return diagnostics.some(diag => diag.severity === 1);
+}
+
+function printDiagnostics(diagnostics: CoreDiagnostic[]) {
   for (const diag of diagnostics) {
     // Format diagnostics nicely for VSCode or other editors (e.g. with file/line info if available)
     // Serverity mapping: 1 = error, 2 = warning, 3 = info, 4 = hint
     const severityStr = diag.severity === 1 ? 'error' : diag.severity === 2 ? 'warning' : diag.severity === 3 ? 'info' : 'hint';
     console.error(`- [${severityStr}] ${diag.uriString}:${diag.range?.start.line}:${diag.range?.start.column} - ${diag.message}`);
-    if (diag.severity === 1) {
-      hasError = true;
-    }
   }
-  return hasError;
 }
 
 const program = new Command();
@@ -41,23 +36,24 @@ program
 program
   .command('check <file>')
   .description('Validate a Kassa file (no output)')
-  .action(async (file) => {
+  .action(async (file, options) => {
     const filepath = path.resolve(file);
     const result = await compileProjectFromMemory(filepath, {
       readFile: readFileFromDisk,
       resolveImport: (from, importPath) => path.resolve(path.dirname(from), importPath)
     });
-    const hasError = checkDiagnostics(result.diagnostics);
-    if (hasError) {
-      console.error('Compilation failed with at least one error.');
+    if (result.diagnostics.length > 0) {
+      printDiagnostics(result.diagnostics);
       process.exit(1);
     } else {
       console.log('Compilation successful. No errors found.');
     }
   });
+
 program
   .command('compile <file>')
   .description('Compile a Kassa file to IR')
+  .option('-q, --quiet', 'Suppress warnings in output')
   .option('-o, --out <file>', 'Output file (default: stdout)')
   .action(async (file, options) => {
     const filepath = path.resolve(file);
@@ -67,7 +63,8 @@ program
     });
     const hasError = checkDiagnostics(result.diagnostics);
     if (hasError) {
-      console.error('Compilation failed with at least one error. No output generated.');
+      console.error('Compilation failed with errors:');
+      printDiagnostics(result.diagnostics);
       process.exit(1);
     }
 
@@ -78,8 +75,13 @@ program
       console.log(`Wrote IR to ${options.out}`);
     } else {
       console.log(output);
+      if (result.diagnostics.length > 0 && !options.quiet) {
+        console.warn('Compilation completed with warnings:');
+        printDiagnostics(result.diagnostics);
+      }
     }
   });
+
 program
   .command('render <file>')
   .action(async (file) => {

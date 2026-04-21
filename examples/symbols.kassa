@@ -7,3 +7,5 @@ symbol CustomValve <Valve> {
   svg: "customvalve.svg"
   label: bottom
 }
+
+v0: Valve
