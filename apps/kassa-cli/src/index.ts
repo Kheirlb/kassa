@@ -3,6 +3,7 @@ import path from 'path';
 import { Command } from 'commander';
 import { renderSvg } from '@kassa/renderer';
 import { compileProjectFromMemory } from '@kassa/compiler'; 
+import { CoreDiagnostic } from '@kassa/core';
 
 // Create a function that reads the provided file from disk.
 function readFileFromDisk(id: string): string | undefined {
@@ -12,6 +13,24 @@ function readFileFromDisk(id: string): string | undefined {
     console.error(`Error reading file ${id}:`, err);
     return undefined;
   }
+}
+
+function checkDiagnostics(diagnostics: CoreDiagnostic[]) {
+  if (diagnostics.length === 0) {
+    return false;
+  }
+  let hasError = false;
+  console.log(`Found ${diagnostics.length} diagnostic(s):`);
+  for (const diag of diagnostics) {
+    // Format diagnostics nicely for VSCode or other editors (e.g. with file/line info if available)
+    // Serverity mapping: 1 = error, 2 = warning, 3 = info, 4 = hint
+    const severityStr = diag.severity === 1 ? 'error' : diag.severity === 2 ? 'warning' : diag.severity === 3 ? 'info' : 'hint';
+    console.error(`- [${severityStr}] ${diag.uriString}:${diag.range?.start.line}:${diag.range?.start.column} - ${diag.message}`);
+    if (diag.severity === 1) {
+      hasError = true;
+    }
+  }
+  return hasError;
 }
 
 const program = new Command();
@@ -28,13 +47,12 @@ program
       readFile: readFileFromDisk,
       resolveImport: (from, importPath) => path.resolve(path.dirname(from), importPath)
     });
-    if (result.diagnostics.length === 0) {
-      console.log('No issues found.');
+    const hasError = checkDiagnostics(result.diagnostics);
+    if (hasError) {
+      console.error('Compilation failed with at least one error.');
+      process.exit(1);
     } else {
-      console.log('Diagnostics:');
-      for (const diag of result.diagnostics) {
-        console.log(`- [${diag.severity}] ${diag.message}`);
-      }
+      console.log('Compilation successful. No errors found.');
     }
   });
 program
@@ -47,6 +65,12 @@ program
       readFile: readFileFromDisk,
       resolveImport: (from, importPath) => path.resolve(path.dirname(from), importPath)
     });
+    const hasError = checkDiagnostics(result.diagnostics);
+    if (hasError) {
+      console.error('Compilation failed with at least one error. No output generated.');
+      process.exit(1);
+    }
+
     const output = JSON.stringify(result, null, 2);
 
     if (options.out) {

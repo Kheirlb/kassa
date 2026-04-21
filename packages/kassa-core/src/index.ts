@@ -6,15 +6,16 @@ export type CompilerResult = {
 }
 
 export type CoreDiagnostic = {
-  severity: 'error' | 'warning' | 'info'
-  message: string
-  code?: string
+  uriString: string
   range?: {
-    uri: string
     start: { line: number; column: number }
     end: { line: number; column: number }
   }
-  // TODO target?
+  severity?: 1 | 2 | 3 | 4;
+  code?: number | string;
+  message: string
+  // TODO: more langium-like diagnostics? 
+  // TODO: target?
 }
 
 export type Bundle = {

@@ -1,7 +1,10 @@
 import { builtinKassa, createKassaServices } from "@kassa/lang";
-import type { CompilerResult, ComponentDefinition, ComponentInstance, ComponentLayout, ConnectionInstance, ConnectionPath, Port, Project, ProjectLayout } from "@kassa/core";
+import type { CompilerResult, ComponentDefinition, ComponentInstance, ComponentLayout, ConnectionInstance, ConnectionPath, CoreDiagnostic, Port, Project, ProjectLayout } from "@kassa/core";
 import { ComponentDeclaration, ComponentNameProperty, ConnectionStatement, DrawingHeight, DrawingScale, DrawingTitleBlock, DrawingWidth, isComponentDeclaration, isConnectionGroup, isConnectionStatement, isDrawingStatement, isLayoutElement, isLayoutGroup, isSymbolStatement, isTagDeclaration, isTagDeclarations, isTagSetDeclaration, LayoutElement, Model, HardwareOptionsArray, TagArray, TagColorProperty, TagNameProperty, TagSetNameProperty, TagSetTagsProperty, TitleBlockAuthor, TitleBlockDate, TitleBlockTitle, XPos } from "@kassa/lang/ast";
 import { EmptyFileSystem, URI, LangiumDocument } from "langium";
+
+// TODO: make compiler version package aware?
+const COMPILER_VERSION = "0.0.1";
 
 type FileSystemHost = {
   readFile: (id: string) => string | undefined
@@ -25,7 +28,7 @@ export async function compileProjectFromMemory(
   // TODO: better error handling
   const entryText = host.readFile(filepath);
   if (!entryText) {
-    return { version: "0.0.1", projects: [], documents: [], diagnostics: [{ severity: "error", message: `Entry file not found: ${entryId}` }] };
+    return { version: COMPILER_VERSION, projects: [], documents: [], diagnostics: [{ severity: 1, message: `Entry file not found: ${entryId}`, uriString: filepath }] };
   }
 
   // Create typed document (and run parser)
@@ -209,8 +212,7 @@ export function parseConnectionStatement(statement: ConnectionStatement, project
 }
 
 export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult {
-  const diagnostics = docs.flatMap(d => d.diagnostics ?? []);
-  const models = docs.map(d => d.parseResult.value); // typed Model
+  // const models = docs.map(d => d.parseResult.value); // typed Model
   // console.log(`Compiling ${models.length} models: ${models.map(m => m.$document?.uri).join(", ")}`);
 
   const defaultProject: Project = {
@@ -234,9 +236,25 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult
     connectionPaths: []
   }
 
-  for (const model of models) {
+  const builtinUri = URI.parse('builtin:///library.kassa');
+  const coreDiagnostics: CoreDiagnostic[] = [];
+  for (const doc of docs) {
+    const model = doc.parseResult.value;
+    for (const diag of doc.diagnostics ?? []) {
+      coreDiagnostics.push({
+        uriString: doc.uri.toString(),
+        severity: diag.severity,
+        code: diag.code,
+        message: diag.message,
+        range: diag.range ? {
+          // Langium's range is 0-based, but most editors expect 1-based, so we add 1 here for better editor integration.
+          start: { line: diag.range.start.line + 1, column: diag.range.start.character },
+          end: { line: diag.range.end.line + 1, column: diag.range.end.character }
+        } : undefined
+      });
+    }
+
     // console.log(`Compiling model with ${model.statements.length} statements and ${model.imports.length} imports.`);
-    const builtinUri = URI.parse('builtin:///library.kassa');
     let isBuiltin = false;
     if (model.$document?.uri.toString() === builtinUri.toString()) {
       isBuiltin = true;
@@ -367,13 +385,13 @@ export function compileDocuments(docs: LangiumDocument<Model>[]): CompilerResult
 
   // TODO: lower models -> IR
   return {
-    version: "0.0.1",
+    version: COMPILER_VERSION,
     projects: [defaultProject],
     documents: docs.map(d => ({
       uri: d.uri.toString(),
       text: "<TODO>", // Hiding text for development d.textDocument.getText(),
       imports: [] // TODO
     })),
-    diagnostics: []
+    diagnostics: coreDiagnostics
   };
 }
