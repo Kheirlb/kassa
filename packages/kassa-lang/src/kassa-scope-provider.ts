@@ -1,10 +1,31 @@
-import { AstNodeDescription, DocumentCache, LangiumCoreServices, ReferenceInfo, Scope, URI } from 'langium';
+import { AstNode, AstNodeDescription, DocumentCache, LangiumCoreServices, LangiumDocument, ReferenceInfo, Scope, URI } from 'langium';
 import { AstUtils, DefaultScopeComputation, EMPTY_SCOPE, MultiMapScope } from 'langium';
 import { DefaultScopeProvider } from 'langium';
 import { dirname, join } from 'node:path'; // TODO: Remove dep.
 import * as ast from './generated/ast.js';
 
-export class KassaScopeComputation extends DefaultScopeComputation {}
+export class KassaScopeComputation extends DefaultScopeComputation {
+  override async collectExportedSymbols(
+    document: LangiumDocument<AstNode>
+  ): Promise<AstNodeDescription[]> {
+    console.log("[kassa-lang] running collectExportedSymbols")
+    const exported = await super.collectExportedSymbols(document);
+    const seen = new Set(exported.map(e => `${e.type}:${e.name}`));
+
+    const extra: AstNodeDescription[] = [];
+    for (const node of AstUtils.streamAllContents(document.parseResult.value)) {
+      if (ast.isComponentDeclaration(node) && node.name) {
+        const key = `ComponentDeclaration:${node.name}`;
+        if (!seen.has(key)) {
+          extra.push(this.descriptions.createDescription(node, node.name, document));
+          seen.add(key);
+        }
+      }
+    }
+
+    return [...exported, ...extra];
+  }
+}
 
 /**
  * Kassa scope provider.
@@ -36,7 +57,6 @@ export class KassaScopeProvider extends DefaultScopeProvider {
           const uri = currentUri.with({ path: filePath });
           uris.add(uri.toString());
       }
-
       return new MultiMapScope(this.indexManager.allElements(referenceType, uris));
     });
   }
@@ -84,19 +104,6 @@ export class KassaScopeProvider extends DefaultScopeProvider {
         }
         return this.createScope(portDescs, EMPTY_SCOPE);
       }
-    }
-
-    // Langium by default does not include references that are nested.
-    // Component declarations needs to look at the entire document.
-    // Even stuff defined in a connection.
-    if (referenceType === 'ComponentDeclaration') {
-      const doc = AstUtils.getDocument(context.container);
-      const root = doc.parseResult.value;
-      const localDescs = AstUtils.streamAllContents(root)
-        .filter(ast.isComponentDeclaration)
-        .map(node => this.descriptions.createDescription(node, node.name));
-
-      return this.createScope(localDescs, EMPTY_SCOPE);
     }
 
     return super.getScope(context);
