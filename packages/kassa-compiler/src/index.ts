@@ -83,6 +83,7 @@ export function defineComponentInstance(componentId: ComponentDeclaration): Comp
 }
 
 // Generate connection id.
+// TODO: Use the one in lang? Or move to core?
 export function defineConnectionId(sourceName: string, sourceOutlet: string | undefined, targetName: string, targetInlet: string | undefined): string {
   return `connection-${sourceName}.${sourceOutlet ?? "auto"}-to-${targetName}.${targetInlet ?? "auto"}`;
 }
