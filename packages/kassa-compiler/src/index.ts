@@ -11,6 +11,8 @@ import type {
   Layout,
   Port,
   Project,
+  Schematic,
+  UsedLayout,
 } from "@kassa/core";
 import {
   ComponentDeclaration,
@@ -42,6 +44,7 @@ import {
   TitleBlockDate,
   TitleBlockTitle,
   XPos,
+  isSchematicStatement,
 } from "@kassa/lang/ast";
 import { EmptyFileSystem, URI, LangiumDocument } from "langium";
 
@@ -456,8 +459,8 @@ export function compileDocuments(
     for (const statement of model.statements) {
       if (isComponentDeclaration(statement)) {
         const component = defineComponentInstance(statement);
-        // TODO: don't allow duplicates?
-        defaultProject.componentInstances.push(component);
+        // TODO: error/warn on duplicates
+        addComponent(context, component)
       } else if (isConnectionStatement(statement)) {
         parseConnectionStatement(statement, context);
       } else if (isTagDeclaration(statement)) {
@@ -480,6 +483,7 @@ export function compileDocuments(
             )?.value ?? statement.name,
           color: colorString,
         };
+        // TODO: handle duplicates
         defaultProject.tags.push(tag);
       } else if (isTagSetDeclaration(statement)) {
         const tagSet = {
@@ -495,10 +499,11 @@ export function compileDocuments(
                 p.elements.map((t) => t.ref.ref?.name ?? "unknown"),
               ) ?? [],
         };
+        // TODO: handle duplicates
         defaultProject.tagSets.push(tagSet);
       } else if (isLayoutElement(statement)) {
         // TODO: Avoid double parsing LayoutElements if also in isLayout below?
-        parseLayoutElement(statement, defaultLayoutGroup);
+        // parseLayoutElement(statement, defaultLayoutGroup);
       } else if (isLayout(statement)) {
         const layoutGroup: Layout = {
           id: statement.name ?? "unnamed-layout", // TODO: better id generation, avoid duplicates?
@@ -627,6 +632,56 @@ export function compileDocuments(
           tagIds
         };
         defaultProject.groups.push(group);
+      } else if (isSchematicStatement(statement)) {
+        const schematic: Schematic = {
+          id: statement.name,
+          name: statement.name,
+          sourceDocumentId: "", // TODO
+          usedLayouts: [],
+          layout: {
+            placements: [],
+            routes: []
+          },
+          drawing: {
+            templateId: "",
+          }
+        }
+
+        for (const option of statement.block.options) {
+          if (option.$type === "LayoutRef") {
+            const layoutObject: UsedLayout = {
+              layoutId: "",
+              x: 0,
+              y: 0
+            }
+            const layoutRef = option.layoutId.ref?.name ?? ""
+            layoutObject.layoutId = layoutRef;
+            for (const prop of option.block?.properties ?? []) {
+              if (prop.$type === "XPos") {
+                layoutObject.x = Number(prop.value.value)
+              } else if (prop.$type === "YPos") {
+                layoutObject.y = Number(prop.value.value)
+              } else if (prop.$type === "Rot") {
+                layoutObject.rot = Number(prop.value.value)
+              } else {
+                // TODO: error handling for unknown property?
+              }
+            }
+            schematic.usedLayouts.push(layoutObject)
+          } else if (option.$type === "DrawingRef") {
+            schematic.drawing.templateId = option.ref.ref?.name ?? ""
+            // TODO fields
+          } else if (option.$type === "GroupRefArray") {
+            const groupIds: string[] = [];
+            for (const groupRef of option.ref) {
+              const groupId = groupRef.ref?.name ?? ""
+              groupIds.push(groupId)
+            }
+            schematic.includeGroupIds?.push(...groupIds) 
+          }
+        }
+
+        defaultProject.schematics.push(schematic);
       }
     }
   }
