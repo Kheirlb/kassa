@@ -210,5 +210,5 @@ export type InlineLayout = {
 
 export type DrawingUse = {
   templateId: string
-  fields: Record<string, string>
+  fields?: Record<string, string>
 }
