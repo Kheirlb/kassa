@@ -1,8 +1,49 @@
 export type CompilerResult = {
   version: string
-  projects: Project[]
-  documents: SourceDocument[]
+  workspace: Workspace
   diagnostics: CoreDiagnostic[]
+}
+
+export type Workspace = {
+  id: string
+  projects: Project[]
+}
+
+export type Project = {
+  id: string
+  name?: string
+  rootUri?: string
+  entryDocumentId?: string
+
+  documents: SourceDocument[]
+
+  componentDefinitions: ComponentDefinition[]
+  componentInstances: ComponentInstance[]
+  connectionInstances: ConnectionInstance[]
+  groups: Group[]
+  tags: Tag[]
+  tagSets: TagSet[]
+
+  drawingTemplates: DrawingTemplate[]
+  layouts: Layout[]
+  schematics: Schematic[]
+}
+
+export type SourceDocument = {
+  id: string
+  uri: string
+  text?: string
+  imports: ImportRef[]
+
+  layoutIds: string[]
+  schematicIds: string[]
+}
+
+export type ImportRef = {
+  path: string
+  resolvedUri?: string
+  projectId?: string
+  isExternal?: boolean
 }
 
 export type CoreDiagnostic = {
@@ -11,143 +52,164 @@ export type CoreDiagnostic = {
     start: { line: number; column: number }
     end: { line: number; column: number }
   }
-  severity?: 1 | 2 | 3 | 4;
-  code?: number | string;
+  severity?: 1 | 2 | 3 | 4
+  code?: number | string
   message: string
-  // TODO: more langium-like diagnostics? 
-  // TODO: target?
 }
 
-export type Bundle = {
-  result: CompilerResult
-  // exports: ExportArtifact[] // svg, json, etc.
-}
-
-export type Project = {
-  id: string
-  name?: string
-  componentDefinitions: ComponentDefinition[]
-  components: ComponentInstance[]
-  connections: ConnectionInstance[]
-  drawings: Drawing[]
-  groups: Group[]
-  // hardwareLibraries: HardwareLibrary[]
-  layouts: ProjectLayout[]
-  // runtimeBindings: RuntimeBinding[]
-  schematics: Schematic[]
-  tags: Tag[]
-  tagsets: TagSet[]
-}
-// custom content (like symbols and drawings) not include in a component are ignored
-
-export type SourceDocument = {
-  uri: string
-  text: string
-  imports: string[]
-}
-
-// --- Begin Project Types ---
+// ---------- Definitions ----------
 
 export type ComponentDefinition = {
   id: string
-  ref?: string
+  name: string
+  extendsId?: string
   svg?: string
   label?: string
   ports: Port[]
-  // isBuiltin?: boolean // include builtin status/version?
-}
-
-export type ComponentInstance = {
-  id: string
-  type: string
-  name: string
-  tags: string[]
-  hardware: string[]
-}
-
-export type ConnectionInstance = {
-  id: string
-  name: string
-  from: string
-  fromSubId: string
-  to: string
-  toSubId: string
-  isDirectConnection: boolean // no wire or tubing
-  isNamedConnection: boolean // has a name
-}
-
-export type Group = {
-  id: string
-  name?: string
-  connectionIds: string[]
+  sourceDocumentId?: string
 }
 
 export type Port = {
   id: string
+  name: string
   x: number
   y: number
   rot: number
 }
 
-export type ProjectLayout = {
-  id: string
-  name: string
-  componentPositions: ComponentLayout[]
-  connectionPaths: ConnectionPath[]
-}
-
-export type ComponentLayout = {
-  componentId: string
-  x: number // x position in "units"
-  y: number // y position in "units"
-  z?: number // use for layering for now
-  positionRelativeToId?: string // part or none
-  rot: number // along z in degrees
-  mirror?: boolean // mirror along y-axis
-}
-
-export type Segment = {
-  deg?: number // rotation in degrees
-  length?: number // in "units"
-  auto?: boolean // auto route this segment
-}
-
-export type ConnectionPath = {
-	connectionId: string
-	segments: Segment[]
-}
-
-export type Schematic = {
-  id: string
-  components: string[]
-  groups: string[]
-  useLayouts: string[]
-  // layoutOverrides: SchematicLayout[]
-  drawing: string
-}
-
-export type Drawing = {
-  id: string
-  width: number
-  height: number
-  scale: number
-  titleBlock?: {
-    title: string
-    author: string
-    date: string
-    // revision: string
-    // organization: string
-  }
-}
-
 export type Tag = {
   id: string
   name: string
-  color: string
+  color?: string
+  sourceDocumentId?: string
 }
 
 export type TagSet = {
   id: string
   name: string
-  tags: string[]
+  tagIds: string[]
+  sourceDocumentId?: string
+}
+
+export type Group = {
+  id: string
+  name: string
+  componentIds: string[]
+  connectionIds: string[]
+  tagIds: string[]
+  sourceDocumentId?: string
+}
+
+// ---------- Instances ----------
+
+export type ComponentInstance = {
+  id: string
+  name: string
+  definitionId: string
+  tagIds: string[]
+  hardwareRefs: string[]
+  groupIds: string[]
+  sourceDocumentId?: string
+}
+
+export type ConnectionInstance = {
+  id: string
+  name: string
+  from: ComponentPortRef
+  to: ComponentPortRef
+  isDirectConnection: boolean
+  groupIds: string[]
+  tagIds: string[]
+  sourceDocumentId?: string
+}
+
+export type ComponentPortRef = {
+  componentId: string
+  portId: string
+}
+
+// ---------- Drawing Templates ----------
+
+export type DrawingTemplate = {
+  id: string
+  name: string
+  width: number
+  height: number
+  scale: number
+  titleBlocks: TitleBlockTemplate[]
+  sourceDocumentId?: string
+}
+
+export type TitleBlockTemplate = {
+  id: string
+  name: string
+  fields: string[]
+}
+
+// ---------- Layouts ----------
+
+export type Layout = {
+  id: string
+  name: string
+  sourceDocumentId?: string
+  placements: ComponentPlacement[]
+  routes: ConnectionRoute[]
+  usedLayouts: UsedLayout[]
+}
+
+export type UsedLayout = {
+  layoutId: string
+  x: number
+  y: number
+  z?: number
+  rot?: number
+  mirror?: boolean
+}
+
+export type ComponentPlacement = {
+  componentId: string
+  x: number
+  y: number
+  z?: number
+  rot?: number
+  mirror?: boolean
+  relativeTo?: string
+}
+
+export type ConnectionRoute = {
+  connectionId: string
+  segments: RouteSegment[]
+}
+
+export type RouteSegment = {
+  deg?: number
+  length?: number
+  auto?: boolean
+}
+
+// ---------- Schematics ----------
+
+export type Schematic = {
+  id: string
+  name: string
+  sourceDocumentId: string
+
+  // If empty, include everything in scope.
+  includeComponentIds?: string[]
+  includeGroupIds?: string[]
+
+  usedLayouts: UsedLayout[]
+  layout: InlineLayout
+
+  drawing: DrawingUse
+}
+
+export type InlineLayout = {
+  placements: ComponentPlacement[]
+  routes: ConnectionRoute[]
+}
+
+export type DrawingUse = {
+  templateId: string
+  fields: Record<string, string>
 }
