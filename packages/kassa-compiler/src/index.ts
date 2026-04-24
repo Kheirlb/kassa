@@ -53,6 +53,34 @@ type FileSystemHost = {
   resolveImport: (from: string, importPath: string) => string;
 };
 
+type CompilerContext = {
+  components: ComponentInstance[];
+  connections: ConnectionInstance[];
+
+  componentById: Map<string, ComponentInstance>;
+  connectionById: Map<string, ConnectionInstance>;
+};
+
+function addComponent(ctx: CompilerContext, component: ComponentInstance) {
+  if (ctx.componentById.has(component.id)) {
+    return false;
+  }
+
+  ctx.components.push(component);
+  ctx.componentById.set(component.id, component);
+  return true
+}
+
+function addConnection(ctx: CompilerContext, connection: ConnectionInstance) {
+  if (ctx.connectionById.has(connection.id)) {
+    return false;
+  }
+
+  ctx.connections.push(connection);
+  ctx.connectionById.set(connection.id, connection);
+  return true
+}
+
 export async function compileProjectFromMemory(
   entryId: string,
   host: FileSystemHost,
@@ -224,11 +252,27 @@ export function parseLayoutElement(
   }
 }
 
+// function componentInstancesToId(components: ComponentInstance[]) {
+//   return components.map(comp => comp.id)
+// } 
+
+// function connectionInstancesToId(connections: ConnectionInstance[]) {
+//   return connections.map(conn => conn.id)
+// }
+
+type ConnectionStatementResult = {
+  componentIds: Set<string>,
+  connectionIds: Set<string>
+}
+
 export function parseConnectionStatement(
   statement: ConnectionStatement,
-  project: Project,
-): string[] {
-  let connectionIds: string[] = [];
+  context: CompilerContext
+): ConnectionStatementResult {
+  const result: ConnectionStatementResult = {
+    componentIds: new Set(),
+    connectionIds: new Set()
+  }
   let sourceOutlet: string | undefined;
   let sourceName = "";
   if (statement.start.define) {
@@ -238,13 +282,15 @@ export function parseConnectionStatement(
     const sourceComponent: ComponentInstance = defineComponentInstance(
       statement.start.define.componentId,
     );
-    // TODO: don't allow duplicates?
-    project.componentInstances.push(sourceComponent);
+    // TODO: error/warn on duplicates
+    addComponent(context, sourceComponent)
+    result.componentIds.add(sourceComponent.id)
   }
   if (statement.start.ref) {
     sourceOutlet = statement.start.ref.outlet?.portName.ref?.name;
     // TODO: probably error if unknown.
     sourceName = statement.start.ref.componentIdRef.ref?.name ?? "unknown";
+    result.componentIds.add(sourceName)
   }
   for (const connection of statement.connections) {
     let isDirectConnection = false;
@@ -269,8 +315,9 @@ export function parseConnectionStatement(
       const targetComponent: ComponentInstance = defineComponentInstance(
         target.define.componentId,
       );
-      // TODO: don't allow duplicates?
-      project.componentInstances.push(targetComponent);
+      // TODO: error/warn on duplicates
+      addComponent(context, targetComponent)
+      result.componentIds.add(targetComponent.id)
       const connection: ConnectionInstance = {
         id:
           namedConnection ??
@@ -291,9 +338,9 @@ export function parseConnectionStatement(
         tagIds: []
         // isNamedConnection: !!namedConnection,
       };
-      // TODO: allow duplicates (or not?)
-      project.connectionInstances.push(connection);
-      connectionIds.push(connection.id);
+      // TODO: error/warn on duplicates (or not?)
+      addConnection(context, connection)
+      result.connectionIds.add(connection.id)
       // console.log(`def ${connection.name}`)
       sourceOutlet = target.define.outlet?.portName.ref?.name;
       sourceName = targetName;
@@ -302,6 +349,7 @@ export function parseConnectionStatement(
       maybeInlet = target.ref.inlet?.portName.ref?.name;
       // TODO: probably error if unknown.
       targetName = target.ref.componentIdRef.ref?.name ?? "unknown";
+      result.componentIds.add(targetName)
       const connection: ConnectionInstance = {
         id:
           namedConnection ??
@@ -322,16 +370,18 @@ export function parseConnectionStatement(
         tagIds: []
         // isNamedConnection: !!namedConnection,
       };
-      // TODO: allow duplicates (or not?)
-      project.connectionInstances.push(connection);
-      connectionIds.push(connection.id);
+      // TODO: error/warn on duplicates (or not?)
+      addConnection(context, connection)
+      result.connectionIds.add(connection.id)
       // console.log(`ref ${sourceName} ${sourceOutlet ? `[${sourceOutlet}] ` : ""}${connectionSymbol} ${maybeInlet ? `[${maybeInlet}] ` : ""}${targetName}`)
+
+      // Prepare for NEXT connection ("from")
       sourceOutlet = target.ref.outlet?.portName.ref?.name;
       // TODO: probably error if unknown.
       sourceName = targetName ?? "unknown";
     }
   }
-  return connectionIds;
+  return result
 }
 
 export function compileDocuments(
@@ -339,6 +389,13 @@ export function compileDocuments(
 ): CompilerResult {
   // const models = docs.map(d => d.parseResult.value); // typed Model
   // console.log(`Compiling ${models.length} models: ${models.map(m => m.$document?.uri).join(", ")}`);
+
+  const context: CompilerContext = {
+    components: [],
+    connections: [],
+    componentById: new Map(),
+    connectionById: new Map()
+  }
 
   const defaultProject: Project = {
     id: "default-project",
@@ -402,7 +459,7 @@ export function compileDocuments(
         // TODO: don't allow duplicates?
         defaultProject.componentInstances.push(component);
       } else if (isConnectionStatement(statement)) {
-        parseConnectionStatement(statement, defaultProject);
+        parseConnectionStatement(statement, context);
       } else if (isTagDeclaration(statement)) {
         const color = statement.block?.properties.find(
           (p): p is TagColorProperty => p.$type === "TagColorProperty",
@@ -440,7 +497,7 @@ export function compileDocuments(
         };
         defaultProject.tagSets.push(tagSet);
       } else if (isLayoutElement(statement)) {
-        // TODO: Avoid double parsing LayoutElements if also in isLayoutGroup below?
+        // TODO: Avoid double parsing LayoutElements if also in isLayout below?
         parseLayoutElement(statement, defaultLayoutGroup);
       } else if (isLayout(statement)) {
         const layoutGroup: Layout = {
@@ -542,26 +599,40 @@ export function compileDocuments(
         };
         defaultProject.componentDefinitions.push(symbol);
       } else if (isGroup(statement)) {
+        // TODO: Clean up and prevent duplicates here.
+        const componentIds: string[] = [];
         const connectionIds: string[] = [];
+        const tagIds: string[] = [];
+        let groupName = "";
         for (const groupStatement of statement.block.statements) {
-          // TODO: support other group statements
-          if (groupStatement.$type === "ConnectionStatement"){
-            const ids = parseConnectionStatement(groupStatement, defaultProject);
-            connectionIds.push(...ids);
+          if (groupStatement.$type === "ConnectionStatement") {
+            const result = parseConnectionStatement(groupStatement, context);
+            componentIds.push(...result.componentIds);
+            connectionIds.push(...result.connectionIds);
+          } else if (groupStatement.$type === "ComponentDeclaration") {
+            componentIds.push(groupStatement.name)
+          } else if (groupStatement.$type === "GroupName") {
+            groupName = groupStatement.name
+          } else if (groupStatement.$type === "TagArray") {
+            for (const tag of groupStatement.elements) {
+              tagIds.push(tag.ref.ref?.name ?? "")
+            }
           }
         }
         const group = {
           id: statement.name,
-          name: statement.name,
-          componentIds: [],
+          name: groupName,
+          componentIds,
           connectionIds,
-          tagIds: []
+          tagIds
         };
         defaultProject.groups.push(group);
       }
     }
   }
 
+  defaultProject.componentInstances.push(...context.components)
+  defaultProject.connectionInstances.push(...context.connections)
   defaultProject.layouts.push(defaultLayoutGroup);
   defaultProject.documents.map((d) => ({
     uri: d.uri.toString(),
