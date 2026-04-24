@@ -109,11 +109,12 @@ symbol Cylinder = {
 symbol Tank = {
   svg: "tank"
   label: bottom_mid
-  port p1 = { x: 85 y: 60 rot: 0 }
+  port top = { x: 60 y: 35 rot: 270 }
+  port bottom = { x: 85 y: 60 rot: 0 }
 }
 
-symbol Tank4 = {
-  svg: "tank4"
+symbol Vessel = {
+  svg: "vessel"
   label: bottom
   port p1 = { x: 25 y: 60 rot: 180 }
   port p2 = { x: 60 y: 35 rot: 270 }
@@ -121,12 +122,27 @@ symbol Tank4 = {
   port p4 = { x: 60 y: 85 rot: 90 }
 }
 
-symbol QD = {
+symbol QuickDisconnect = {
   svg: "quick-disconnect"
   label: bottom_mid
   // hideLabel: true
   port inlet  = { x: 20 y: 60 rot: 180 }
   port outlet = { x: 100 y: 60 rot: 0 }
+}
+symbol QuickDisconnectWithCheck <QuickDisconnect> {
+  svg: "quick-disconnect-check"
+}
+symbol QuickDisconnectMale <QuickDisconnect> {
+  svg: "quick-disconnect-male"
+}
+symbol QuickDisconnectMaleWithCheck <QuickDisconnect> {
+  svg: "quick-disconnect-male-check"
+}
+symbol QuickDisconnectFemale <QuickDisconnect> {
+  svg: "quick-disconnect-female"
+}
+symbol QuickDisconnectFemaleWithCheck <QuickDisconnect> {
+  svg: "quick-disconnect-female-check"
 }
 
 symbol Cap = {
@@ -135,14 +151,15 @@ symbol Cap = {
   // hideLabel: true
   port p1 = { x: 55 y: 60 rot: 180 }
 }
+symbol Plug <Cap>
 
 symbol Instrument1Port = {
   label: top
   port p1 = { x: 60 y: 80 rot: 90 }
 }
 
-symbol PT <Instrument1Port> = { svg: "pressure-transducer" }
-symbol TC <Instrument1Port> = { svg: "thermocouple" }
+symbol PressureTransducer <Instrument1Port> = { svg: "pressure-transducer" }
+symbol Thermocouple <Instrument1Port> = { svg: "thermocouple" }
 symbol PressureGauge <Instrument1Port> = {
   svg: "pressure-gauge"
   label: top_mid
