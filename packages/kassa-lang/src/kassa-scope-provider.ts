@@ -8,7 +8,7 @@ export class KassaScopeComputation extends DefaultScopeComputation {
   override async collectExportedSymbols(
     document: LangiumDocument<AstNode>
   ): Promise<AstNodeDescription[]> {
-    console.log("[kassa-lang] running collectExportedSymbols")
+    // console.log("[kassa-lang] running collectExportedSymbols")
     const exported = await super.collectExportedSymbols(document);
     const seen = new Set(exported.map(e => `${e.type}:${e.name}`));
 
