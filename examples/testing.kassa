@@ -71,7 +71,16 @@ route conn1 = [
 ]
 route (v2 [outlet] --> [inlet] v3) = [bend -30]
 
-layout {
+layout layoutA { 
+  place v2 = {
+    x: 10
+    y: 10
+    rot: 90
+    mirror
+  }
+}
+
+layout layoutName {
   place v0 = {
     x: 10
     y: 10
@@ -86,7 +95,7 @@ layout {
   route (v2 [outlet] --> [inlet] v3) = [bend -30]
 }
 
-connect groupName {
+group groupName {
   v00 --> v02
 }
 
@@ -104,19 +113,10 @@ drawing optionSheetName {
 
 schematic Schematic1 {
 	// Actually connect.
-	connect optionalGroupName {
-	    v1 --> vG: CustomValve
-  }
+	groups [groupName]
 
 	// And layout.
-	layout optionalLayoutName {
-    place vG = {
-      x: 10
-      y: 10
-      rot: 90
-      mirror
-    }
-	}
+	use layoutA
 
 	drawing: optionSheetName
 }

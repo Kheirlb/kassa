@@ -143,5 +143,5 @@ vite.config.ts.timestamp-*
 dist
 bin
 
-examples/rocket.kassa
+examples/reuse
 examplesDev
