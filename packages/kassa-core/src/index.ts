@@ -61,7 +61,7 @@ export type CoreDiagnostic = {
 
 export type ComponentDefinition = {
   id: string
-  name: string
+  name?: string
   extendsId?: string
   svg?: string
   label?: string
@@ -71,7 +71,7 @@ export type ComponentDefinition = {
 
 export type Port = {
   id: string
-  name: string
+  name?: string
   x: number
   y: number
   rot: number
@@ -132,18 +132,17 @@ export type ComponentPortRef = {
 
 export type DrawingTemplate = {
   id: string
-  name: string
+  name?: string
   width: number
   height: number
   scale: number
-  titleBlocks: TitleBlockTemplate[]
+  // TODO: support better block definitions
+  titleBlock?: {
+    title: string
+    author: string
+    date: string
+  }
   sourceDocumentId?: string
-}
-
-export type TitleBlockTemplate = {
-  id: string
-  name: string
-  fields: string[]
 }
 
 // ---------- Layouts ----------
