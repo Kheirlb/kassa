@@ -5,6 +5,9 @@ import "./kassa-symbols"
 ComponentDeclaration:
   name=Identifier ':' componentType=[SymbolStatement] ('='? value=ComponentBlock)?;
 
+ComponentReference:
+  ref=[ComponentDeclaration];
+
 ComponentBlock:
   '{' (properties+=ComponentProperty (','? properties+=ComponentProperty)*)? ','? '}';
 

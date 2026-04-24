@@ -5,7 +5,7 @@ import {
   ValidationChecks,
 } from "langium";
 import { KassaServices } from "./kassa-module.js";
-import type { ComponentDeclaration, DrawingStatement, KassaAstType, LayoutComponent, LayoutPlaceBlock, Model, SymbolStatement, TagBlock, TagDeclaration, TagSetDeclaration } from "./ast/index.js";
+import type { ComponentDeclaration, DrawingTemplate, KassaAstType, LayoutComponent, LayoutPlaceBlock, Model, SymbolStatement, TagBlock, TagDeclaration, TagSetDeclaration } from "./ast/index.js";
 
 export function defineConnectionId(sourceName: string, sourceOutlet: string | undefined, targetName: string, targetInlet: string | undefined): string {
   return `connection-${sourceName}.${sourceOutlet ?? "auto"}-to-${targetName}.${targetInlet ?? "auto"}`;
@@ -32,7 +32,7 @@ export function registerValidationChecks(services: KassaServices) {
     ComponentDeclaration: [validator.validateComponent],
     TagDeclaration: [validator.validateTagDeclaration],
     TagSetDeclaration: [validator.validateTagSets],
-    DrawingStatement: [validator.validateDrawing],
+    DrawingTemplate: [validator.validateDrawing],
     LayoutComponent: [validator.validateLayoutComponent]
   };
   registry.register(checks, validator);
@@ -225,7 +225,7 @@ export class KassaValidator {
         } else {
           seen.add(name);
         }
-      } else if (statement.$type === 'LayoutGroup') {
+      } else if (statement.$type === 'Layout') {
         const groupPointer = statement.name ? ` in group '${statement.name}'` : ' in a layout';
         const seenInGroup = new Set<string>();
         // Might as well run the same checks here so we add more details for the user with respect to full model.
@@ -366,7 +366,7 @@ export class KassaValidator {
     // Check for hardware reference duplication.
   }
 
-  validateDrawing(drawingStatment: DrawingStatement, accept: ValidationAcceptor): void {
+  validateDrawing(drawingStatment: DrawingTemplate, accept: ValidationAcceptor): void {
     const seen = new Set<string>();
     for (const prop of drawingStatment.block?.properties ?? []) {
       this.checkDuplicateProperty(prop, seen, accept, drawingStatment.name)
@@ -405,8 +405,8 @@ export class KassaValidator {
         case "TagSetDeclaration":
         case "SymbolStatement":
         case "ConnectionGroup":
-        case "LayoutGroup":
-        case "DrawingStatement":
+        case "Layout":
+        case "DrawingTemplate":
         case "SchematicStatement":
           return "name" in node && typeof node.name === "string"
             ? node.name

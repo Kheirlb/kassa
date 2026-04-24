@@ -2,11 +2,20 @@ import "./kassa-groups"
 import "./kassa-layout"
 import "./kassa-drawing"
 
+SchematicStatement:
+  'schematic' name=Identifier block=SchematicBlock;
+
+SchematicBlock:
+  '{' options+=SchematicOptions* '}';
+
 SchematicOptions:
-  ConnectionGroup | LayoutGroup | DrawingRef;
+  GroupRefArray | LayoutRef | DrawingRef;
+
+GroupRefArray:
+  'groups' '[' (ref+=[Group] (','? ref+=[Group])*)? ','? ']';
 
 DrawingRef:
-  'drawing' ':' ref=[DrawingStatement];
+  'drawing' ':' ref=[DrawingTemplate];
 
-SchematicStatement:
-  'schematic' name=Identifier '{' options+=SchematicOptions* '}';
+LayoutRef:
+  'use' layoutId=[Layout] ('=' block=LayoutPlaceBlock)?;

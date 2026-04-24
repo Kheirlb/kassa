@@ -36,10 +36,11 @@ export type KassaKeywordNames =
     | "author"
     | "auto"
     | "color"
-    | "connect"
     | "date"
     | "drawing"
     | "false"
+    | "group"
+    | "groups"
     | "hardware"
     | "height"
     | "import"
@@ -62,6 +63,7 @@ export type KassaKeywordNames =
     | "title"
     | "titleBlock"
     | "true"
+    | "use"
     | "width"
     | "x"
     | "y"
@@ -163,7 +165,7 @@ export function isComponentBlock(item: unknown): item is ComponentBlock {
 }
 
 export interface ComponentDeclaration extends langium.AstNode {
-    readonly $container: ConnectedComponentDefine | Model;
+    readonly $container: ConnectedComponentDefine | GroupBlock | Model;
     readonly $type: 'ComponentDeclaration';
     componentType: langium.Reference<SymbolStatement>;
     name: string;
@@ -214,6 +216,20 @@ export const ComponentProperty = {
 
 export function isComponentProperty(item: unknown): item is ComponentProperty {
     return reflection.isInstance(item, ComponentProperty.$type);
+}
+
+export interface ComponentReference extends langium.AstNode {
+    readonly $type: 'ComponentReference';
+    ref: langium.Reference<ComponentDeclaration>;
+}
+
+export const ComponentReference = {
+    $type: 'ComponentReference',
+    ref: 'ref'
+} as const;
+
+export function isComponentReference(item: unknown): item is ComponentReference {
+    return reflection.isInstance(item, ComponentReference.$type);
 }
 
 export interface ConnectedComponent extends langium.AstNode {
@@ -271,23 +287,6 @@ export function isConnectedComponentRef(item: unknown): item is ConnectedCompone
     return reflection.isInstance(item, ConnectedComponentRef.$type);
 }
 
-export interface ConnectionGroup extends langium.AstNode {
-    readonly $container: Model | SchematicStatement;
-    readonly $type: 'ConnectionGroup';
-    connectionStatements: Array<ConnectionStatement>;
-    name: string;
-}
-
-export const ConnectionGroup = {
-    $type: 'ConnectionGroup',
-    connectionStatements: 'connectionStatements',
-    name: 'name'
-} as const;
-
-export function isConnectionGroup(item: unknown): item is ConnectionGroup {
-    return reflection.isInstance(item, ConnectionGroup.$type);
-}
-
 export interface ConnectionKind extends langium.AstNode {
     readonly $container: ConnectionStatement;
     readonly $type: 'ConnectionKind';
@@ -306,7 +305,7 @@ export function isConnectionKind(item: unknown): item is ConnectionKind {
 }
 
 export interface ConnectionStatement extends langium.AstNode {
-    readonly $container: ConnectionGroup | Model;
+    readonly $container: GroupBlock | Model;
     readonly $type: 'ConnectionStatement';
     connections: Array<ConnectionKind>;
     start: ConnectedComponent;
@@ -403,7 +402,7 @@ export function isDirection(item: unknown): item is Direction {
 }
 
 export interface DrawingBlock extends langium.AstNode {
-    readonly $container: DrawingStatement;
+    readonly $container: DrawingTemplate;
     readonly $type: 'DrawingBlock';
     properties: Array<DrawingProperty>;
 }
@@ -443,9 +442,9 @@ export function isDrawingProperty(item: unknown): item is DrawingProperty {
 }
 
 export interface DrawingRef extends langium.AstNode {
-    readonly $container: SchematicStatement;
+    readonly $container: SchematicBlock;
     readonly $type: 'DrawingRef';
-    ref: langium.Reference<DrawingStatement>;
+    ref: langium.Reference<DrawingTemplate>;
 }
 
 export const DrawingRef = {
@@ -472,21 +471,21 @@ export function isDrawingScale(item: unknown): item is DrawingScale {
     return reflection.isInstance(item, DrawingScale.$type);
 }
 
-export interface DrawingStatement extends langium.AstNode {
+export interface DrawingTemplate extends langium.AstNode {
     readonly $container: Model;
-    readonly $type: 'DrawingStatement';
+    readonly $type: 'DrawingTemplate';
     block?: DrawingBlock;
     name: string;
 }
 
-export const DrawingStatement = {
-    $type: 'DrawingStatement',
+export const DrawingTemplate = {
+    $type: 'DrawingTemplate',
     block: 'block',
     name: 'name'
 } as const;
 
-export function isDrawingStatement(item: unknown): item is DrawingStatement {
-    return reflection.isInstance(item, DrawingStatement.$type);
+export function isDrawingTemplate(item: unknown): item is DrawingTemplate {
+    return reflection.isInstance(item, DrawingTemplate.$type);
 }
 
 export interface DrawingTitleBlock extends langium.AstNode {
@@ -517,6 +516,78 @@ export const DrawingWidth = {
 
 export function isDrawingWidth(item: unknown): item is DrawingWidth {
     return reflection.isInstance(item, DrawingWidth.$type);
+}
+
+export interface Group extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'Group';
+    block: GroupBlock;
+    name: string;
+}
+
+export const Group = {
+    $type: 'Group',
+    block: 'block',
+    name: 'name'
+} as const;
+
+export function isGroup(item: unknown): item is Group {
+    return reflection.isInstance(item, Group.$type);
+}
+
+export interface GroupBlock extends langium.AstNode {
+    readonly $container: Group;
+    readonly $type: 'GroupBlock';
+    statements: Array<GroupStatements>;
+}
+
+export const GroupBlock = {
+    $type: 'GroupBlock',
+    statements: 'statements'
+} as const;
+
+export function isGroupBlock(item: unknown): item is GroupBlock {
+    return reflection.isInstance(item, GroupBlock.$type);
+}
+
+export interface GroupName extends langium.AstNode {
+    readonly $container: GroupBlock;
+    readonly $type: 'GroupName';
+    name: string;
+}
+
+export const GroupName = {
+    $type: 'GroupName',
+    name: 'name'
+} as const;
+
+export function isGroupName(item: unknown): item is GroupName {
+    return reflection.isInstance(item, GroupName.$type);
+}
+
+export interface GroupRefArray extends langium.AstNode {
+    readonly $container: SchematicBlock;
+    readonly $type: 'GroupRefArray';
+    ref: Array<langium.Reference<Group>>;
+}
+
+export const GroupRefArray = {
+    $type: 'GroupRefArray',
+    ref: 'ref'
+} as const;
+
+export function isGroupRefArray(item: unknown): item is GroupRefArray {
+    return reflection.isInstance(item, GroupRefArray.$type);
+}
+
+export type GroupStatements = ComponentDeclaration | ConnectionStatement | GroupName | TagSetTagsProperty;
+
+export const GroupStatements = {
+    $type: 'GroupStatements'
+} as const;
+
+export function isGroupStatements(item: unknown): item is GroupStatements {
+    return reflection.isInstance(item, GroupStatements.$type);
 }
 
 export interface HardwareOptionRef extends langium.AstNode {
@@ -645,8 +716,25 @@ export function isLabelLocation(item: unknown): item is LabelLocation {
     return reflection.isInstance(item, LabelLocation.$type);
 }
 
+export interface Layout extends langium.AstNode {
+    readonly $container: Model;
+    readonly $type: 'Layout';
+    block: LayoutBlock;
+    name?: string;
+}
+
+export const Layout = {
+    $type: 'Layout',
+    block: 'block',
+    name: 'name'
+} as const;
+
+export function isLayout(item: unknown): item is Layout {
+    return reflection.isInstance(item, Layout.$type);
+}
+
 export interface LayoutBlock extends langium.AstNode {
-    readonly $container: LayoutGroup;
+    readonly $container: Layout;
     readonly $type: 'LayoutBlock';
     layoutElements: Array<LayoutElement>;
 }
@@ -687,25 +775,8 @@ export function isLayoutElement(item: unknown): item is LayoutElement {
     return reflection.isInstance(item, LayoutElement.$type);
 }
 
-export interface LayoutGroup extends langium.AstNode {
-    readonly $container: Model | SchematicStatement;
-    readonly $type: 'LayoutGroup';
-    block: LayoutBlock;
-    name?: string;
-}
-
-export const LayoutGroup = {
-    $type: 'LayoutGroup',
-    block: 'block',
-    name: 'name'
-} as const;
-
-export function isLayoutGroup(item: unknown): item is LayoutGroup {
-    return reflection.isInstance(item, LayoutGroup.$type);
-}
-
 export interface LayoutPlaceBlock extends langium.AstNode {
-    readonly $container: LayoutComponent;
+    readonly $container: LayoutComponent | LayoutRef;
     readonly $type: 'LayoutPlaceBlock';
     properties: Array<PlaceProperty>;
 }
@@ -717,6 +788,23 @@ export const LayoutPlaceBlock = {
 
 export function isLayoutPlaceBlock(item: unknown): item is LayoutPlaceBlock {
     return reflection.isInstance(item, LayoutPlaceBlock.$type);
+}
+
+export interface LayoutRef extends langium.AstNode {
+    readonly $container: SchematicBlock;
+    readonly $type: 'LayoutRef';
+    block?: LayoutPlaceBlock;
+    layoutId: langium.Reference<Layout>;
+}
+
+export const LayoutRef = {
+    $type: 'LayoutRef',
+    block: 'block',
+    layoutId: 'layoutId'
+} as const;
+
+export function isLayoutRef(item: unknown): item is LayoutRef {
+    return reflection.isInstance(item, LayoutRef.$type);
 }
 
 export type LiteralValue = BooleanValue | IdentifierValue | NumberValue | StringValue;
@@ -963,7 +1051,22 @@ export function isRouteSection(item: unknown): item is RouteSection {
     return reflection.isInstance(item, RouteSection.$type);
 }
 
-export type SchematicOptions = ConnectionGroup | DrawingRef | LayoutGroup;
+export interface SchematicBlock extends langium.AstNode {
+    readonly $container: SchematicStatement;
+    readonly $type: 'SchematicBlock';
+    options: Array<SchematicOptions>;
+}
+
+export const SchematicBlock = {
+    $type: 'SchematicBlock',
+    options: 'options'
+} as const;
+
+export function isSchematicBlock(item: unknown): item is SchematicBlock {
+    return reflection.isInstance(item, SchematicBlock.$type);
+}
+
+export type SchematicOptions = DrawingRef | GroupRefArray | LayoutRef;
 
 export const SchematicOptions = {
     $type: 'SchematicOptions'
@@ -976,14 +1079,14 @@ export function isSchematicOptions(item: unknown): item is SchematicOptions {
 export interface SchematicStatement extends langium.AstNode {
     readonly $container: Model;
     readonly $type: 'SchematicStatement';
+    block: SchematicBlock;
     name: string;
-    options: Array<SchematicOptions>;
 }
 
 export const SchematicStatement = {
     $type: 'SchematicStatement',
-    name: 'name',
-    options: 'options'
+    block: 'block',
+    name: 'name'
 } as const;
 
 export function isSchematicStatement(item: unknown): item is SchematicStatement {
@@ -1007,7 +1110,7 @@ export function isStandardConnection(item: unknown): item is StandardConnection 
     return reflection.isInstance(item, StandardConnection.$type);
 }
 
-export type Statement = ComponentDeclaration | ConnectionGroup | ConnectionStatement | DrawingStatement | LayoutElement | LayoutGroup | NamedConnection | SchematicStatement | SymbolStatement | TagDeclarations;
+export type Statement = ComponentDeclaration | ConnectionStatement | DrawingTemplate | Group | Layout | LayoutElement | NamedConnection | SchematicStatement | SymbolStatement | TagDeclarations;
 
 export const Statement = {
     $type: 'Statement'
@@ -1092,7 +1195,7 @@ export function isSymbolStatement(item: unknown): item is SymbolStatement {
 }
 
 export interface TagArray extends langium.AstNode {
-    readonly $container: ComponentBlock | TagSetBlock;
+    readonly $container: ComponentBlock | GroupBlock | TagSetBlock;
     readonly $type: 'TagArray';
     elements: Array<TagRef>;
 }
@@ -1406,10 +1509,10 @@ export type KassaAstType = {
     ComponentNameProperty: ComponentNameProperty
     ComponentOptionsProperty: ComponentOptionsProperty
     ComponentProperty: ComponentProperty
+    ComponentReference: ComponentReference
     ConnectedComponent: ConnectedComponent
     ConnectedComponentDefine: ConnectedComponentDefine
     ConnectedComponentRef: ConnectedComponentRef
-    ConnectionGroup: ConnectionGroup
     ConnectionKind: ConnectionKind
     ConnectionStatement: ConnectionStatement
     DefinePortBlock: DefinePortBlock
@@ -1422,9 +1525,14 @@ export type KassaAstType = {
     DrawingProperty: DrawingProperty
     DrawingRef: DrawingRef
     DrawingScale: DrawingScale
-    DrawingStatement: DrawingStatement
+    DrawingTemplate: DrawingTemplate
     DrawingTitleBlock: DrawingTitleBlock
     DrawingWidth: DrawingWidth
+    Group: Group
+    GroupBlock: GroupBlock
+    GroupName: GroupName
+    GroupRefArray: GroupRefArray
+    GroupStatements: GroupStatements
     HardwareOptionRef: HardwareOptionRef
     HardwareOptionsArray: HardwareOptionsArray
     HexColor: HexColor
@@ -1433,11 +1541,12 @@ export type KassaAstType = {
     ImportCsv: ImportCsv
     KeyValue: KeyValue
     LabelLocation: LabelLocation
+    Layout: Layout
     LayoutBlock: LayoutBlock
     LayoutComponent: LayoutComponent
     LayoutElement: LayoutElement
-    LayoutGroup: LayoutGroup
     LayoutPlaceBlock: LayoutPlaceBlock
+    LayoutRef: LayoutRef
     LiteralValue: LiteralValue
     Mirror: Mirror
     Model: Model
@@ -1455,6 +1564,7 @@ export type KassaAstType = {
     RouteConnection: RouteConnection
     RouteNamedConnection: RouteNamedConnection
     RouteSection: RouteSection
+    SchematicBlock: SchematicBlock
     SchematicOptions: SchematicOptions
     SchematicStatement: SchematicStatement
     StandardConnection: StandardConnection
@@ -1558,7 +1668,7 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                     name: ComponentDeclaration.value
                 }
             },
-            superTypes: [Statement.$type]
+            superTypes: [GroupStatements.$type, Statement.$type]
         },
         ComponentNameProperty: {
             name: ComponentNameProperty.$type,
@@ -1578,6 +1688,16 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         ComponentProperty: {
             name: ComponentProperty.$type,
             properties: {
+            },
+            superTypes: []
+        },
+        ComponentReference: {
+            name: ComponentReference.$type,
+            properties: {
+                ref: {
+                    name: ComponentReference.ref,
+                    referenceType: ComponentDeclaration.$type
+                }
             },
             superTypes: []
         },
@@ -1624,19 +1744,6 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: []
         },
-        ConnectionGroup: {
-            name: ConnectionGroup.$type,
-            properties: {
-                connectionStatements: {
-                    name: ConnectionGroup.connectionStatements,
-                    defaultValue: []
-                },
-                name: {
-                    name: ConnectionGroup.name
-                }
-            },
-            superTypes: [SchematicOptions.$type, Statement.$type]
-        },
         ConnectionKind: {
             name: ConnectionKind.$type,
             properties: {
@@ -1660,7 +1767,7 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                     name: ConnectionStatement.start
                 }
             },
-            superTypes: [Statement.$type]
+            superTypes: [GroupStatements.$type, Statement.$type]
         },
         DefinePortBlock: {
             name: DefinePortBlock.$type,
@@ -1751,7 +1858,7 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             properties: {
                 ref: {
                     name: DrawingRef.ref,
-                    referenceType: DrawingStatement.$type
+                    referenceType: DrawingTemplate.$type
                 }
             },
             superTypes: [SchematicOptions.$type]
@@ -1765,14 +1872,14 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [DrawingProperty.$type]
         },
-        DrawingStatement: {
-            name: DrawingStatement.$type,
+        DrawingTemplate: {
+            name: DrawingTemplate.$type,
             properties: {
                 block: {
-                    name: DrawingStatement.block
+                    name: DrawingTemplate.block
                 },
                 name: {
-                    name: DrawingStatement.name
+                    name: DrawingTemplate.name
                 }
             },
             superTypes: [Statement.$type]
@@ -1794,6 +1901,54 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: [DrawingProperty.$type]
+        },
+        Group: {
+            name: Group.$type,
+            properties: {
+                block: {
+                    name: Group.block
+                },
+                name: {
+                    name: Group.name
+                }
+            },
+            superTypes: [Statement.$type]
+        },
+        GroupBlock: {
+            name: GroupBlock.$type,
+            properties: {
+                statements: {
+                    name: GroupBlock.statements,
+                    defaultValue: []
+                }
+            },
+            superTypes: []
+        },
+        GroupName: {
+            name: GroupName.$type,
+            properties: {
+                name: {
+                    name: GroupName.name
+                }
+            },
+            superTypes: [GroupStatements.$type]
+        },
+        GroupRefArray: {
+            name: GroupRefArray.$type,
+            properties: {
+                ref: {
+                    name: GroupRefArray.ref,
+                    defaultValue: [],
+                    referenceType: Group.$type
+                }
+            },
+            superTypes: [SchematicOptions.$type]
+        },
+        GroupStatements: {
+            name: GroupStatements.$type,
+            properties: {
+            },
+            superTypes: []
         },
         HardwareOptionRef: {
             name: HardwareOptionRef.$type,
@@ -1878,6 +2033,18 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [SymbolProperty.$type]
         },
+        Layout: {
+            name: Layout.$type,
+            properties: {
+                block: {
+                    name: Layout.block
+                },
+                name: {
+                    name: Layout.name
+                }
+            },
+            superTypes: [Statement.$type]
+        },
         LayoutBlock: {
             name: LayoutBlock.$type,
             properties: {
@@ -1907,18 +2074,6 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: [Statement.$type]
         },
-        LayoutGroup: {
-            name: LayoutGroup.$type,
-            properties: {
-                block: {
-                    name: LayoutGroup.block
-                },
-                name: {
-                    name: LayoutGroup.name
-                }
-            },
-            superTypes: [SchematicOptions.$type, Statement.$type]
-        },
         LayoutPlaceBlock: {
             name: LayoutPlaceBlock.$type,
             properties: {
@@ -1928,6 +2083,19 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                 }
             },
             superTypes: []
+        },
+        LayoutRef: {
+            name: LayoutRef.$type,
+            properties: {
+                block: {
+                    name: LayoutRef.block
+                },
+                layoutId: {
+                    name: LayoutRef.layoutId,
+                    referenceType: Layout.$type
+                }
+            },
+            superTypes: [SchematicOptions.$type]
         },
         LiteralValue: {
             name: LiteralValue.$type,
@@ -2100,6 +2268,16 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             },
             superTypes: []
         },
+        SchematicBlock: {
+            name: SchematicBlock.$type,
+            properties: {
+                options: {
+                    name: SchematicBlock.options,
+                    defaultValue: []
+                }
+            },
+            superTypes: []
+        },
         SchematicOptions: {
             name: SchematicOptions.$type,
             properties: {
@@ -2109,12 +2287,11 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         SchematicStatement: {
             name: SchematicStatement.$type,
             properties: {
+                block: {
+                    name: SchematicStatement.block
+                },
                 name: {
                     name: SchematicStatement.name
-                },
-                options: {
-                    name: SchematicStatement.options,
-                    defaultValue: []
                 }
             },
             superTypes: [Statement.$type]
@@ -2299,7 +2476,7 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             name: TagSetTagsProperty.$type,
             properties: {
             },
-            superTypes: [ComponentProperty.$type, TagSetProperty.$type]
+            superTypes: [ComponentProperty.$type, GroupStatements.$type, TagSetProperty.$type]
         },
         TitleBlock: {
             name: TitleBlock.$type,

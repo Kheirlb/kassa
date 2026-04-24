@@ -17,7 +17,9 @@ export class KassaFormatter extends AbstractFormatter {
             ast.isLayoutPlaceBlock(node) ||
             ast.isDefinePortBlock(node) ||
             ast.isSymbolBlock(node) ||
-            ast.isDrawingTitleBlock(node)
+            ast.isDrawingTitleBlock(node) ||
+            ast.isGroupBlock(node) || 
+            ast.isSchematicBlock(node)
         )) {
             const formatter = this.getNodeFormatter(node);
             const bracesOpen = formatter.keyword('{')
