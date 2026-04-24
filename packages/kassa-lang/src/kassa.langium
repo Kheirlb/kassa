@@ -23,10 +23,10 @@ Statement:
 | ComponentDeclaration
 | NamedConnection
 | TagDeclarations
-| ConnectionGroup
-| LayoutGroup
+| Group
+| Layout
 | LayoutElement
-| DrawingStatement
+| DrawingTemplate
 | SymbolStatement
 | SchematicStatement
 ;

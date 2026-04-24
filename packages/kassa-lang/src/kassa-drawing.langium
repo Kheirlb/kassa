@@ -1,6 +1,6 @@
 import "./kassa-base"
 
-DrawingStatement:
+DrawingTemplate:
   'drawing' name=Identifier ('='? block=DrawingBlock)?;
 
 DrawingBlock:

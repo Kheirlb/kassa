@@ -2,7 +2,7 @@ import "./kassa-base"
 import "./kassa-components"
 import "./kassa-connections"
 
-LayoutGroup:
+Layout:
   'layout' name=Identifier? '='? block=LayoutBlock;
 
 LayoutBlock:

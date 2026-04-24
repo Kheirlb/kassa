@@ -2,5 +2,17 @@ import "./kassa-base"
 import "./kassa-components"
 import "./kassa-connections"
 
-ConnectionGroup:
-  'connect' name=Identifier '{' connectionStatements+=ConnectionStatement* '}';
+Group:
+  'group' name=Identifier '='? block=GroupBlock;
+
+GroupBlock:
+  '{' statements+=GroupStatements* '}';
+
+GroupStatements:
+  GroupName
+| TagSetTagsProperty
+| ComponentDeclaration
+| ConnectionStatement;
+
+GroupName:
+  'name' ':' name=String;
