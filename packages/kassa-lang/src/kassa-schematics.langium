@@ -15,7 +15,10 @@ GroupRefArray:
   'groups' '[' (ref+=[Group] (','? ref+=[Group])*)? ','? ']';
 
 DrawingRef:
-  'drawing' ':' ref=[DrawingTemplate];
+  'drawing' ':' ref=[DrawingTemplate] block=DrawingRefBlock?;
+
+DrawingRefBlock:
+  '{' DrawingTitleBlock '}';
 
 LayoutRef:
   'use' layoutId=[Layout] ('=' block=LayoutPlaceBlock)?;

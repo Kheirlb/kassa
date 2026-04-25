@@ -517,48 +517,37 @@ export function compileDocuments(
         });
         defaultProject.layouts.push(layoutGroup);
       } else if (isDrawingTemplate(statement)) {
-        // TODO: use const for of through blocks here
-        const height = Number(
-          statement.block?.properties.find(
-            (p): p is DrawingHeight => p.$type === "DrawingHeight",
-          )?.value.value ?? 11,
-        );
-        const width = Number(
-          statement.block?.properties.find(
-            (p): p is DrawingWidth => p.$type === "DrawingWidth",
-          )?.value.value ?? 8.5,
-        );
-        const scale = Number(
-          statement.block?.properties.find(
-            (p): p is DrawingScale => p.$type === "DrawingScale",
-          )?.value.value ?? 1,
-        );
-        const titleBlock = statement.block?.properties.find(
-          (p): p is DrawingTitleBlock => p.$type === "DrawingTitleBlock",
-        )?.value;
         const drawing: DrawingTemplate = {
-          id: statement.name ?? "unnamed-drawing", // TODO: better id generation, avoid duplicates?
-          height,
-          width,
-          scale,
-          titleBlock: titleBlock
-            ? {
-                title:
-                  titleBlock.properties.find(
-                    (p): p is TitleBlockTitle => p.$type === "TitleBlockTitle",
-                  )?.value.value ?? "",
-                author:
-                  titleBlock.properties.find(
-                    (p): p is TitleBlockAuthor =>
-                      p.$type === "TitleBlockAuthor",
-                  )?.value.value ?? "",
-                date:
-                  titleBlock.properties.find(
-                    (p): p is TitleBlockDate => p.$type === "TitleBlockDate",
-                  )?.value.value ?? "",
+          id: "",
+          width: 0,
+          height: 0,
+          scale: 0
+        }
+        for (const prop of statement.block?.properties ?? []) {
+          if (prop.$type === "DrawingHeight") {
+            drawing.height = Number(prop.value.value)
+          } else if (prop.$type === "DrawingScale") {
+            drawing.scale = Number(prop.value.value)
+          } else if (prop.$type === "DrawingWidth") {
+            drawing.width = Number(prop.value.value)
+          } else if (prop.$type === "DrawingTitleBlock") {
+            drawing.titleBlock = {
+              title: "",
+              author: "",
+              date: ""
+            };
+            const titleBlock = prop.value
+            for (const titleProp of titleBlock.properties) {
+              if (titleProp.$type === "TitleBlockTitle") {
+                drawing.titleBlock.title = titleProp.value.value
+              } else if (titleProp.$type === "TitleBlockDate") {
+                drawing.titleBlock.date = titleProp.value.value
+              } else if (titleProp.$type === "TitleBlockAuthor") {
+                drawing.titleBlock.author = titleProp.value.value
               }
-            : undefined,
-        };
+            }
+          }
+        }
         defaultProject.drawingTemplates.push(drawing);
       } else if (isSymbolStatement(statement)) {
         if (isBuiltin) continue; // TODO: maybe include builtin
@@ -670,7 +659,18 @@ export function compileDocuments(
             schematic.usedLayouts.push(layoutObject)
           } else if (option.$type === "DrawingRef") {
             schematic.drawing.templateId = option.ref.ref?.name ?? ""
-            // TODO fields
+            if (!option.block) continue
+            schematic.drawing.fields = {};
+            const titleBlockProp = option.block.value
+            for (const titleProp of titleBlockProp?.properties ?? []) {
+              if (titleProp.$type === "TitleBlockTitle") {
+                schematic.drawing.fields['title'] = titleProp.value.value
+              } else if (titleProp.$type === "TitleBlockDate") {
+                schematic.drawing.fields['date'] = titleProp.value.value
+              } else if (titleProp.$type === "TitleBlockAuthor") {
+                schematic.drawing.fields['author'] = titleProp.value.value
+              }
+            }
           } else if (option.$type === "GroupRefArray") {
             const groupIds: string[] = [];
             for (const groupRef of option.ref) {
