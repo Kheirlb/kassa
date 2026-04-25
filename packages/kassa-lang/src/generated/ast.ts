@@ -444,16 +444,28 @@ export function isDrawingProperty(item: unknown): item is DrawingProperty {
 export interface DrawingRef extends langium.AstNode {
     readonly $container: SchematicBlock;
     readonly $type: 'DrawingRef';
+    block?: DrawingRefBlock;
     ref: langium.Reference<DrawingTemplate>;
 }
 
 export const DrawingRef = {
     $type: 'DrawingRef',
+    block: 'block',
     ref: 'ref'
 } as const;
 
 export function isDrawingRef(item: unknown): item is DrawingRef {
     return reflection.isInstance(item, DrawingRef.$type);
+}
+
+export type DrawingRefBlock = DrawingTitleBlock;
+
+export const DrawingRefBlock = {
+    $type: 'DrawingRefBlock'
+} as const;
+
+export function isDrawingRefBlock(item: unknown): item is DrawingRefBlock {
+    return reflection.isInstance(item, DrawingRefBlock.$type);
 }
 
 export interface DrawingScale extends langium.AstNode {
@@ -489,7 +501,7 @@ export function isDrawingTemplate(item: unknown): item is DrawingTemplate {
 }
 
 export interface DrawingTitleBlock extends langium.AstNode {
-    readonly $container: DrawingBlock;
+    readonly $container: DrawingBlock | DrawingRef;
     readonly $type: 'DrawingTitleBlock';
     value: TitleBlock;
 }
@@ -1524,6 +1536,7 @@ export type KassaAstType = {
     DrawingHeight: DrawingHeight
     DrawingProperty: DrawingProperty
     DrawingRef: DrawingRef
+    DrawingRefBlock: DrawingRefBlock
     DrawingScale: DrawingScale
     DrawingTemplate: DrawingTemplate
     DrawingTitleBlock: DrawingTitleBlock
@@ -1856,12 +1869,21 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
         DrawingRef: {
             name: DrawingRef.$type,
             properties: {
+                block: {
+                    name: DrawingRef.block
+                },
                 ref: {
                     name: DrawingRef.ref,
                     referenceType: DrawingTemplate.$type
                 }
             },
             superTypes: [SchematicOptions.$type]
+        },
+        DrawingRefBlock: {
+            name: DrawingRefBlock.$type,
+            properties: {
+            },
+            superTypes: []
         },
         DrawingScale: {
             name: DrawingScale.$type,
@@ -1891,7 +1913,7 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
                     name: DrawingTitleBlock.value
                 }
             },
-            superTypes: [DrawingProperty.$type]
+            superTypes: [DrawingProperty.$type, DrawingRefBlock.$type]
         },
         DrawingWidth: {
             name: DrawingWidth.$type,

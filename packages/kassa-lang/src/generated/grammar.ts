@@ -3886,7 +3886,7 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@104"
+              "$ref": "#/rules@105"
             },
             "arguments": []
           },
@@ -4001,6 +4001,46 @@ export const KassaGrammar = (): Grammar => loadedKassaGrammar ?? (loadedKassaGra
               "deprecatedSyntax": false,
               "isMulti": false
             }
+          },
+          {
+            "$type": "Assignment",
+            "feature": "block",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@104"
+              },
+              "arguments": []
+            },
+            "cardinality": "?"
+          }
+        ]
+      },
+      "entry": false,
+      "fragment": false,
+      "parameters": []
+    },
+    {
+      "$type": "ParserRule",
+      "name": "DrawingRefBlock",
+      "definition": {
+        "$type": "Group",
+        "elements": [
+          {
+            "$type": "Keyword",
+            "value": "{"
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@89"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "Keyword",
+            "value": "}"
           }
         ]
       },
