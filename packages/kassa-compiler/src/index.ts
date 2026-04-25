@@ -180,7 +180,7 @@ export function defineComponentInstance(
         .find(
           (p): p is HardwareOptionsArray => p.$type === "HardwareOptionsArray",
         )
-        ?.option.map((o) => `${o.source}.${o.key}`) ?? [],
+        ?.option.map((o) => `${o.source.ref?.name}.${o.key}`) ?? [],
     groupIds: []
   };
 }
