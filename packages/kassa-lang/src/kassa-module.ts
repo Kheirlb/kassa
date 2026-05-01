@@ -5,6 +5,7 @@ import { KassaScopeComputation, KassaScopeProvider } from './kassa-scope-provide
 import { KassaFormatter } from './kassa-formatter.js';
 import { KassaWorkspaceManager } from './kassa-workspace-manager.js';
 import { KassaValidator, registerValidationChecks } from './kassa-validation.js';
+import { KassaCompletionProvider } from './kassa-completion-provider.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -33,7 +34,8 @@ export const KassaModule: Module<KassaServices, PartialLangiumServices & KassaAd
         ScopeComputation: (services) => new KassaScopeComputation(services)
     },
     lsp: {
-        Formatter: () => new KassaFormatter()
+        Formatter: () => new KassaFormatter(),
+        CompletionProvider: (services) => new KassaCompletionProvider(services),
     },
     validation: {
         KassaValidator: () => new KassaValidator()
