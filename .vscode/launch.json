@@ -7,11 +7,24 @@
       "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/apps/kassa-vscode-ext",
-        "${workspaceFolder}/examples/"
+        "${workspaceFolder}/examplesDev/inline"
       ],
+      "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/kassa-vscode-ext/dist/**/*.js",
-        "${workspaceFolder}/packages/kassa-lang/dist/**/*.js"
+        "${workspaceFolder}/apps/kassa-vscode-ext/**/*.js",
+      ]
+    },
+    {
+      "name": "Attach to Language Server",
+      "type": "node",
+      "port": 6009,
+      "request": "attach",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/apps/kassa-vscode-ext/**/*.js",
       ]
     },
     {

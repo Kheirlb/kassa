@@ -6,7 +6,8 @@
     "outDir": "dist",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "types": ["node"]
+    "types": ["node"],
+    "sourceMap": true
   },
   "include": ["src"]
 }
