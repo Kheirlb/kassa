@@ -24,8 +24,7 @@
   "license": "AGPL-3.0",
   "packageManager": "pnpm@10.28.1",
   "dependencies": {
-    "langium": "4.2.2",
-    "chevrotain-allstar": "0.4.2",
+    "langium": "4.2.3",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-protocol": "^3.17.5",
     "vscode-languageserver-types": "^3.17.5",

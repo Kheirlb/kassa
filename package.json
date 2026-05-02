@@ -18,10 +18,5 @@
   "packageManager": "pnpm@10.29.3",
   "devDependencies": {
     "typescript": "^5.9.3"
-  },
-  "pnpm": {
-    "overrides": {
-      "chevrotain-allstar": "0.4.2"
-    }
   }
 }
