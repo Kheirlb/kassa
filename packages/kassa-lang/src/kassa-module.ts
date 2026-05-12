@@ -6,6 +6,7 @@ import { KassaFormatter } from './kassa-formatter.js';
 import { KassaWorkspaceManager } from './kassa-workspace-manager.js';
 import { KassaValidator, registerValidationChecks } from './kassa-validation.js';
 import { KassaCompletionProvider } from './kassa-completion-provider.js';
+import { KassaVisibleDocumentService } from './kassa-visible-documents.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -13,6 +14,9 @@ import { KassaCompletionProvider } from './kassa-completion-provider.js';
 export type KassaAddedServices = {
     validation: {
         KassaValidator: KassaValidator
+    },
+    references: {
+        VisibleDocuments: KassaVisibleDocumentService 
     }
 }
 
@@ -31,7 +35,8 @@ export const KassaModule: Module<KassaServices, PartialLangiumServices & KassaAd
     // Add our custom scope provider here.
     references: {
         ScopeProvider: (services) => new KassaScopeProvider(services),
-        ScopeComputation: (services) => new KassaScopeComputation(services)
+        ScopeComputation: (services) => new KassaScopeComputation(services),
+        VisibleDocuments: () => new KassaVisibleDocumentService()
     },
     lsp: {
         Formatter: () => new KassaFormatter(),
@@ -39,7 +44,7 @@ export const KassaModule: Module<KassaServices, PartialLangiumServices & KassaAd
     },
     validation: {
         KassaValidator: () => new KassaValidator()
-    }
+    },
 };
 
 export type KassaSharedServices = LangiumSharedServices;

@@ -7,7 +7,7 @@
       "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/apps/kassa-vscode-ext",
-        "${workspaceFolder}/examples/inline"
+        "${workspaceFolder}/examples/reuse"
       ],
       "sourceMaps": true,
       "outFiles": [

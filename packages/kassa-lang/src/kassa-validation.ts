@@ -1,11 +1,13 @@
 import {
   AstNode,
   AstUtils,
+  LangiumDocument,
   ValidationAcceptor,
   ValidationChecks,
 } from "langium";
 import { KassaServices } from "./kassa-module.js";
-import type { ComponentDeclaration, DrawingTemplate, KassaAstType, LayoutComponent, LayoutPlaceBlock, Model, SymbolStatement, TagBlock, TagDeclaration, TagSetDeclaration } from "./ast/index.js";
+import type { ComponentDeclaration, DrawingTemplate, Import, KassaAstType, LayoutComponent, LayoutPlaceBlock, Model, SymbolStatement, TagBlock, TagDeclaration, TagSetDeclaration } from "./ast/index.js";
+import { KassaVisibleDocumentService } from "./kassa-visible-documents.js";
 
 export function defineConnectionId(sourceName: string, sourceOutlet: string | undefined, targetName: string, targetInlet: string | undefined): string {
   return `connection-${sourceName}.${sourceOutlet ?? "auto"}-to-${targetName}.${targetInlet ?? "auto"}`;
@@ -25,7 +27,7 @@ export function registerValidationChecks(services: KassaServices) {
     Model: [
       validator.checkUniqueImports,
       // validator.checkUniqueComponentsInModel,
-      validator.checkUniqueIdentifiers,
+      // validator.checkUniqueIdentifiers,
       validator.validateUniqueLayouts,
     ],
     SymbolStatement: [validator.validatePorts],
@@ -42,6 +44,14 @@ export function registerValidationChecks(services: KassaServices) {
  * Implementation of custom validations.
  */
 export class KassaValidator {
+  private readonly visibleDocuments: KassaVisibleDocumentService;
+  // private readonly indexManager: IndexManager;
+
+  constructor(services: KassaServices) {
+    this.visibleDocuments = services.references.VisibleDocuments;
+    // this.indexManager = services.shared.workspace.IndexManager;
+  }
+
   checkUniqueImports(model: Model, accept: ValidationAcceptor): void {
     // Create a set of visited imports to track duplicates.
     const uniqueImports = new Set();
@@ -154,6 +164,10 @@ export class KassaValidator {
   // TODO: Understand/check quality.
   checkUniqueIdentifiers(model: Model, accept: ValidationAcceptor): void {
     const seen = new Map<string, AstNode>();
+    const document = AstUtils.getDocument(model) as LangiumDocument<Model>;
+    const uris = this.visibleDocuments.collectVisibleUris(document)
+    // Get imports?
+    // model.imports
 
     // include root if needed, plus all descendants
     for (const node of [model, ...AstUtils.streamAllContents(model)]) {
@@ -164,7 +178,7 @@ export class KassaValidator {
       if (first) {
         accept(
           "error",
-          `Identifier '${name}' is already defined in this document.`,
+          `Identifier '${name}' is already defined in this document KARL.`,
           {
             node,
             property: "name",

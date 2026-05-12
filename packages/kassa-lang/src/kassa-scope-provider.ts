@@ -3,6 +3,8 @@ import { AstUtils, DefaultScopeComputation, EMPTY_SCOPE, MultiMapScope } from 'l
 import { DefaultScopeProvider } from 'langium';
 import { dirname, join } from 'node:path'; // TODO: Remove dep.
 import * as ast from './generated/ast.js';
+import { KassaServices } from './kassa-module.js';
+import { KassaVisibleDocumentService } from './kassa-visible-documents.js';
 
 export class KassaScopeComputation extends DefaultScopeComputation {
   override async collectExportedSymbols(
@@ -33,30 +35,21 @@ export class KassaScopeComputation extends DefaultScopeComputation {
 export class KassaScopeProvider extends DefaultScopeProvider {
   // Cache for global scopes, which are expensive to compute and don't change often.
   private documentCache: DocumentCache<string, Scope>;
+  protected readonly visibleDocuments: KassaVisibleDocumentService;
 
-  constructor(services: LangiumCoreServices) {
+  constructor(services: KassaServices) {
     super(services);
     this.documentCache = new DocumentCache<string, Scope>(services.shared);
+    this.visibleDocuments = services.references.VisibleDocuments;
   }
 
   // https://github.com/eclipse-langium/langium/discussions/1957
   // "Global" scope is now file + imports (including builtin).
   protected override getGlobalScope(referenceType: string, context: ReferenceInfo): Scope {
-    const document = AstUtils.getDocument(context.container);
-    const currentUri = document.uri;
-    return this.documentCache.get(currentUri, referenceType, () => {
-      const currentDir = dirname(currentUri.path);
-      const uris = new Set<string>();
-      // Add current and builtin docuemnts to the scope.
-      uris.add(document.textDocument.uri);
-      uris.add(URI.parse('builtin:///library.kassa').toString());
-      const model = document.parseResult.value as ast.Model;
-      // Add imported files to the scope.
-      for (const fileImport of model.imports) {
-          const filePath = join(currentDir, fileImport.path);
-          const uri = currentUri.with({ path: filePath });
-          uris.add(uri.toString());
-      }
+    const document = AstUtils.getDocument(context.container) as LangiumDocument<ast.Model>;
+
+    return this.documentCache.get(document.uri, referenceType, () => {
+      const uris = this.visibleDocuments.collectVisibleUris(document);
       return new MultiMapScope(this.indexManager.allElements(referenceType, uris));
     });
   }

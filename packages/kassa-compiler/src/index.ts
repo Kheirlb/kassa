@@ -161,22 +161,23 @@ export async function compileProjectFromMemory(
 // Handle new component instances.
 // TODO: Actually define this.
 export function defineComponentInstance(
-  componentId: ComponentDeclaration,
+  moduleUri: string,
+  componentDeclaration: ComponentDeclaration,
 ): ComponentInstance {
-  const nameProperty = componentId.value?.properties.find(
+  const nameProperty = componentDeclaration.value?.properties.find(
     (p): p is ComponentNameProperty => p.$type === "ComponentNameProperty",
   );
   return {
-    id: componentId.name,
-    definitionId: componentId.componentType.ref?.name ?? "unknown",
-    name: nameProperty?.value ?? componentId.name,
+    id: componentDeclaration.name,
+    definitionId: componentDeclaration.componentType.ref?.name ?? "unknown",
+    name: nameProperty?.value ?? componentDeclaration.name,
     tagIds:
-      componentId.value?.properties
+      componentDeclaration.value?.properties
         .filter((p): p is TagArray => p.$type === "TagArray")
         .flatMap((p) => p.elements.map((t) => t.ref.ref?.name ?? "unknown")) ??
       [],
     hardwareRefs:
-      componentId.value?.properties
+      componentDeclaration.value?.properties
         .find(
           (p): p is HardwareOptionsArray => p.$type === "HardwareOptionsArray",
         )
@@ -269,6 +270,7 @@ type ConnectionStatementResult = {
 }
 
 export function parseConnectionStatement(
+  moduleUri: string,
   statement: ConnectionStatement,
   context: CompilerContext
 ): ConnectionStatementResult {
@@ -283,6 +285,7 @@ export function parseConnectionStatement(
     sourceName = statement.start.define.componentId.name;
     // Add component to project.
     const sourceComponent: ComponentInstance = defineComponentInstance(
+      moduleUri,
       statement.start.define.componentId,
     );
     // TODO: error/warn on duplicates
@@ -316,6 +319,7 @@ export function parseConnectionStatement(
       targetName = target.define.componentId.name;
       // Add component to project.
       const targetComponent: ComponentInstance = defineComponentInstance(
+        moduleUri,
         target.define.componentId,
       );
       // TODO: error/warn on duplicates
@@ -426,10 +430,11 @@ export function compileDocuments(
   const builtinUri = URI.parse("builtin:///library.kassa");
   const coreDiagnostics: CoreDiagnostic[] = [];
   for (const doc of docs) {
+    const moduleUri = doc.uri.toString(); 
     const model = doc.parseResult.value;
     for (const diag of doc.diagnostics ?? []) {
       coreDiagnostics.push({
-        uriString: doc.uri.toString(),
+        uriString: moduleUri,
         severity: diag.severity,
         code: diag.code,
         message: diag.message,
@@ -458,11 +463,11 @@ export function compileDocuments(
 
     for (const statement of model.statements) {
       if (isComponentDeclaration(statement)) {
-        const component = defineComponentInstance(statement);
+        const component = defineComponentInstance(moduleUri, statement);
         // TODO: error/warn on duplicates
         addComponent(context, component)
       } else if (isConnectionStatement(statement)) {
-        parseConnectionStatement(statement, context);
+        parseConnectionStatement(moduleUri, statement, context);
       } else if (isTagDeclaration(statement)) {
         const color = statement.block?.properties.find(
           (p): p is TagColorProperty => p.$type === "TagColorProperty",
@@ -600,7 +605,7 @@ export function compileDocuments(
         let groupName = "";
         for (const groupStatement of statement.block.statements) {
           if (groupStatement.$type === "ConnectionStatement") {
-            const result = parseConnectionStatement(groupStatement, context);
+            const result = parseConnectionStatement(moduleUri, groupStatement, context);
             componentIds.push(...result.componentIds);
             connectionIds.push(...result.connectionIds);
           } else if (groupStatement.$type === "ComponentDeclaration") {

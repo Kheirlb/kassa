@@ -29,4 +29,5 @@ Statement:
 | DrawingTemplate
 | SymbolStatement
 | SchematicStatement
+| NumberValue
 ;
