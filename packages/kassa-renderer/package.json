@@ -7,7 +7,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -b tsconfig.json"
+    "build": "tsc -b tsconfig.json",
+    "test": "pnpm build && node --test dist/**/*.test.js"
   },
   "keywords": [],
   "author": "",
@@ -15,5 +16,8 @@
   "packageManager": "pnpm@10.28.1",
   "dependencies": {
     "@kassa/compiler": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.7.0"
   }
 }
