@@ -1,11 +1,10 @@
 import test from "node:test";
 import assert from "node:assert";
-import { loadSvgFile } from "./load-symbols.js";
+import { loadSvgFile, loadSvgs } from "./load-symbols.js";
 import path from "node:path";
 
 test('loading', async () => {
   const filepath = path.resolve("./src/symbols/valve.svg");
-  const basename = path.basename(filepath)
   const svgValve = await loadSvgFile(filepath)
   assert.strictEqual(svgValve,
 `<svg
@@ -20,4 +19,7 @@ test('loading', async () => {
   />
 </svg>
 `)
+
+  const symbolsFilepath = path.resolve("./src/symbols");
+  const svgs = await loadSvgs(symbolsFilepath);
 })

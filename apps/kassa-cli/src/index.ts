@@ -90,7 +90,7 @@ program
       readFile: readFileFromDisk,
       resolveImport: (from, importPath) => path.resolve(path.dirname(from), importPath)
     });
-    const svg = renderSvg();
+    const svg = renderSvg(result);
     console.log(svg);
   });
 
