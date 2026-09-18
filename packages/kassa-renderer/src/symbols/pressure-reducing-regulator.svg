@@ -1,0 +1,31 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="120"
+  height="120"
+>
+  <g transform="translate(0, -15)">
+    <path
+      fill="transparent"
+      stroke="currentColor"
+      d="m30,60 v30 l60,-30 v30 z"
+    />
+    <path
+      fill="transparent"
+      stroke="currentColor"
+      d="m60,75 v-35"
+    />
+    <path
+      fill="transparent"
+      stroke="currentColor"
+      d="m45,40
+        a15,15 0 0 1 30,0
+        z
+        "
+    />
+    <path
+      fill="transparent"
+      stroke="currentColor"
+      d="m60,25 v-5 h30 l-30,55"
+    />
+  </g>
+</svg>

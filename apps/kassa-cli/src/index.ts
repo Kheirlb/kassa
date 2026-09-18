@@ -84,14 +84,20 @@ program
 
 program
   .command('render <file>')
-  .action(async (file) => {
+  .option('-o, --out <file>', 'Output file (default: stdout)')
+  .action(async (file, options) => {
     const filepath = path.resolve(file);
     const result = await compileProjectFromMemory(filepath, {
       readFile: readFileFromDisk,
       resolveImport: (from, importPath) => path.resolve(path.dirname(from), importPath)
     });
-    const svg = renderSvg();
-    console.log(svg);
+    const svg = renderSvg(result);
+    if (options.out) {
+      fs.writeFileSync(options.out, svg);
+      console.log(`Wrote SVG to ${options.out}`);
+    } else {
+      console.log(svg);
+    }
   });
 
 // Check if no arguments were provided, and show help in that case.

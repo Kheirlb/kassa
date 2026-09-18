@@ -1,0 +1,19 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="120"
+  height="120"
+>
+  <!-- <rect
+    width="100%"
+    height="100%"
+    fill="red"
+  /> -->
+  <line x1="20" y1="60" x2="40" y2="60" stroke="currentColor" />
+  <circle cx="50" cy="60" r="10" stroke="currentColor" fill="transparent"/>
+  <path
+    fill="transparent"
+    stroke="currentColor"
+    d="m65,50 L75,60 L65,70"
+  />
+  <line x1="75" y1="60" x2="100" y2="60" stroke="currentColor" />
+</svg>

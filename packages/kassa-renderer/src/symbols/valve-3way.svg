@@ -6,6 +6,6 @@
   <path
     fill="transparent"
     stroke="currentColor"
-    d="m30,45 v30 l60,-30 v30 z"
+    d="m30,45 v30 l60,-30 v30 l-30,-15, l15,30 l-30,0, l15,-30 z"
   />
 </svg>
