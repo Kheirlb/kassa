@@ -4,8 +4,8 @@ symbol CustomValve <Valve> {
     y: 60
     rot: 0
   }
-  svg: "customvalve.svg"
+  // svg: "customvalve.svg"
   label: bottom
 }
 
-v0: Valve
+v0: CustomValve

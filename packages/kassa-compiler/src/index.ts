@@ -387,6 +387,20 @@ export function parseConnectionStatement(
   return result
 }
 
+// TODO: Add some sort of recursion limit?
+function addComponentDefinition(project: Project, options: Map<string, ComponentDefinition>, definition: ComponentDefinition) {
+  if (definition.id in project.componentDefinitions) {
+    return
+  }
+  project.componentDefinitions[definition.id] = definition;
+  if (definition.extendsId) {
+    const extendedDefinition = options.get(definition.extendsId);
+    if (extendedDefinition) {
+      addComponentDefinition(project, options, extendedDefinition);
+    }
+  }
+}
+
 export function compileDocuments(
   docs: LangiumDocument<Model>[],
 ): CompilerResult {
@@ -404,7 +418,7 @@ export function compileDocuments(
     id: "default-project",
     name: "Default Project",
     documents: [],
-    componentDefinitions: [],
+    componentDefinitions: {},
     componentInstances: [],
     connectionInstances: [],
     drawingTemplates: [],
@@ -423,10 +437,14 @@ export function compileDocuments(
     usedLayouts: []
   };
 
-  const builtinUri = URI.parse("builtin:///library.kassa");
   const coreDiagnostics: CoreDiagnostic[] = [];
+
+  // Track component definitions.
+  const allComponentDefinitions = new Map<string, ComponentDefinition>();
+
   for (const doc of docs) {
     const model = doc.parseResult.value;
+    const documentUriString = model.$document?.uri.toString();
     for (const diag of doc.diagnostics ?? []) {
       coreDiagnostics.push({
         uriString: doc.uri.toString(),
@@ -450,12 +468,6 @@ export function compileDocuments(
     }
 
     // console.log(`Compiling model with ${model.statements.length} statements and ${model.imports.length} imports.`);
-    let isBuiltin = false;
-    if (model.$document?.uri.toString() === builtinUri.toString()) {
-      isBuiltin = true;
-      // console.log(`Model is builtin library.`);
-    }
-
     for (const statement of model.statements) {
       if (isComponentDeclaration(statement)) {
         const component = defineComponentInstance(statement);
@@ -550,7 +562,6 @@ export function compileDocuments(
         }
         defaultProject.drawingTemplates.push(drawing);
       } else if (isSymbolStatement(statement)) {
-        if (isBuiltin) continue; // TODO: maybe include builtin
         let svg: string | undefined;
         let labelLocation: string | undefined;
         const ports: Port[] = [];
@@ -585,13 +596,16 @@ export function compileDocuments(
         }
         const symbol: ComponentDefinition = {
           id: statement.name,
+          // TODO: name?
           extendsId: statement.base?.symbolInput.ref?.name,
           ports,
           svg,
           label: labelLocation,
-          // TODO: Indicate builtin status.
+          // TODO: Indicate builtin status. Document id good enough?
+          sourceDocumentId: documentUriString
         };
-        defaultProject.componentDefinitions.push(symbol);
+        // TODO: Warn on overwrite?
+        allComponentDefinitions.set(symbol.id, symbol)
       } else if (isGroup(statement)) {
         // TODO: Clean up and prevent duplicates here.
         const componentIds: string[] = [];
@@ -684,6 +698,15 @@ export function compileDocuments(
         defaultProject.schematics.push(schematic);
       }
     }
+  }
+
+  // Add component definitions (but just those required to render).
+  for (const component of context.components) {
+    const definition = allComponentDefinitions.get(component.definitionId);
+    if (!definition) {
+      continue;
+    }
+    addComponentDefinition(defaultProject, allComponentDefinitions, definition);
   }
 
   defaultProject.componentInstances.push(...context.components)

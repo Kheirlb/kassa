@@ -17,7 +17,7 @@ export type Project = {
 
   documents: SourceDocument[]
 
-  componentDefinitions: ComponentDefinition[]
+  componentDefinitions: Record<string, ComponentDefinition>
   componentInstances: ComponentInstance[]
   connectionInstances: ConnectionInstance[]
   groups: Group[]
