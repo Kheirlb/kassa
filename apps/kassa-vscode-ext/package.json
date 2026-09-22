@@ -36,7 +36,12 @@
         "scopeName": "source.kassa",
         "path": "./syntaxes/kassa.tmLanguage.json"
       }
-    ]
+    ],
+    "commands": [{
+      "command": "catCoding.start",
+      "title": "Start new cad coding session",
+      "category": "Cat Coding"
+    }]
   },
   "activationEvents": [
     "onFileSystem:builtin"

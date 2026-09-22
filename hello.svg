@@ -1,0 +1,55 @@
+
+    <svg xmlns="http://www.w3.org/2000/svg">
+      <g>
+        <line
+          x1="90"
+          y1="60"
+          x2="150"
+          y2="60"
+          stroke="currentColor"
+          stroke-width="1"
+          stroke-linecap="round"
+          pointer-events="none"
+        />
+        <line
+          x1="90"
+          y1="60"
+          x2="150"
+          y2="60"
+          stroke="transparent"
+          stroke-width="8"
+          pointer-events="stroke"
+          style="cursor: pointer;" 
+        />
+      </g>
+      
+      <g transform="translate(0, 0) rotate(0, 0, 0)">
+        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="120"
+  height="120"
+>
+  <path
+    fill="transparent"
+    stroke="currentColor"
+    d="m30,45 v30 l60,-30 v30 z"
+  />
+</svg>
+
+      </g>
+      <g transform="translate(120, 0) rotate(1.4033419209422001e-14, 0, 0)">
+        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="120"
+  height="120"
+>
+  <path
+    fill="transparent"
+    stroke="currentColor"
+    d="m30,45 v30 l60,-30 v30 z"
+  />
+</svg>
+
+      </g>
+      
+    </svg>

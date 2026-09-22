@@ -1,7 +1,6 @@
 import { AstNode, AstNodeDescription, DocumentCache, LangiumCoreServices, LangiumDocument, ReferenceInfo, Scope, URI } from 'langium';
 import { AstUtils, DefaultScopeComputation, EMPTY_SCOPE, MultiMapScope } from 'langium';
 import { DefaultScopeProvider } from 'langium';
-import { dirname, join } from 'node:path'; // TODO: Remove dep.
 import * as ast from './generated/ast.js';
 
 export class KassaScopeComputation extends DefaultScopeComputation {
@@ -45,7 +44,8 @@ export class KassaScopeProvider extends DefaultScopeProvider {
     const document = AstUtils.getDocument(context.container);
     const currentUri = document.uri;
     return this.documentCache.get(currentUri, referenceType, () => {
-      const currentDir = dirname(currentUri.path);
+      // Consider regex?
+      const currentDir = currentUri.path.split('/').slice(0, -1).join('/') + '/';
       const uris = new Set<string>();
       // Add current and builtin docuemnts to the scope.
       uris.add(document.textDocument.uri);
@@ -53,7 +53,7 @@ export class KassaScopeProvider extends DefaultScopeProvider {
       const model = document.parseResult.value as ast.Model;
       // Add imported files to the scope.
       for (const fileImport of model.imports) {
-          const filePath = join(currentDir, fileImport.path);
+          const filePath = currentDir + fileImport.path; 
           const uri = currentUri.with({ path: filePath });
           uris.add(uri.toString());
       }

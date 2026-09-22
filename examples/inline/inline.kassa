@@ -1,1 +1,3 @@
+import "test.kassa"
 v1: Valve --> reg: PressureReducingRegulator
+s1: Custom

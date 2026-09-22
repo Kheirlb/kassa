@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Command } from 'commander';
 import { renderSvg } from '@kassa/renderer';
-import { compileProjectFromMemory } from '@kassa/compiler'; 
+import { compileProjectFromMemory } from '@kassa/compiler';
 import { CoreDiagnostic } from '@kassa/core';
 
 // Create a function that reads the provided file from disk.

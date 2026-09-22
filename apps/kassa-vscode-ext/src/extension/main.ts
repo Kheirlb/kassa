@@ -1,5 +1,5 @@
 import type { LanguageClientOptions, ServerOptions } from 'vscode-languageclient/node.js';
-import type * as vscode from 'vscode';
+import * as vscode from 'vscode';
 import * as path from 'node:path';
 import { LanguageClient, TransportKind } from 'vscode-languageclient/node.js';
 import { DslLibraryFileSystemProvider } from './fileSystemProvider.js';
@@ -12,6 +12,32 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     DslLibraryFileSystemProvider.register(context);
     console.log("[kassa-ext] activate(), starting language client...");
     client = await startLanguageClient(context);
+    context.subscriptions.push(
+        vscode.commands.registerCommand('catCoding.start', () => {
+            const panel = vscode.window.createWebviewPanel(
+                'catCoding',
+                'Cat Coding',
+                vscode.ViewColumn.Two,
+                {}
+            );
+
+            panel.webview.html = getWebviewContent();
+        })
+    )
+}
+
+function getWebviewContent() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Coding</title>
+</head>
+<body>
+    <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" width="300" />
+</body>
+</html>`;
 }
 
 // This function is called when the extension is deactivated.

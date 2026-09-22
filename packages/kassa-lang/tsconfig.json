@@ -4,9 +4,6 @@
     "composite": true,
     "rootDir": "src",
     "outDir": "dist",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "types": ["node"],
     "sourceMap": true
   },
   "include": ["src"]
