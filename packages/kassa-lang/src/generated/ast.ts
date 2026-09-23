@@ -1385,20 +1385,6 @@ export function isTagSetTagsProperty(item: unknown): item is TagSetTagsProperty 
     return reflection.isInstance(item, TagSetTagsProperty.$type);
 }
 
-export interface TestImports extends langium.AstNode {
-    readonly $type: 'TestImports';
-    name: string;
-}
-
-export const TestImports = {
-    $type: 'TestImports',
-    name: 'name'
-} as const;
-
-export function isTestImports(item: unknown): item is TestImports {
-    return reflection.isInstance(item, TestImports.$type);
-}
-
 export interface TitleBlock extends langium.AstNode {
     readonly $container: DrawingTitleBlock;
     readonly $type: 'TitleBlock';
@@ -1614,7 +1600,6 @@ export type KassaAstType = {
     TagSetNameProperty: TagSetNameProperty
     TagSetProperty: TagSetProperty
     TagSetTagsProperty: TagSetTagsProperty
-    TestImports: TestImports
     TitleBlock: TitleBlock
     TitleBlockAuthor: TitleBlockAuthor
     TitleBlockDate: TitleBlockDate
@@ -2514,15 +2499,6 @@ export class KassaAstReflection extends langium.AbstractAstReflection {
             properties: {
             },
             superTypes: [ComponentProperty.$type, GroupStatements.$type, TagSetProperty.$type]
-        },
-        TestImports: {
-            name: TestImports.$type,
-            properties: {
-                name: {
-                    name: TestImports.name
-                }
-            },
-            superTypes: []
         },
         TitleBlock: {
             name: TitleBlock.$type,
