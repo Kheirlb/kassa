@@ -38,7 +38,7 @@ export const KassaModule: Module<KassaServices, PartialLangiumServices & KassaAd
         CompletionProvider: (services) => new KassaCompletionProvider(services),
     },
     validation: {
-        KassaValidator: () => new KassaValidator()
+        KassaValidator: (services) => new KassaValidator(services)
     }
 };
 

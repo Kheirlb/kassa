@@ -1,11 +1,13 @@
 import {
   AstNode,
   AstUtils,
+  LangiumDocuments,
   ValidationAcceptor,
   ValidationChecks,
 } from "langium";
 import { KassaServices } from "./kassa-module.js";
 import type { ComponentDeclaration, DrawingTemplate, KassaAstType, LayoutComponent, LayoutPlaceBlock, Model, SymbolStatement, TagBlock, TagDeclaration, TagSetDeclaration } from "./ast/index.js";
+import { resolveTransitiveImports } from "./internal-grammar-utils.js";
 
 export function defineConnectionId(sourceName: string, sourceOutlet: string | undefined, targetName: string, targetInlet: string | undefined): string {
   return `connection-${sourceName}.${sourceOutlet ?? "auto"}-to-${targetName}.${targetInlet ?? "auto"}`;
@@ -42,6 +44,12 @@ export function registerValidationChecks(services: KassaServices) {
  * Implementation of custom validations.
  */
 export class KassaValidator {
+  protected readonly documents: LangiumDocuments;
+
+  constructor(services: KassaServices) {
+      this.documents = services.shared.workspace.LangiumDocuments;
+  }
+
   checkUniqueImports(model: Model, accept: ValidationAcceptor): void {
     // Create a set of visited imports to track duplicates.
     const uniqueImports = new Set();
@@ -68,8 +76,6 @@ export class KassaValidator {
     });
   }
 
-  // TODO: Handle imports/builtin?
-  // TODO: Unused with checkUniqueIdentifiers. Maybe delete?
   checkUniqueComponentsInModel(model: Model, accept: ValidationAcceptor): void {
     // Create a set of visited components to track duplicates.
     const uniqueComponents = new Set<string>();
@@ -152,13 +158,35 @@ export class KassaValidator {
 
   // Had some "help" with this from some big LLM or something.
   // TODO: Understand/check quality.
-  checkUniqueIdentifiers(model: Model, accept: ValidationAcceptor): void {
+  checkUniqueIdentifiers(inputModel: Model, accept: ValidationAcceptor): void {
     const seen = new Map<string, AstNode>();
 
-    // include root if needed, plus all descendants
-    for (const node of [model, ...AstUtils.streamAllContents(model)]) {
+    const imported = new Map<string, string>();
+    const resolvedModels = resolveTransitiveImports(this.documents, inputModel);
+    for (const model of resolvedModels) {
+      for (const node of AstUtils.streamAst(model)) {
+        const name = this.getDeclaredName(node);
+        if (!name) continue;
+        const filename = model.$document?.uri.toString().split('/').at(-1) ?? "";
+        imported.set(name, filename);
+      }
+    }
+
+    for (const node of AstUtils.streamAst(inputModel)) {
       const name = this.getDeclaredName(node);
       if (!name) continue;
+      if (imported.has(name)) {
+        accept(
+          "error",
+          // TODO: Figure out how to link to the other document but still have red squiggly here?
+          `Identifier '${name}' is already defined in '${imported.get(name)}'.`,
+          {
+            node,
+            property: "name",
+          },
+        );
+        continue;
+      }
 
       const first = seen.get(name);
       if (first) {

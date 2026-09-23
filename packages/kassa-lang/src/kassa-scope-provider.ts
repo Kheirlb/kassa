@@ -7,7 +7,6 @@ export class KassaScopeComputation extends DefaultScopeComputation {
   override async collectExportedSymbols(
     document: LangiumDocument<AstNode>
   ): Promise<AstNodeDescription[]> {
-    // console.log("[kassa-lang] running collectExportedSymbols")
     const exported = await super.collectExportedSymbols(document);
     const seen = new Set(exported.map(e => `${e.type}:${e.name}`));
 
@@ -31,7 +30,7 @@ export class KassaScopeComputation extends DefaultScopeComputation {
  */
 export class KassaScopeProvider extends DefaultScopeProvider {
   // Cache for global scopes, which are expensive to compute and don't change often.
-  private documentCache: DocumentCache<string, Scope>;
+  protected readonly documentCache: DocumentCache<string, Scope>;
 
   constructor(services: LangiumCoreServices) {
     super(services);
