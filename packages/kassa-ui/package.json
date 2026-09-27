@@ -1,0 +1,23 @@
+{
+  "name": "@kassa/ui",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Share UI components between website, preview, and desktop",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && vite build",
+    "start": "node ./dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@types/node": "^26.6.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1"
+  },
+  "dependencies": {
+    "svelte": "^5.57.1"
+  }
+}

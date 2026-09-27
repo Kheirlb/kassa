@@ -3,6 +3,7 @@ import typescriptLogo from './assets/typescript.svg'
 import viteLogo from './assets/vite.svg'
 import { renderSvg } from '@kassa/renderer';
 import { compileProjectFromMemory } from '@kassa/compiler';
+import { thing } from '@kassa/ui';
 
 const testFilepath = 'builtin:///test.kassa';
 
